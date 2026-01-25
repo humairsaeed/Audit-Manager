@@ -20,6 +20,23 @@ import { auditsApi, observationsApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
 import clsx from 'clsx';
 
+interface Audit {
+  id: string;
+  name: string;
+  reference: string;
+  type: string;
+  status: string;
+  description?: string;
+  scope?: string;
+  startDate?: string;
+  endDate?: string;
+  entity?: { id: string; name: string; code: string };
+  leadAuditor?: { id: string; displayName: string; email: string };
+  auditTeam?: Array<{ id: string; displayName: string; email: string }>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const typeColors: Record<string, string> = {
   INTERNAL: 'bg-blue-100 text-blue-800',
   EXTERNAL: 'bg-purple-100 text-purple-800',
@@ -81,11 +98,11 @@ export default function AuditDetailPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'observations' | 'team'>('overview');
 
   // Fetch audit details
-  const { data: audit, isLoading, error } = useQuery({
+  const { data: audit, isLoading, error } = useQuery<Audit>({
     queryKey: ['audit', auditId],
     queryFn: async () => {
       const response = await auditsApi.getById(auditId);
-      return response.data;
+      return response.data as Audit;
     },
   });
 
