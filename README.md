@@ -17,46 +17,155 @@ This system provides a centralized platform for:
 
 ### Technology Stack
 
-| Component | Technology | Justification |
-|-----------|------------|---------------|
-| Frontend | Next.js 14 + TypeScript | SSR, App Router, excellent DX, enterprise-ready |
-| Backend | Node.js + Express + TypeScript | Fast development, strong typing, rich ecosystem |
-| Database | PostgreSQL 16 | ACID compliance, complex queries, enterprise standard |
-| ORM | Prisma | Type-safe, excellent migrations, audit-friendly |
-| File Storage | S3-compatible (MinIO/AWS) | Scalable, secure, industry standard |
-| Cache/Queue | Redis + Bull | Reliable job processing for imports/notifications |
-| Auth | JWT + RBAC | Stateless, scalable, secure |
+#### Backend Technologies
 
-### System Architecture
+| Technology | Purpose |
+|------------|---------|
+| **Node.js 20** | Runtime environment |
+| **Express.js** | Web framework with middleware support |
+| **TypeScript** | Type-safe development |
+| **Prisma ORM** | Database access & migrations |
+| **PostgreSQL 16** | Primary relational database |
+| **Redis** | Caching & session management |
+| **JWT** | Stateless authentication tokens |
+| **Zod** | Runtime request validation |
+| **Winston** | Structured logging |
+| **Nodemailer** | Email notifications |
+| **ExcelJS** | Excel file processing |
+
+#### Frontend Technologies
+
+| Technology | Purpose |
+|------------|---------|
+| **Next.js 14** | React framework with App Router |
+| **TypeScript** | Type-safe development |
+| **TailwindCSS** | Utility-first CSS framework |
+| **React Query** | Server state management & caching |
+| **Zustand** | Client state management |
+| **React Hook Form** | Form handling with validation |
+| **Zod** | Client-side validation schemas |
+| **Heroicons** | SVG icon library |
+| **Headless UI** | Accessible UI components |
+
+#### Infrastructure
+
+| Technology | Purpose |
+|------------|---------|
+| **Docker** | Containerization |
+| **Docker Compose** | Multi-container orchestration |
+| **Nginx** | Reverse proxy & SSL termination |
+| **MinIO** | S3-compatible object storage |
+
+### High-Level System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Load Balancer                           │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-        ┌───────────────────────┴───────────────────────┐
-        │                                               │
-┌───────▼───────┐                             ┌────────▼────────┐
-│   Frontend    │                             │    Backend      │
-│   (Next.js)   │◄────────REST API──────────►│   (Express)     │
-│   Port 3000   │                             │   Port 3001     │
-└───────────────┘                             └────────┬────────┘
-                                                       │
-        ┌──────────────────────────────────────────────┼────────────┐
-        │                                              │            │
-┌───────▼───────┐  ┌───────────────┐  ┌───────────────▼──────┐    │
-│  PostgreSQL   │  │     Redis     │  │       MinIO          │    │
-│   Database    │  │  Cache/Queue  │  │   File Storage       │    │
-│   Port 5432   │  │   Port 6379   │  │   Port 9000/9001     │    │
-└───────────────┘  └───────────────┘  └──────────────────────┘    │
-                                                                   │
-                                      ┌────────────────────────────┘
-                                      │
-                    ┌─────────────────▼─────────────────┐
-                    │    External Services             │
-                    │  • SMTP Server (Email)           │
-                    │  • MS Teams Webhook              │
-                    └──────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT LAYER                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
+│  │   Web Browser   │  │  Mobile App     │  │  API Clients    │              │
+│  │   (Next.js)     │  │  (Future)       │  │  (Integration)  │              │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘              │
+└───────────┼─────────────────────┼─────────────────────┼─────────────────────┘
+            │                     │                     │
+            └─────────────────────┼─────────────────────┘
+                                  │ HTTPS
+┌─────────────────────────────────┼───────────────────────────────────────────┐
+│                        PRESENTATION LAYER                                    │
+├─────────────────────────────────┼───────────────────────────────────────────┤
+│                    ┌────────────▼────────────┐                              │
+│                    │      Nginx Proxy        │                              │
+│                    │   (SSL Termination,     │                              │
+│                    │    Rate Limiting)       │                              │
+│                    └────────────┬────────────┘                              │
+└─────────────────────────────────┼───────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────┼───────────────────────────────────────────┐
+│                         APPLICATION LAYER                                    │
+├─────────────────────────────────┼───────────────────────────────────────────┤
+│  ┌──────────────────────────────┼──────────────────────────────────────┐    │
+│  │                    ┌─────────▼─────────┐                            │    │
+│  │                    │   Express.js API   │                           │    │
+│  │                    │     Server         │                           │    │
+│  │                    └─────────┬─────────┘                            │    │
+│  │                              │                                      │    │
+│  │  ┌───────────────┬───────────┼───────────┬───────────────┐         │    │
+│  │  │               │           │           │               │         │    │
+│  │  ▼               ▼           ▼           ▼               ▼         │    │
+│  │ ┌────┐        ┌────┐      ┌────┐      ┌────┐         ┌────┐       │    │
+│  │ │Auth│        │RBAC│      │Audit│     │Error│        │Rate│       │    │
+│  │ │ MW │        │ MW │      │Log  │     │Handler      │Limit│       │    │
+│  │ └────┘        └────┘      └────┘      └────┘         └────┘       │    │
+│  │                              │                                      │    │
+│  │                    ┌─────────▼─────────┐                            │    │
+│  │                    │    Controllers     │                           │    │
+│  │                    └─────────┬─────────┘                            │    │
+│  │                              │                                      │    │
+│  │                    ┌─────────▼─────────┐                            │    │
+│  │                    │     Services       │                           │    │
+│  │                    │  (Business Logic)  │                           │    │
+│  │                    └─────────┬─────────┘                            │    │
+│  └──────────────────────────────┼──────────────────────────────────────┘    │
+└─────────────────────────────────┼───────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────┼───────────────────────────────────────────┐
+│                           DATA LAYER                                         │
+├─────────────────────────────────┼───────────────────────────────────────────┤
+│         ┌───────────────────────┼───────────────────────────┐               │
+│         │                       │                           │               │
+│         ▼                       ▼                           ▼               │
+│  ┌─────────────┐       ┌───────────────┐          ┌─────────────┐          │
+│  │ PostgreSQL  │       │     Redis     │          │  MinIO/S3   │          │
+│  │  (Primary)  │       │   (Cache/     │          │  (Object    │          │
+│  │             │       │   Sessions)   │          │   Storage)  │          │
+│  └─────────────┘       └───────────────┘          └─────────────┘          │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Layered Architecture Pattern
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                      PRESENTATION LAYER                         │
+│  • React Components      • Pages          • Hooks               │
+│  • State Management      • Form Handling  • API Integration     │
+├────────────────────────────────────────────────────────────────┤
+│                         API LAYER                               │
+│  • Route Handlers        • Request Validation                   │
+│  • Response Formatting   • Error Handling                       │
+├────────────────────────────────────────────────────────────────┤
+│                       SERVICE LAYER                             │
+│  • Business Logic        • Domain Rules                         │
+│  • Transaction Management• External Integrations                │
+├────────────────────────────────────────────────────────────────┤
+│                    DATA ACCESS LAYER                            │
+│  • Prisma ORM            • Query Building                       │
+│  • Soft Deletes          • Audit Logging                        │
+├────────────────────────────────────────────────────────────────┤
+│                     INFRASTRUCTURE                              │
+│  • Database              • File Storage                         │
+│  • Cache                 • Email/Notifications                  │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Observation Status Workflow
+
+```
+┌──────────┐    ┌─────────────┐    ┌────────────────────┐
+│   OPEN   │───>│ IN_PROGRESS │───>│ EVIDENCE_SUBMITTED │
+└──────────┘    └─────────────┘    └──────────┬─────────┘
+                                              │
+                     ┌────────────────────────┤
+                     │                        ▼
+                     │               ┌───────────────┐
+                     │               │ UNDER_REVIEW  │
+                     │               └───────┬───────┘
+                     │                       │
+                     │         ┌─────────────┴─────────────┐
+                     │         ▼                           ▼
+                     │    ┌──────────┐              ┌──────────┐
+                     └────│ REJECTED │              │  CLOSED  │
+                          └──────────┘              └──────────┘
 ```
 
 ## 👥 Role-Based Access Control (RBAC)

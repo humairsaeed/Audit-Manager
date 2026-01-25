@@ -306,20 +306,23 @@ async function main() {
   });
 
   if (adminRole) {
-    await prisma.userRole.upsert({
+    // Check if role assignment already exists (can't use upsert with nullable composite key)
+    const existingAdminRole = await prisma.userRole.findFirst({
       where: {
-        userId_roleId_entityId: {
-          userId: adminUser.id,
-          roleId: adminRole.id,
-          entityId: null as any,
-        },
-      },
-      update: {},
-      create: {
         userId: adminUser.id,
         roleId: adminRole.id,
+        entityId: null,
       },
     });
+
+    if (!existingAdminRole) {
+      await prisma.userRole.create({
+        data: {
+          userId: adminUser.id,
+          roleId: adminRole.id,
+        },
+      });
+    }
   }
 
   // Create Demo Users
@@ -352,20 +355,23 @@ async function main() {
     });
 
     if (role) {
-      await prisma.userRole.upsert({
+      // Check if role assignment already exists (can't use upsert with nullable composite key)
+      const existingUserRole = await prisma.userRole.findFirst({
         where: {
-          userId_roleId_entityId: {
-            userId: user.id,
-            roleId: role.id,
-            entityId: null as any,
-          },
-        },
-        update: {},
-        create: {
           userId: user.id,
           roleId: role.id,
+          entityId: null,
         },
       });
+
+      if (!existingUserRole) {
+        await prisma.userRole.create({
+          data: {
+            userId: user.id,
+            roleId: role.id,
+          },
+        });
+      }
     }
   }
 
@@ -380,9 +386,16 @@ async function main() {
   ];
 
   for (const rule of slaRules) {
-    await prisma.sLARule.create({
-      data: rule,
+    // Check if SLA rule already exists
+    const existingRule = await prisma.sLARule.findFirst({
+      where: { name: rule.name },
     });
+
+    if (!existingRule) {
+      await prisma.sLARule.create({
+        data: rule,
+      });
+    }
   }
 
   console.log('✅ Database seed completed successfully!');
