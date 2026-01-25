@@ -114,7 +114,8 @@ export default function AuditDetailPage() {
     queryKey: ['audit', auditId],
     queryFn: async () => {
       const response = await auditsApi.getById(auditId);
-      return response.data as Audit;
+      // API returns { success: true, data: { audit: {...} } }
+      return (response.data?.audit || response.data) as Audit;
     },
   });
 
