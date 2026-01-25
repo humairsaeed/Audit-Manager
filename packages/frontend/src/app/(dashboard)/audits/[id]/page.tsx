@@ -15,6 +15,7 @@ import {
   PlusIcon,
   ExclamationTriangleIcon,
   ChartBarIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 import { auditsApi, observationsApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
@@ -143,6 +144,26 @@ export default function AuditDetailPage() {
     },
   });
 
+  // Delete audit mutation
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      return auditsApi.delete(auditId);
+    },
+    onSuccess: () => {
+      toast.success('Audit deleted successfully');
+      router.push('/audits');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to delete audit');
+    },
+  });
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this audit? This action cannot be undone.')) {
+      deleteMutation.mutate();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -200,10 +221,20 @@ export default function AuditDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           {canEdit && audit.status !== 'CLOSED' && audit.status !== 'CANCELLED' && (
-            <Link href={`/audits/${auditId}/edit`} className="btn btn-secondary">
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Edit
-            </Link>
+            <>
+              <Link href={`/audits/${auditId}/edit`} className="btn btn-secondary">
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Edit
+              </Link>
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="btn btn-secondary text-red-600 hover:bg-red-50"
+              >
+                <TrashIcon className="h-4 w-4 mr-2" />
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </>
           )}
           {canAddObservation && audit.status === 'IN_PROGRESS' && (
             <Link href={`/observations/new?auditId=${auditId}`} className="btn btn-primary">
