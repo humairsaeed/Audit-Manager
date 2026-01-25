@@ -173,7 +173,7 @@ export default function EntitiesPage() {
     });
   };
 
-  const renderEntityRow = (entity: Entity, level: number = 0) => {
+  const renderEntityRow = (entity: Entity, level: number = 0): React.ReactNode => {
     const hasChildren = entity.children && entity.children.length > 0;
     const isExpanded = expandedIds.has(entity.id);
 
