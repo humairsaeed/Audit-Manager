@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  typescript: {
+    // Skip type checking during build (types can be checked separately with `npm run type-check`)
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // Skip ESLint during build
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     return [
       {

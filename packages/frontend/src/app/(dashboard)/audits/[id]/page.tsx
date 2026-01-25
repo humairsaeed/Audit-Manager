@@ -20,6 +20,14 @@ import { auditsApi, observationsApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
 import clsx from 'clsx';
 
+interface AuditUser {
+  id: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+}
+
 interface Audit {
   id: string;
   name: string;
@@ -30,11 +38,13 @@ interface Audit {
   description?: string;
   scope?: string;
   objectives?: string;
+  framework?: string;
   startDate?: string;
   endDate?: string;
   entity?: { id: string; name: string; code: string };
-  leadAuditor?: { id: string; displayName: string; email: string };
-  auditTeam?: Array<{ id: string; displayName: string; email: string }>;
+  leadAuditor?: AuditUser;
+  auditTeam?: AuditUser[];
+  teamMembers?: AuditUser[];
   createdAt: string;
   updatedAt: string;
 }
