@@ -1,6 +1,9 @@
 # Build stage
 FROM node:20-alpine AS builder
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # Copy package files
@@ -22,6 +25,9 @@ RUN npm run build
 # Production stage
 FROM node:20-alpine AS runner
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # Create non-root user
@@ -34,8 +40,12 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
 
-# Create logs directory
+# Create logs directory and set permissions
 RUN mkdir -p /app/logs && chown -R expressjs:nodejs /app/logs
+
+# Fix permissions for Prisma engines directory
+RUN chown -R expressjs:nodejs /app/node_modules/.prisma
+RUN chown -R expressjs:nodejs /app/node_modules/@prisma
 
 # Switch to non-root user
 USER expressjs
