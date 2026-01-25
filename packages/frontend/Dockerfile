@@ -16,6 +16,9 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
+# Create public directory if it doesn't exist
+RUN mkdir -p /app/public
+
 # Production stage
 FROM node:20-alpine AS runner
 
