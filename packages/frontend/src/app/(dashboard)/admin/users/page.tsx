@@ -10,7 +10,6 @@ import {
   TrashIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  UserCircleIcon,
   KeyIcon,
 } from '@heroicons/react/24/outline';
 import { usersApi, rolesApi } from '@/lib/api';
@@ -174,6 +173,19 @@ export default function UsersPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate at least one role is selected
+    if (formData.roleIds.length === 0) {
+      toast.error('Please select at least one role');
+      return;
+    }
+
+    // Validate password for new users
+    if (!editingUser && formData.password.length < 12) {
+      toast.error('Password must be at least 12 characters');
+      return;
+    }
+
     if (editingUser) {
       updateMutation.mutate({
         id: editingUser.id,
@@ -427,14 +439,19 @@ export default function UsersPage() {
                 {!editingUser && (
                   <>
                     <div>
-                      <label className="label">Password</label>
+                      <label className="label">Password *</label>
                       <input
                         type="password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         className="input"
-                        placeholder="Leave empty to auto-generate"
+                        placeholder="Minimum 12 characters"
+                        minLength={12}
+                        required
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Must be at least 12 characters with uppercase, lowercase, numbers, and special characters
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <input
@@ -452,7 +469,7 @@ export default function UsersPage() {
                 )}
 
                 <div>
-                  <label className="label">Roles</label>
+                  <label className="label">Roles *</label>
                   <div className="space-y-2 max-h-40 overflow-y-auto p-2 border rounded-lg">
                     {roles?.map((role: any) => (
                       <label key={role.id} className="flex items-center gap-2">
@@ -466,6 +483,9 @@ export default function UsersPage() {
                       </label>
                     ))}
                   </div>
+                  {formData.roleIds.length === 0 && (
+                    <p className="mt-1 text-xs text-red-500">At least one role is required</p>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
