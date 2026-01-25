@@ -361,16 +361,18 @@ export default function AuditDetailPage() {
             <div className="card p-6">
               <h3 className="text-sm font-medium text-gray-900 mb-4">Details</h3>
               <dl className="space-y-4">
-                <div>
-                  <dt className="text-sm text-gray-500 flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    Audit Period
-                  </dt>
-                  <dd className="text-sm font-medium text-gray-900 mt-1">
-                    {new Date(audit.startDate).toLocaleDateString()} -{' '}
-                    {new Date(audit.endDate).toLocaleDateString()}
-                  </dd>
-                </div>
+                {(audit.startDate || audit.endDate) && (
+                  <div>
+                    <dt className="text-sm text-gray-500 flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4" />
+                      Audit Period
+                    </dt>
+                    <dd className="text-sm font-medium text-gray-900 mt-1">
+                      {audit.startDate ? new Date(audit.startDate).toLocaleDateString() : 'N/A'} -{' '}
+                      {audit.endDate ? new Date(audit.endDate).toLocaleDateString() : 'N/A'}
+                    </dd>
+                  </div>
+                )}
 
                 {audit.entity && (
                   <div>
