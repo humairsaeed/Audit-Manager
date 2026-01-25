@@ -11,17 +11,19 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { auditsApi, entitiesApi, usersApi } from '@/lib/api';
 
 const auditSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
+  name: z.string().min(1, 'Name is required').max(255, 'Name too long'),
   type: z.enum(['INTERNAL', 'EXTERNAL', 'ISO', 'SOC', 'ISR', 'FINANCIAL', 'IT', 'REGULATORY', 'CUSTOM']),
   description: z.string().optional(),
   scope: z.string().optional(),
   objectives: z.string().optional(),
-  framework: z.string().optional(),
-  entityId: z.string().optional(),
-  year: z.number().min(2000).max(2100),
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
+  entityId: z.string().min(1, 'Entity is required'),
+  periodStart: z.string().min(1, 'Period start date is required'),
+  periodEnd: z.string().min(1, 'Period end date is required'),
+  plannedStartDate: z.string().optional(),
+  plannedEndDate: z.string().optional(),
   leadAuditorId: z.string().optional(),
+  externalAuditorName: z.string().optional(),
+  externalAuditorFirm: z.string().optional(),
   teamMemberIds: z.array(z.string()).optional(),
 });
 
@@ -34,14 +36,12 @@ export default function NewAuditPage() {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<AuditFormData>({
     resolver: zodResolver(auditSchema),
     defaultValues: {
       type: 'INTERNAL',
-      year: new Date().getFullYear(),
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      periodStart: new Date().toISOString().split('T')[0],
+      periodEnd: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       teamMemberIds: [],
     },
   });
@@ -69,17 +69,19 @@ export default function NewAuditPage() {
     mutationFn: async (data: AuditFormData) => {
       const payload = {
         ...data,
-        startDate: new Date(data.startDate).toISOString(),
-        endDate: new Date(data.endDate).toISOString(),
-        entityId: data.entityId || undefined,
+        periodStart: new Date(data.periodStart).toISOString(),
+        periodEnd: new Date(data.periodEnd).toISOString(),
+        plannedStartDate: data.plannedStartDate ? new Date(data.plannedStartDate).toISOString() : undefined,
+        plannedEndDate: data.plannedEndDate ? new Date(data.plannedEndDate).toISOString() : undefined,
         leadAuditorId: data.leadAuditorId || undefined,
         teamMemberIds: data.teamMemberIds?.filter(Boolean) || [],
       };
       return auditsApi.create(payload);
     },
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       toast.success('Audit created successfully');
-      router.push(`/audits/${response.data?.audit?.id || response.data?.id}`);
+      const auditId = response.data?.audit?.id || response.data?.id || response.audit?.id;
+      router.push(`/audits/${auditId}`);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to create audit');
@@ -89,9 +91,6 @@ export default function NewAuditPage() {
   const onSubmit = (data: AuditFormData) => {
     createMutation.mutate(data);
   };
-
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 5 }, (_, i) => currentYear + i - 2);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -140,36 +139,18 @@ export default function NewAuditPage() {
             </div>
 
             <div>
-              <label className="label">Year *</label>
-              <select {...register('year', { valueAsNumber: true })} className="input">
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="label">Entity</label>
+              <label className="label">Entity *</label>
               <select {...register('entityId')} className="input">
-                <option value="">Select entity (optional)</option>
+                <option value="">Select entity</option>
                 {entities?.map((entity: any) => (
                   <option key={entity.id} value={entity.id}>
                     {entity.name}
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="label">Framework</label>
-              <input
-                type="text"
-                {...register('framework')}
-                className="input"
-                placeholder="e.g., ISO 27001:2022"
-              />
+              {errors.entityId && (
+                <p className="mt-1 text-sm text-red-600">{errors.entityId.message}</p>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -210,32 +191,50 @@ export default function NewAuditPage() {
           </div>
         </div>
 
-        {/* Timeline */}
+        {/* Audit Period */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Timeline</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Audit Period</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="label">Start Date *</label>
+              <label className="label">Period Start *</label>
               <input
                 type="date"
-                {...register('startDate')}
+                {...register('periodStart')}
                 className="input"
               />
-              {errors.startDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
+              {errors.periodStart && (
+                <p className="mt-1 text-sm text-red-600">{errors.periodStart.message}</p>
               )}
             </div>
 
             <div>
-              <label className="label">End Date *</label>
+              <label className="label">Period End *</label>
               <input
                 type="date"
-                {...register('endDate')}
+                {...register('periodEnd')}
                 className="input"
               />
-              {errors.endDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
+              {errors.periodEnd && (
+                <p className="mt-1 text-sm text-red-600">{errors.periodEnd.message}</p>
               )}
+            </div>
+
+            <div>
+              <label className="label">Planned Start Date</label>
+              <input
+                type="date"
+                {...register('plannedStartDate')}
+                className="input"
+              />
+            </div>
+
+            <div>
+              <label className="label">Planned End Date</label>
+              <input
+                type="date"
+                {...register('plannedEndDate')}
+                className="input"
+              />
             </div>
           </div>
         </div>
@@ -254,6 +253,26 @@ export default function NewAuditPage() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="label">External Auditor Name</label>
+              <input
+                type="text"
+                {...register('externalAuditorName')}
+                className="input"
+                placeholder="External auditor name (if applicable)"
+              />
+            </div>
+
+            <div>
+              <label className="label">External Auditor Firm</label>
+              <input
+                type="text"
+                {...register('externalAuditorFirm')}
+                className="input"
+                placeholder="External audit firm (if applicable)"
+              />
             </div>
           </div>
         </div>

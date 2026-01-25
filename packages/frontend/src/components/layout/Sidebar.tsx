@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Dialog, Transition } from '@headlessui/react';
@@ -16,7 +16,8 @@ import {
   ArrowUpTrayIcon,
   XMarkIcon,
   ShieldCheckIcon,
-  BellIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore, ROLES } from '@/stores/auth';
 import clsx from 'clsx';
@@ -24,6 +25,8 @@ import clsx from 'clsx';
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 const navigation = [
@@ -51,6 +54,12 @@ const navigation = [
     roles: [ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN],
   },
   {
+    name: 'Roles',
+    href: '/admin/roles',
+    icon: ShieldCheckIcon,
+    roles: [ROLES.SYSTEM_ADMIN],
+  },
+  {
     name: 'Entities',
     href: '/admin/entities',
     icon: BuildingOfficeIcon,
@@ -64,7 +73,7 @@ const navigation = [
   },
 ];
 
-export default function Sidebar({ open, onClose }: SidebarProps) {
+export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const { user, hasAnyRole } = useAuthStore();
 
@@ -74,16 +83,24 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     return hasAnyRole(...item.roles);
   });
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ isCollapsed = false }: { isCollapsed?: boolean }) => (
     <div className="flex flex-col h-full bg-gray-900">
       {/* Logo */}
-      <div className="flex items-center h-16 px-4 bg-gray-900">
-        <ShieldCheckIcon className="w-8 h-8 text-primary-500" />
-        <span className="ml-2 text-xl font-bold text-white">AuditMS</span>
+      <div className={clsx(
+        'flex items-center h-16 bg-gray-900',
+        isCollapsed ? 'justify-center px-2' : 'px-4'
+      )}>
+        <ShieldCheckIcon className="w-8 h-8 text-primary-500 flex-shrink-0" />
+        {!isCollapsed && (
+          <span className="ml-2 text-xl font-bold text-white">AuditMS</span>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+      <nav className={clsx(
+        'flex-1 py-4 space-y-1 overflow-y-auto',
+        isCollapsed ? 'px-2' : 'px-2'
+      )}>
         {filteredNavigation.map((item, index) => {
           if (item.name === 'divider') {
             return <div key={`divider-${index}`} className="my-4 border-t border-gray-700" />;
@@ -97,37 +114,68 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               key={item.name}
               href={item.href}
               onClick={onClose}
+              title={isCollapsed ? item.name : undefined}
               className={clsx(
-                'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                'flex items-center py-2 text-sm font-medium rounded-lg transition-colors',
+                isCollapsed ? 'justify-center px-2' : 'px-3',
                 isActive
                   ? 'bg-primary-600 text-white'
                   : 'text-gray-300 hover:bg-gray-800 hover:text-white'
               )}
             >
-              {Icon && <Icon className="w-5 h-5 mr-3" />}
-              {item.name}
+              {Icon && <Icon className={clsx('w-5 h-5 flex-shrink-0', !isCollapsed && 'mr-3')} />}
+              {!isCollapsed && <span className="truncate">{item.name}</span>}
             </Link>
           );
         })}
       </nav>
 
+      {/* Collapse Toggle Button - Desktop only */}
+      <div className={clsx(
+        'hidden lg:flex border-t border-gray-700',
+        isCollapsed ? 'justify-center p-2' : 'justify-end p-2'
+      )}>
+        <button
+          onClick={onToggleCollapse}
+          className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronRightIcon className="w-5 h-5" />
+          ) : (
+            <ChevronLeftIcon className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+
       {/* User Info */}
-      <div className="p-4 border-t border-gray-700">
-        <div className="flex items-center">
+      <div className={clsx(
+        'border-t border-gray-700',
+        isCollapsed ? 'p-2' : 'p-4'
+      )}>
+        <div className={clsx(
+          'flex items-center',
+          isCollapsed && 'justify-center'
+        )}>
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center">
-              <span className="text-white font-medium">
+            <div className={clsx(
+              'rounded-full bg-primary-600 flex items-center justify-center',
+              isCollapsed ? 'w-8 h-8' : 'w-10 h-10'
+            )}>
+              <span className={clsx('text-white font-medium', isCollapsed && 'text-xs')}>
                 {user?.firstName?.[0]}
                 {user?.lastName?.[0]}
               </span>
             </div>
           </div>
-          <div className="ml-3 overflow-hidden">
-            <p className="text-sm font-medium text-white truncate">
-              {user?.displayName || `${user?.firstName} ${user?.lastName}`}
-            </p>
-            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-          </div>
+          {!isCollapsed && (
+            <div className="ml-3 overflow-hidden">
+              <p className="text-sm font-medium text-white truncate">
+                {user?.displayName || `${user?.firstName} ${user?.lastName}`}
+              </p>
+              <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -177,7 +225,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </button>
                   </div>
                 </Transition.Child>
-                <SidebarContent />
+                <SidebarContent isCollapsed={false} />
               </Dialog.Panel>
             </Transition.Child>
           </div>
@@ -185,8 +233,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </Transition.Root>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-        <SidebarContent />
+      <div className={clsx(
+        'hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300',
+        collapsed ? 'lg:w-16' : 'lg:w-64'
+      )}>
+        <SidebarContent isCollapsed={collapsed} />
       </div>
     </>
   );

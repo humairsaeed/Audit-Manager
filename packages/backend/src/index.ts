@@ -13,6 +13,7 @@ import { auditLogMiddleware } from './middleware/audit-log.middleware.js';
 // Import routes
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import roleRoutes from './routes/role.routes.js';
 import auditRoutes from './routes/audit.routes.js';
 import observationRoutes from './routes/observation.routes.js';
 import evidenceRoutes from './routes/evidence.routes.js';
@@ -69,6 +70,7 @@ app.get('/health', (req, res) => {
 const apiPrefix = config.app.apiPrefix;
 app.use(`${apiPrefix}/auth`, authRoutes);
 app.use(`${apiPrefix}/users`, userRoutes);
+app.use(`${apiPrefix}/roles`, roleRoutes);
 app.use(`${apiPrefix}/audits`, auditRoutes);
 app.use(`${apiPrefix}/observations`, observationRoutes);
 app.use(`${apiPrefix}/evidence`, evidenceRoutes);

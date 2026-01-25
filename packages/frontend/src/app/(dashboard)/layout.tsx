@@ -15,6 +15,9 @@ import Sidebar from '@/components/layout/Sidebar';
 import { useAuthStore } from '@/stores/auth';
 import { authApi, notificationsApi } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
+import clsx from 'clsx';
+
+const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed';
 
 export default function DashboardLayout({
   children,
@@ -24,6 +27,22 @@ export default function DashboardLayout({
   const router = useRouter();
   const { user, isAuthenticated, logout, setLoading, isLoading } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Load collapsed state from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    if (saved !== null) {
+      setSidebarCollapsed(saved === 'true');
+    }
+  }, []);
+
+  // Handle sidebar collapse toggle
+  const handleToggleCollapse = () => {
+    const newValue = !sidebarCollapsed;
+    setSidebarCollapsed(newValue);
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue));
+  };
 
   // Check authentication
   useEffect(() => {
@@ -66,10 +85,18 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={handleToggleCollapse}
+      />
 
       {/* Main content area */}
-      <div className="lg:pl-64">
+      <div className={clsx(
+        'transition-all duration-300',
+        sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+      )}>
         {/* Top header */}
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <button

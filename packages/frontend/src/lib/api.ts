@@ -534,6 +534,11 @@ export const rolesApi = {
     return response.data;
   },
 
+  getPermissions: async () => {
+    const response = await api.get<ApiResponse<any[]>>('/roles/permissions');
+    return response.data;
+  },
+
   create: async (data: any) => {
     const response = await api.post<ApiResponse>('/roles', data);
     return response.data;
