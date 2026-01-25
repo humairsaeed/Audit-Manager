@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bars3Icon,
@@ -25,7 +25,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isAuthenticated, logout, setLoading, isLoading } = useAuthStore();
+  const {
+    user,
+    isAuthenticated,
+    logout,
+    setLoading,
+    isLoading,
+    isHydrated,
+    updateActivity,
+    checkSessionTimeout
+  } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -44,13 +53,63 @@ export default function DashboardLayout({
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue));
   };
 
-  // Check authentication
+  // Handle session timeout
+  const handleSessionTimeout = useCallback(() => {
+    logout();
+    toast.error('Session expired due to inactivity. Please login again.');
+    router.push('/login');
+  }, [logout, router]);
+
+  // Check authentication after hydration
   useEffect(() => {
+    // Wait for hydration to complete
+    if (!isHydrated) return;
+
+    // Check for session timeout first
+    if (isAuthenticated && checkSessionTimeout()) {
+      handleSessionTimeout();
+      return;
+    }
+
+    // Redirect to login if not authenticated
     if (!isAuthenticated) {
       router.push('/login');
     }
     setLoading(false);
-  }, [isAuthenticated, router, setLoading]);
+  }, [isHydrated, isAuthenticated, router, setLoading, checkSessionTimeout, handleSessionTimeout]);
+
+  // Track user activity for session timeout
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+
+    const handleActivity = () => {
+      updateActivity();
+    };
+
+    // Update activity on initial load
+    updateActivity();
+
+    // Add event listeners
+    activityEvents.forEach((event) => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
+
+    // Check session timeout periodically (every minute)
+    const intervalId = setInterval(() => {
+      if (checkSessionTimeout()) {
+        handleSessionTimeout();
+      }
+    }, 60000);
+
+    return () => {
+      activityEvents.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
+      clearInterval(intervalId);
+    };
+  }, [isAuthenticated, updateActivity, checkSessionTimeout, handleSessionTimeout]);
 
   // Fetch unread notifications count
   const { data: notificationData } = useQuery({
@@ -75,7 +134,8 @@ export default function DashboardLayout({
     }
   };
 
-  if (isLoading || !isAuthenticated) {
+  // Show loading while hydrating or checking auth
+  if (!isHydrated || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
