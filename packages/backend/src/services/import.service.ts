@@ -186,8 +186,8 @@ export class ImportService {
         data: {
           status: errors.length === 0 ? 'VALIDATED' : 'PENDING',
           totalRows: data.length - 1,
-          validationErrors: { errors, warnings },
-          mappingConfig: { mappings: autoMapping },
+          validationErrors: JSON.parse(JSON.stringify({ errors, warnings })),
+          mappingConfig: JSON.parse(JSON.stringify({ mappings: autoMapping })),
         },
       });
 
@@ -248,7 +248,7 @@ export class ImportService {
 
       const headers = (data[0] as string[]).map((h) => String(h || '').trim().toLowerCase());
       const mapping = mappingOverrides?.mappings ||
-        (importJob.mappingConfig as { mappings: ImportConfig['mappings'] })?.mappings ||
+        (importJob.mappingConfig as unknown as { mappings: ImportConfig['mappings'] })?.mappings ||
         this.autoDetectMapping(headers);
 
       let processedRows = 0;
@@ -335,7 +335,7 @@ export class ImportService {
           progress: 100,
           completedAt: new Date(),
           errorFilePath,
-          validationErrors: failedRowErrors.length > 0 ? { errors: failedRowErrors } : undefined,
+          validationErrors: failedRowErrors.length > 0 ? JSON.parse(JSON.stringify({ errors: failedRowErrors })) : undefined,
         },
       });
 
@@ -840,7 +840,7 @@ export class ImportService {
       data: {
         name,
         description,
-        mappings,
+        mappings: JSON.parse(JSON.stringify(mappings)),
         createdById,
       },
     });

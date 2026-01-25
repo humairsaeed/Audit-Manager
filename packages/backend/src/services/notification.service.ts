@@ -433,7 +433,7 @@ export class NotificationService {
         channel: 'IN_APP',
         title: this.interpolate(template.subject, payload.data),
         message: this.stripHtml(template.emailBody(payload.data)),
-        data: payload.data,
+        data: JSON.parse(JSON.stringify(payload.data)),
       },
     });
   }

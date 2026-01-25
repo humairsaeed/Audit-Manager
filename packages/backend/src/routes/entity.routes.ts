@@ -116,10 +116,14 @@ router.post(
       level = parent.level + 1;
     }
 
+    const { parentId, code, name, description } = data;
     const entity = await prisma.entity.create({
       data: {
-        ...data,
+        code,
+        name,
+        description,
         level,
+        parent: parentId ? { connect: { id: parentId } } : undefined,
       },
       include: {
         parent: { select: { id: true, code: true, name: true } },

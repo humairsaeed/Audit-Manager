@@ -7,7 +7,7 @@ import { requirePermission } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
 import { NotificationService } from '../services/notification.service.js';
 import { config } from '../config/index.js';
-import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS } from '../types/index.js';
+import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, ReviewEvidenceDTO } from '../types/index.js';
 
 const router = Router();
 
@@ -223,7 +223,7 @@ router.post(
     const { id } = req.params;
     const review = reviewEvidenceSchema.parse(req.body);
 
-    const evidence = await EvidenceService.reviewEvidence(id, review, authReq.user.userId);
+    const evidence = await EvidenceService.reviewEvidence(id, review as ReviewEvidenceDTO, authReq.user.userId);
 
     // Send notification
     if (evidence.uploadedBy) {

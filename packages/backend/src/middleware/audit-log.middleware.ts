@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import { ActionType } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { auditLogger } from '../lib/logger.js';
-import { AuthenticatedRequest, ActionType } from '../types/index.js';
+import { AuthenticatedRequest } from '../types/index.js';
 
 /**
  * Maps HTTP methods to action types

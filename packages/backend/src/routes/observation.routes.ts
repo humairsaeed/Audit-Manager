@@ -6,7 +6,7 @@ import { requirePermission } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
 import { prisma } from '../lib/prisma.js';
 import { NotificationService } from '../services/notification.service.js';
-import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS } from '../types/index.js';
+import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, CreateObservationDTO } from '../types/index.js';
 
 const router = Router();
 
@@ -199,7 +199,7 @@ router.post(
     const authReq = req as AuthenticatedRequest;
     const data = createObservationSchema.parse(req.body);
 
-    const observation = await ObservationService.createObservation(data, authReq.user.userId);
+    const observation = await ObservationService.createObservation(data as CreateObservationDTO, authReq.user.userId);
 
     // Send notification if owner is assigned
     if (observation.ownerId && observation.ownerId !== authReq.user.userId) {

@@ -230,6 +230,9 @@ export class EvidenceService {
     const observation = await prisma.observation.findUnique({
       where: { id: observationId },
       include: {
+        audit: {
+          select: { name: true },
+        },
         evidence: {
           where: {
             deletedAt: null,

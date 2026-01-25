@@ -382,13 +382,13 @@ export class AuthService {
     };
 
     const accessToken = jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
+      expiresIn: config.jwt.expiresIn as jwt.SignOptions['expiresIn'],
     });
 
     const refreshToken = jwt.sign(
       { userId: user.id, sessionId },
       config.jwt.refreshSecret,
-      { expiresIn: config.jwt.refreshExpiresIn }
+      { expiresIn: config.jwt.refreshExpiresIn as jwt.SignOptions['expiresIn'] }
     );
 
     // Parse expiration
@@ -426,5 +426,51 @@ export class AuthService {
    */
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 12);
+  }
+
+  /**
+   * Get user profile by ID
+   */
+  static async getUserProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw AppError.notFound('User');
+    }
+
+    // Remove sensitive fields
+    const { passwordHash, ...userWithoutPassword } = user;
+
+    return {
+      ...userWithoutPassword,
+      roles: user.roles.map((ur) => ({
+        id: ur.role.id,
+        name: ur.role.name,
+        displayName: ur.role.displayName,
+        entityId: ur.entityId,
+        permissions: ur.role.permissions.map((rp) => ({
+          resource: rp.permission.resource,
+          action: rp.permission.action,
+          scope: rp.permission.scope,
+        })),
+      })),
+    };
   }
 }

@@ -234,7 +234,7 @@ async function checkResourceOwnership(
 
   try {
     // Use dynamic prisma query
-    const model = prisma[modelName as keyof typeof prisma] as {
+    const model = prisma[modelName as keyof typeof prisma] as unknown as {
       findUnique: (args: { where: { id: string } }) => Promise<Record<string, unknown> | null>;
     };
 

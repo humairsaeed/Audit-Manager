@@ -4,7 +4,7 @@ import { UserService } from '../services/user.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission, requireRole } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
-import { AuthenticatedRequest, ApiResponse, SYSTEM_ROLES, RESOURCES, ACTIONS } from '../types/index.js';
+import { AuthenticatedRequest, ApiResponse, SYSTEM_ROLES, RESOURCES, ACTIONS, CreateUserDTO } from '../types/index.js';
 
 const router = Router();
 
@@ -105,7 +105,7 @@ router.post(
     const data = createUserSchema.parse(req.body);
     const ipAddress = req.ip || null;
 
-    const user = await UserService.createUser(data, authReq.user.userId, ipAddress);
+    const user = await UserService.createUser(data as CreateUserDTO, authReq.user.userId, ipAddress);
 
     const response: ApiResponse = {
       success: true,

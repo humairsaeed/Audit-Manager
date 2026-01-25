@@ -5,7 +5,7 @@ import { ImportService } from '../services/import.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
-import { AuthenticatedRequest, ApiResponse, SYSTEM_ROLES } from '../types/index.js';
+import { AuthenticatedRequest, ApiResponse, SYSTEM_ROLES, ColumnMapping } from '../types/index.js';
 
 const router = Router();
 
@@ -196,7 +196,7 @@ router.post(
 
     const template = await ImportService.createMappingTemplate(
       name,
-      mappings,
+      mappings as ColumnMapping[],
       description,
       authReq.user.userId
     );

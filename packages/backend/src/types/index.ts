@@ -445,3 +445,5 @@ export const ACTIONS = {
 } as const;
 
 export type Action = typeof ACTIONS[keyof typeof ACTIONS];
+
+// ActionType is exported from Prisma - use import { ActionType } from '@prisma/client'

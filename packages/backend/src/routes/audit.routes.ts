@@ -4,7 +4,7 @@ import { AuditService } from '../services/audit.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
-import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS } from '../types/index.js';
+import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, CreateAuditDTO } from '../types/index.js';
 
 const router = Router();
 
@@ -101,7 +101,7 @@ router.post(
     const authReq = req as AuthenticatedRequest;
     const data = createAuditSchema.parse(req.body);
 
-    const audit = await AuditService.createAudit(data, authReq.user.userId);
+    const audit = await AuditService.createAudit(data as CreateAuditDTO, authReq.user.userId);
 
     const response: ApiResponse = {
       success: true,
