@@ -487,6 +487,11 @@ export const usersApi = {
     const response = await api.delete<ApiResponse>(`/users/${id}`);
     return response.data;
   },
+
+  resetPassword: async (userId: string) => {
+    const response = await api.post<ApiResponse>(`/users/${userId}/reset-password`);
+    return response.data;
+  },
 };
 
 // Notifications API
@@ -599,12 +604,6 @@ export const reportsApi = {
     const response = await api.get<ApiResponse>('/reports/scheduled');
     return response.data;
   },
-};
-
-// Users API additions
-usersApi.resetPassword = async (userId: string) => {
-  const response = await api.post<ApiResponse>(`/users/${userId}/reset-password`);
-  return response.data;
 };
 
 export default api;
