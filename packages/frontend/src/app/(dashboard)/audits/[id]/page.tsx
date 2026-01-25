@@ -29,6 +29,7 @@ interface Audit {
   year: number;
   description?: string;
   scope?: string;
+  objectives?: string;
   startDate?: string;
   endDate?: string;
   entity?: { id: string; name: string; code: string };
