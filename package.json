@@ -1,0 +1,34 @@
+{
+  "name": "audit-management-system",
+  "version": "1.0.0",
+  "description": "Enterprise Audit & Compliance Observation Management System",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm run dev --workspace=@audit-system/backend",
+    "dev:frontend": "npm run dev --workspace=@audit-system/frontend",
+    "build": "npm run build --workspaces",
+    "build:backend": "npm run build --workspace=@audit-system/backend",
+    "build:frontend": "npm run build --workspace=@audit-system/frontend",
+    "start": "npm run start --workspaces",
+    "db:migrate": "npm run db:migrate --workspace=@audit-system/backend",
+    "db:seed": "npm run db:seed --workspace=@audit-system/backend",
+    "db:studio": "npm run db:studio --workspace=@audit-system/backend",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

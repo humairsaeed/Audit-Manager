@@ -1,0 +1,785 @@
+// Prisma Schema for Enterprise Audit & Compliance Management System
+// Version: 1.0.0
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  LOCKED
+  PENDING_ACTIVATION
+}
+
+enum AuditType {
+  INTERNAL
+  EXTERNAL
+  ISO
+  SOC
+  ISR
+  FINANCIAL
+  IT
+  REGULATORY
+  CUSTOM
+}
+
+enum AuditStatus {
+  PLANNED
+  IN_PROGRESS
+  UNDER_REVIEW
+  CLOSED
+  CANCELLED
+}
+
+enum ObservationStatus {
+  OPEN
+  IN_PROGRESS
+  EVIDENCE_SUBMITTED
+  UNDER_REVIEW
+  REJECTED
+  CLOSED
+  OVERDUE
+}
+
+enum RiskRating {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFORMATIONAL
+}
+
+enum EvidenceStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  SUPERSEDED
+}
+
+enum NotificationType {
+  OBSERVATION_ASSIGNED
+  DUE_DATE_REMINDER
+  OVERDUE_ALERT
+  EVIDENCE_SUBMITTED
+  EVIDENCE_REJECTED
+  EVIDENCE_APPROVED
+  OBSERVATION_CLOSED
+  REVIEW_REQUIRED
+  STATUS_CHANGED
+  COMMENT_ADDED
+}
+
+enum NotificationChannel {
+  EMAIL
+  TEAMS
+  IN_APP
+}
+
+enum ImportStatus {
+  PENDING
+  VALIDATING
+  VALIDATED
+  IMPORTING
+  COMPLETED
+  FAILED
+  ROLLED_BACK
+}
+
+enum ActionType {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  ASSIGNMENT
+  EVIDENCE_UPLOAD
+  EVIDENCE_DELETE
+  COMMENT_ADD
+  IMPORT
+  EXPORT
+  LOGIN
+  LOGOUT
+  PERMISSION_CHANGE
+}
+
+// ============================================================================
+// USER & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  passwordHash          String
+  firstName             String
+  lastName              String
+  displayName           String?
+  employeeId            String?   @unique
+  department            String?
+  title                 String?
+  phone                 String?
+  avatar                String?
+  status                UserStatus @default(PENDING_ACTIVATION)
+  emailVerified         Boolean   @default(false)
+  mustChangePassword    Boolean   @default(true)
+  lastLoginAt           DateTime?
+  lastPasswordChangeAt  DateTime?
+  failedLoginAttempts   Int       @default(0)
+  lockoutUntil          DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
+  createdById           String?
+
+  // Relations
+  createdBy             User?     @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdUsers          User[]    @relation("UserCreatedBy")
+  roles                 UserRole[]
+  assignedObservations  Observation[] @relation("ObservationOwner")
+  reviewedObservations  Observation[] @relation("ObservationReviewer")
+  createdAudits         Audit[]   @relation("AuditCreatedBy")
+  leadAudits            Audit[]   @relation("AuditLead")
+  auditTeamMemberships  AuditTeamMember[]
+  evidenceUploads       Evidence[] @relation("EvidenceUploadedBy")
+  evidenceReviews       Evidence[] @relation("EvidenceReviewedBy")
+  comments              Comment[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  importJobs            ImportJob[]
+  sessions              Session[]
+
+  @@index([email])
+  @@index([employeeId])
+  @@index([status])
+  @@map("users")
+}
+
+model Role {
+  id              String    @id @default(uuid())
+  name            String    @unique
+  displayName     String
+  description     String?
+  isSystemRole    Boolean   @default(false)
+  level           Int       @default(0) // Higher = more permissions
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  users           UserRole[]
+  permissions     RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id              String    @id @default(uuid())
+  resource        String    // e.g., "audit", "observation", "evidence"
+  action          String    // e.g., "create", "read", "update", "delete"
+  scope           String    @default("own") // "own", "team", "entity", "all"
+  description     String?
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  roles           RolePermission[]
+
+  @@unique([resource, action, scope])
+  @@map("permissions")
+}
+
+model UserRole {
+  id          String    @id @default(uuid())
+  userId      String
+  roleId      String
+  entityId    String?   // Optional: Restrict role to specific entity
+  assignedAt  DateTime  @default(now())
+  assignedBy  String?
+  expiresAt   DateTime?
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  entity      Entity?   @relation(fields: [entityId], references: [id])
+
+  @@unique([userId, roleId, entityId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id              String    @id @default(uuid())
+  roleId          String
+  permissionId    String
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission      Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Session {
+  id            String    @id @default(uuid())
+  userId        String
+  token         String    @unique
+  refreshToken  String?   @unique
+  ipAddress     String?
+  userAgent     String?
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+  lastActivityAt DateTime @default(now())
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+// ============================================================================
+// MASTER DATA
+// ============================================================================
+
+model Entity {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  name            String
+  description     String?
+  parentId        String?
+  level           Int       @default(0)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  parent          Entity?   @relation("EntityHierarchy", fields: [parentId], references: [id])
+  children        Entity[]  @relation("EntityHierarchy")
+  audits          Audit[]
+  observations    Observation[]
+  userRoles       UserRole[]
+
+  @@index([code])
+  @@index([parentId])
+  @@map("entities")
+}
+
+model ControlDomain {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  name            String
+  description     String?
+  framework       String?   // e.g., "ISO 27001", "SOC 2", "ISR"
+  parentId        String?
+  sortOrder       Int       @default(0)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  parent          ControlDomain? @relation("DomainHierarchy", fields: [parentId], references: [id])
+  children        ControlDomain[] @relation("DomainHierarchy")
+  controls        Control[]
+
+  @@index([code])
+  @@index([framework])
+  @@map("control_domains")
+}
+
+model Control {
+  id              String    @id @default(uuid())
+  domainId        String
+  clauseRef       String    // e.g., "A.5.1.1"
+  name            String
+  description     String?
+  requirement     String?   @db.Text
+  guidance        String?   @db.Text
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  domain          ControlDomain @relation(fields: [domainId], references: [id])
+  observations    Observation[]
+
+  @@unique([domainId, clauseRef])
+  @@index([clauseRef])
+  @@map("controls")
+}
+
+model RiskLevel {
+  id              String    @id @default(uuid())
+  rating          RiskRating @unique
+  name            String
+  description     String?
+  colorCode       String?
+  slaDays         Int       @default(30)
+  sortOrder       Int       @default(0)
+  isActive        Boolean   @default(true)
+
+  @@map("risk_levels")
+}
+
+model SLARule {
+  id              String    @id @default(uuid())
+  name            String
+  description     String?
+  riskRating      RiskRating?
+  auditType       AuditType?
+  entityId        String?
+  baseDays        Int
+  warningDays     Int       @default(7)
+  criticalDays    Int       @default(3)
+  escalationDays  Int       @default(1)
+  isActive        Boolean   @default(true)
+  priority        Int       @default(0) // Higher = more specific rule
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("sla_rules")
+}
+
+model NotificationTemplate {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  type            NotificationType
+  channel         NotificationChannel
+  subject         String?
+  body            String    @db.Text
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("notification_templates")
+}
+
+// ============================================================================
+// AUDIT MANAGEMENT
+// ============================================================================
+
+model Audit {
+  id                  String    @id @default(uuid())
+  auditNumber         String    @unique
+  name                String
+  description         String?   @db.Text
+  type                AuditType
+  entityId            String
+  scope               String?   @db.Text
+  objectives          String?   @db.Text
+  periodStart         DateTime
+  periodEnd           DateTime
+  plannedStartDate    DateTime?
+  plannedEndDate      DateTime?
+  actualStartDate     DateTime?
+  actualEndDate       DateTime?
+  status              AuditStatus @default(PLANNED)
+  leadAuditorId       String?
+  externalAuditorName String?
+  externalAuditorFirm String?
+  riskAssessment      String?   @db.Text
+  executiveSummary    String?   @db.Text
+  createdById         String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  closedAt            DateTime?
+  deletedAt           DateTime?
+
+  // Relations
+  entity              Entity    @relation(fields: [entityId], references: [id])
+  leadAuditor         User?     @relation("AuditLead", fields: [leadAuditorId], references: [id])
+  createdBy           User      @relation("AuditCreatedBy", fields: [createdById], references: [id])
+  teamMembers         AuditTeamMember[]
+  observations        Observation[]
+  documents           AuditDocument[]
+  importJobs          ImportJob[]
+
+  @@index([auditNumber])
+  @@index([entityId])
+  @@index([type])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@map("audits")
+}
+
+model AuditTeamMember {
+  id          String    @id @default(uuid())
+  auditId     String
+  userId      String
+  role        String    // e.g., "Lead", "Member", "Observer"
+  addedAt     DateTime  @default(now())
+  addedBy     String?
+
+  // Relations
+  audit       Audit     @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([auditId, userId])
+  @@map("audit_team_members")
+}
+
+model AuditDocument {
+  id              String    @id @default(uuid())
+  auditId         String
+  name            String
+  description     String?
+  documentType    String    // "AUDIT_PLAN", "TOR", "REPORT", "OTHER"
+  filePath        String
+  fileSize        Int
+  mimeType        String
+  checksum        String?
+  uploadedById    String
+  uploadedAt      DateTime  @default(now())
+  deletedAt       DateTime?
+
+  // Relations
+  audit           Audit     @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
+  @@map("audit_documents")
+}
+
+// ============================================================================
+// OBSERVATION MANAGEMENT
+// ============================================================================
+
+model Observation {
+  id                      String    @id @default(uuid())
+  auditId                 String
+  sequenceNumber          Int       // Within audit
+  globalSequence          String    @unique // System-wide unique
+
+  // External References
+  externalReference       String?   // Auditor's NC reference
+  auditSource             String?
+
+  // Entity & Control Mapping
+  entityId                String?
+  controlDomainArea       String?   // Free text area/process
+  controlId               String?   // Linked control clause
+  controlClauseRef        String?   // Manual clause reference
+  controlRequirement      String?   @db.Text
+
+  // Observation Details
+  title                   String
+  description             String    @db.Text
+  findingClassification   String?   // Auditor's original classification
+  riskRating              RiskRating @default(MEDIUM)
+  rootCause               String?   @db.Text
+  impact                  String?   @db.Text
+  recommendation          String?   @db.Text
+
+  // Ownership & Action
+  responsiblePartyText    String?   // Original text from import
+  ownerId                 String?
+  reviewerId              String?
+  correctiveActionPlan    String?   @db.Text
+  managementResponse      String?   @db.Text
+
+  // Dates & SLA
+  openDate                DateTime
+  targetDate              DateTime
+  originalTargetDate      DateTime?
+  slaCalculatedDate       DateTime?
+  slaDays                 Int?
+  extensionCount          Int       @default(0)
+  extensionReason         String?
+
+  // Status & Workflow
+  status                  ObservationStatus @default(OPEN)
+  previousStatus          ObservationStatus?
+  statusChangedAt         DateTime?
+  statusChangedById       String?
+
+  // Review Tracking
+  currentReviewPeriod     String?   // e.g., "Q1 2025"
+  lastReviewedAt          DateTime?
+  lastReviewedById        String?
+
+  // Metadata
+  importJobId             String?
+  importRowNumber         Int?
+  tags                    String[]
+  customFields            Json?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  closedAt                DateTime?
+  deletedAt               DateTime?
+
+  // Relations
+  audit                   Audit     @relation(fields: [auditId], references: [id])
+  entity                  Entity?   @relation(fields: [entityId], references: [id])
+  control                 Control?  @relation(fields: [controlId], references: [id])
+  owner                   User?     @relation("ObservationOwner", fields: [ownerId], references: [id])
+  reviewer                User?     @relation("ObservationReviewer", fields: [reviewerId], references: [id])
+  importJob               ImportJob? @relation(fields: [importJobId], references: [id])
+  evidence                Evidence[]
+  comments                Comment[]
+  reviewCycles            ReviewCycle[]
+  statusHistory           ObservationStatusHistory[]
+  notifications           Notification[]
+
+  @@unique([auditId, sequenceNumber])
+  @@index([auditId])
+  @@index([entityId])
+  @@index([ownerId])
+  @@index([reviewerId])
+  @@index([status])
+  @@index([riskRating])
+  @@index([targetDate])
+  @@index([openDate])
+  @@map("observations")
+}
+
+model ObservationStatusHistory {
+  id              String    @id @default(uuid())
+  observationId   String
+  fromStatus      ObservationStatus?
+  toStatus        ObservationStatus
+  reason          String?
+  changedById     String
+  changedAt       DateTime  @default(now())
+
+  // Relations
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([observationId])
+  @@index([changedAt])
+  @@map("observation_status_history")
+}
+
+// ============================================================================
+// EVIDENCE MANAGEMENT
+// ============================================================================
+
+model Evidence {
+  id              String    @id @default(uuid())
+  observationId   String
+  version         Int       @default(1)
+  name            String
+  description     String?   @db.Text
+  filePath        String
+  fileName        String
+  fileSize        Int
+  mimeType        String
+  checksum        String
+  status          EvidenceStatus @default(PENDING_REVIEW)
+  uploadedById    String
+  uploadedAt      DateTime  @default(now())
+  reviewedById    String?
+  reviewedAt      DateTime?
+  reviewRemarks   String?   @db.Text
+  rejectionReason String?   @db.Text
+  supersededById  String?
+  deletedAt       DateTime?
+
+  // Relations
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  uploadedBy      User      @relation("EvidenceUploadedBy", fields: [uploadedById], references: [id])
+  reviewedBy      User?     @relation("EvidenceReviewedBy", fields: [reviewedById], references: [id])
+  supersededBy    Evidence? @relation("EvidenceSupersedes", fields: [supersededById], references: [id])
+  supersedes      Evidence[] @relation("EvidenceSupersedes")
+
+  @@index([observationId])
+  @@index([status])
+  @@index([uploadedAt])
+  @@map("evidence")
+}
+
+// ============================================================================
+// REVIEW CYCLE MANAGEMENT
+// ============================================================================
+
+model ReviewCycle {
+  id              String    @id @default(uuid())
+  observationId   String
+  period          String    // e.g., "Q1 2025", "Q4 2024"
+  year            Int
+  quarter         Int?      // 1-4
+  reviewDate      DateTime
+  reviewedById    String?
+  comments        String?   @db.Text
+  actionRequired  Boolean   @default(false)
+  nextReviewDate  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@unique([observationId, period])
+  @@index([observationId])
+  @@index([period])
+  @@map("review_cycles")
+}
+
+// ============================================================================
+// COMMENTS & ACTIVITY
+// ============================================================================
+
+model Comment {
+  id              String    @id @default(uuid())
+  observationId   String
+  userId          String
+  content         String    @db.Text
+  isInternal      Boolean   @default(false) // Internal comments not visible to all
+  parentId        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  // Relations
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id])
+  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies         Comment[] @relation("CommentReplies")
+
+  @@index([observationId])
+  @@index([userId])
+  @@map("comments")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id              String    @id @default(uuid())
+  userId          String
+  observationId   String?
+  type            NotificationType
+  channel         NotificationChannel
+  title           String
+  message         String    @db.Text
+  data            Json?
+  isRead          Boolean   @default(false)
+  readAt          DateTime?
+  sentAt          DateTime?
+  failedAt        DateTime?
+  failureReason   String?
+  scheduledFor    DateTime?
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  observation     Observation? @relation(fields: [observationId], references: [id])
+
+  @@index([userId, isRead])
+  @@index([observationId])
+  @@index([type])
+  @@index([scheduledFor])
+  @@map("notifications")
+}
+
+// ============================================================================
+// EXCEL IMPORT
+// ============================================================================
+
+model ImportJob {
+  id                  String    @id @default(uuid())
+  auditId             String
+  userId              String
+  status              ImportStatus @default(PENDING)
+  originalFileName    String
+  originalFilePath    String
+  fileChecksum        String
+  totalRows           Int       @default(0)
+  processedRows       Int       @default(0)
+  successfulRows      Int       @default(0)
+  failedRows          Int       @default(0)
+  skippedRows         Int       @default(0)
+  errorFilePath       String?
+  mappingConfig       Json?     // Column mapping configuration
+  validationErrors    Json?     // Array of validation errors
+  progress            Float     @default(0)
+  startedAt           DateTime?
+  completedAt         DateTime?
+  rolledBackAt        DateTime?
+  rollbackReason      String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  audit               Audit     @relation(fields: [auditId], references: [id])
+  user                User      @relation(fields: [userId], references: [id])
+  observations        Observation[]
+  mappingTemplate     ImportMappingTemplate? @relation(fields: [mappingTemplateId], references: [id])
+  mappingTemplateId   String?
+
+  @@index([auditId])
+  @@index([userId])
+  @@index([status])
+  @@map("import_jobs")
+}
+
+model ImportMappingTemplate {
+  id              String    @id @default(uuid())
+  name            String
+  description     String?
+  mappings        Json      // Column to field mappings
+  synonyms        Json?     // Header synonyms
+  transformations Json?     // Data transformations
+  validations     Json?     // Custom validations
+  isDefault       Boolean   @default(false)
+  createdById     String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  importJobs      ImportJob[]
+
+  @@map("import_mapping_templates")
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+model AuditLog {
+  id              String    @id @default(uuid())
+  userId          String?
+  userEmail       String?
+  action          ActionType
+  resource        String    // Table/resource name
+  resourceId      String?
+  description     String
+  previousValue   Json?
+  newValue        Json?
+  ipAddress       String?
+  userAgent       String?
+  sessionId       String?
+  timestamp       DateTime  @default(now())
+
+  // Relations
+  user            User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// SYSTEM CONFIGURATION
+// ============================================================================
+
+model SystemConfig {
+  id              String    @id @default(uuid())
+  key             String    @unique
+  value           Json
+  description     String?
+  isEncrypted     Boolean   @default(false)
+  updatedAt       DateTime  @updatedAt
+
+  @@map("system_config")
+}

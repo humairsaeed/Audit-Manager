@@ -1,0 +1,576 @@
+'use client';
+
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+import {
+  ArrowLeftIcon,
+  PencilIcon,
+  DocumentArrowUpIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  UserIcon,
+  CalendarIcon,
+  ExclamationTriangleIcon,
+  PaperClipIcon,
+  ChatBubbleLeftRightIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline';
+import { observationsApi, evidenceApi } from '@/lib/api';
+import { useAuthStore, ROLES } from '@/stores/auth';
+import clsx from 'clsx';
+
+const riskColors: Record<string, string> = {
+  CRITICAL: 'bg-red-100 text-red-800 border-red-300',
+  HIGH: 'bg-orange-100 text-orange-800 border-orange-300',
+  MEDIUM: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  LOW: 'bg-green-100 text-green-800 border-green-300',
+  INFORMATIONAL: 'bg-gray-100 text-gray-800 border-gray-300',
+};
+
+const statusColors: Record<string, string> = {
+  OPEN: 'bg-blue-100 text-blue-800',
+  IN_PROGRESS: 'bg-purple-100 text-purple-800',
+  EVIDENCE_SUBMITTED: 'bg-cyan-100 text-cyan-800',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-800',
+  REJECTED: 'bg-red-100 text-red-800',
+  CLOSED: 'bg-green-100 text-green-800',
+  OVERDUE: 'bg-red-100 text-red-800',
+};
+
+const statusTransitions: Record<string, { label: string; action: string; color: string }[]> = {
+  OPEN: [{ label: 'Start Progress', action: 'IN_PROGRESS', color: 'btn-primary' }],
+  IN_PROGRESS: [{ label: 'Submit Evidence', action: 'EVIDENCE_SUBMITTED', color: 'btn-primary' }],
+  EVIDENCE_SUBMITTED: [
+    { label: 'Start Review', action: 'UNDER_REVIEW', color: 'btn-primary' },
+  ],
+  UNDER_REVIEW: [
+    { label: 'Approve & Close', action: 'CLOSED', color: 'btn-success' },
+    { label: 'Reject', action: 'REJECTED', color: 'btn-danger' },
+  ],
+  REJECTED: [{ label: 'Resubmit Evidence', action: 'EVIDENCE_SUBMITTED', color: 'btn-primary' }],
+};
+
+export default function ObservationDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { user, hasAnyRole } = useAuthStore();
+  const observationId = params.id as string;
+
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [comment, setComment] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [evidenceDescription, setEvidenceDescription] = useState('');
+
+  const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
+  const canReview = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.COMPLIANCE_MANAGER);
+
+  // Fetch observation details
+  const { data: observation, isLoading, error } = useQuery({
+    queryKey: ['observation', observationId],
+    queryFn: async () => {
+      const response = await observationsApi.getById(observationId);
+      return response.data;
+    },
+  });
+
+  // Fetch evidence for this observation
+  const { data: evidenceList } = useQuery({
+    queryKey: ['evidence', observationId],
+    queryFn: async () => {
+      const response = await evidenceApi.list(observationId);
+      return response.data?.data || [];
+    },
+    enabled: !!observationId,
+  });
+
+  // Status transition mutation
+  const statusMutation = useMutation({
+    mutationFn: async ({ status, comment }: { status: string; comment?: string }) => {
+      return observationsApi.updateStatus(observationId, status, comment);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['observation', observationId] });
+      toast.success('Status updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to update status');
+    },
+  });
+
+  // Upload evidence mutation
+  const uploadMutation = useMutation({
+    mutationFn: async ({ file, description }: { file: File; description: string }) => {
+      return evidenceApi.upload(observationId, file, description);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['evidence', observationId] });
+      setShowUploadModal(false);
+      setSelectedFile(null);
+      setEvidenceDescription('');
+      toast.success('Evidence uploaded successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to upload evidence');
+    },
+  });
+
+  // Add comment mutation
+  const commentMutation = useMutation({
+    mutationFn: async (content: string) => {
+      return observationsApi.addComment(observationId, content);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['observation', observationId] });
+      setShowCommentModal(false);
+      setComment('');
+      toast.success('Comment added successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to add comment');
+    },
+  });
+
+  const handleStatusChange = (newStatus: string) => {
+    if (newStatus === 'REJECTED') {
+      const reason = window.prompt('Please provide a reason for rejection:');
+      if (!reason) return;
+      statusMutation.mutate({ status: newStatus, comment: reason });
+    } else {
+      statusMutation.mutate({ status: newStatus });
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) {
+      toast.error('Please select a file');
+      return;
+    }
+    uploadMutation.mutate({ file: selectedFile, description: evidenceDescription });
+  };
+
+  const handleAddComment = () => {
+    if (!comment.trim()) {
+      toast.error('Please enter a comment');
+      return;
+    }
+    commentMutation.mutate(comment);
+  };
+
+  const isOwner = observation?.ownerId === user?.id;
+  const isReviewer = observation?.reviewerId === user?.id;
+  const isOverdue = observation?.targetDate && new Date(observation.targetDate) < new Date() && observation.status !== 'CLOSED';
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (error || !observation) {
+    return (
+      <div className="text-center py-12">
+        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500" />
+        <h3 className="mt-2 text-lg font-medium text-gray-900">Observation not found</h3>
+        <p className="mt-1 text-sm text-gray-500">The observation you're looking for doesn't exist.</p>
+        <Link href="/observations" className="btn btn-primary mt-4">
+          Back to Observations
+        </Link>
+      </div>
+    );
+  }
+
+  const availableTransitions = statusTransitions[observation.status] || [];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
+          <Link href="/observations" className="mt-1 text-gray-400 hover:text-gray-600">
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Link>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900">{observation.title}</h1>
+              <span className={clsx('badge', statusColors[observation.status])}>
+                {observation.status.replace(/_/g, ' ')}
+              </span>
+              {isOverdue && (
+                <span className="badge bg-red-100 text-red-800 ring-2 ring-red-500">
+                  OVERDUE
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-gray-500">
+              {observation.globalSequence}
+              {observation.externalReference && ` • ${observation.externalReference}`}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {(canEdit || isOwner) && observation.status !== 'CLOSED' && (
+            <Link href={`/observations/${observationId}/edit`} className="btn btn-secondary">
+              <PencilIcon className="h-4 w-4 mr-2" />
+              Edit
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Description */}
+          <div className="card p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Description</h2>
+            <p className="text-gray-700 whitespace-pre-wrap">{observation.description}</p>
+          </div>
+
+          {/* Recommendation & Root Cause */}
+          {(observation.recommendation || observation.rootCause) && (
+            <div className="card p-6">
+              {observation.recommendation && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Recommendation</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap">{observation.recommendation}</p>
+                </div>
+              )}
+              {observation.rootCause && (
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Root Cause</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap">{observation.rootCause}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Management Response */}
+          {observation.managementResponse && (
+            <div className="card p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Management Response</h2>
+              <p className="text-gray-700 whitespace-pre-wrap">{observation.managementResponse}</p>
+            </div>
+          )}
+
+          {/* Action Plan */}
+          {observation.actionPlan && (
+            <div className="card p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Action Plan</h2>
+              <p className="text-gray-700 whitespace-pre-wrap">{observation.actionPlan}</p>
+            </div>
+          )}
+
+          {/* Evidence Section */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                <PaperClipIcon className="inline h-5 w-5 mr-2" />
+                Evidence
+              </h2>
+              {(isOwner || canEdit) && observation.status !== 'CLOSED' && (
+                <button onClick={() => setShowUploadModal(true)} className="btn btn-secondary btn-sm">
+                  <DocumentArrowUpIcon className="h-4 w-4 mr-2" />
+                  Upload Evidence
+                </button>
+              )}
+            </div>
+
+            {evidenceList && evidenceList.length > 0 ? (
+              <div className="space-y-3">
+                {evidenceList.map((evidence: any) => (
+                  <div key={evidence.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <PaperClipIcon className="h-5 w-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{evidence.fileName}</p>
+                        <p className="text-xs text-gray-500">
+                          {evidence.description} • v{evidence.version} • {new Date(evidence.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={clsx('badge text-xs', {
+                        'bg-yellow-100 text-yellow-800': evidence.status === 'PENDING',
+                        'bg-green-100 text-green-800': evidence.status === 'APPROVED',
+                        'bg-red-100 text-red-800': evidence.status === 'REJECTED',
+                      })}>
+                        {evidence.status}
+                      </span>
+                      <a
+                        href={evidence.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 hover:text-primary-700 text-sm"
+                      >
+                        Download
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No evidence uploaded yet</p>
+            )}
+          </div>
+
+          {/* Comments Section */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                <ChatBubbleLeftRightIcon className="inline h-5 w-5 mr-2" />
+                Comments
+              </h2>
+              <button onClick={() => setShowCommentModal(true)} className="btn btn-secondary btn-sm">
+                Add Comment
+              </button>
+            </div>
+
+            {observation.comments && observation.comments.length > 0 ? (
+              <div className="space-y-4">
+                {observation.comments.map((comment: any) => (
+                  <div key={comment.id} className="border-l-2 border-gray-200 pl-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-gray-900">
+                        {comment.user?.displayName || `${comment.user?.firstName} ${comment.user?.lastName}`}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(comment.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700">{comment.content}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No comments yet</p>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Risk Rating Card */}
+          <div className={clsx('card p-6 border-2', riskColors[observation.riskRating])}>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Rating</h3>
+            <p className="text-2xl font-bold">{observation.riskRating}</p>
+          </div>
+
+          {/* Status Actions */}
+          {availableTransitions.length > 0 && (canReview || isOwner || isReviewer) && (
+            <div className="card p-6">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Actions</h3>
+              <div className="space-y-2">
+                {availableTransitions.map((transition) => (
+                  <button
+                    key={transition.action}
+                    onClick={() => handleStatusChange(transition.action)}
+                    disabled={statusMutation.isPending}
+                    className={clsx('w-full btn', transition.color)}
+                  >
+                    {statusMutation.isPending ? (
+                      <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                    ) : null}
+                    {transition.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Details Card */}
+          <div className="card p-6">
+            <h3 className="text-sm font-medium text-gray-900 mb-4">Details</h3>
+            <dl className="space-y-4">
+              <div>
+                <dt className="text-sm text-gray-500 flex items-center gap-2">
+                  <ClockIcon className="h-4 w-4" />
+                  Due Date
+                </dt>
+                <dd className={clsx('text-sm font-medium', isOverdue ? 'text-red-600' : 'text-gray-900')}>
+                  {new Date(observation.targetDate).toLocaleDateString()}
+                  {isOverdue && ' (Overdue)'}
+                </dd>
+              </div>
+
+              <div>
+                <dt className="text-sm text-gray-500 flex items-center gap-2">
+                  <UserIcon className="h-4 w-4" />
+                  Owner
+                </dt>
+                <dd className="text-sm font-medium text-gray-900">
+                  {observation.owner?.displayName || observation.owner?.firstName
+                    ? `${observation.owner.firstName} ${observation.owner.lastName}`
+                    : 'Unassigned'}
+                </dd>
+              </div>
+
+              {observation.reviewer && (
+                <div>
+                  <dt className="text-sm text-gray-500 flex items-center gap-2">
+                    <CheckCircleIcon className="h-4 w-4" />
+                    Reviewer
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {observation.reviewer.displayName ||
+                      `${observation.reviewer.firstName} ${observation.reviewer.lastName}`}
+                  </dd>
+                </div>
+              )}
+
+              <div>
+                <dt className="text-sm text-gray-500">Audit</dt>
+                <dd className="text-sm font-medium text-gray-900">
+                  <Link href={`/audits/${observation.auditId}`} className="text-primary-600 hover:text-primary-700">
+                    {observation.audit?.name}
+                  </Link>
+                </dd>
+              </div>
+
+              {observation.entity && (
+                <div>
+                  <dt className="text-sm text-gray-500">Entity</dt>
+                  <dd className="text-sm font-medium text-gray-900">{observation.entity.name}</dd>
+                </div>
+              )}
+
+              {observation.department && (
+                <div>
+                  <dt className="text-sm text-gray-500">Department</dt>
+                  <dd className="text-sm font-medium text-gray-900">{observation.department}</dd>
+                </div>
+              )}
+
+              {observation.category && (
+                <div>
+                  <dt className="text-sm text-gray-500">Category</dt>
+                  <dd className="text-sm font-medium text-gray-900">{observation.category}</dd>
+                </div>
+              )}
+
+              <div>
+                <dt className="text-sm text-gray-500 flex items-center gap-2">
+                  <CalendarIcon className="h-4 w-4" />
+                  Created
+                </dt>
+                <dd className="text-sm font-medium text-gray-900">
+                  {new Date(observation.createdAt).toLocaleDateString()}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* History */}
+          {observation.statusHistory && observation.statusHistory.length > 0 && (
+            <div className="card p-6">
+              <h3 className="text-sm font-medium text-gray-900 mb-4">Status History</h3>
+              <div className="space-y-3">
+                {observation.statusHistory.slice(0, 5).map((history: any, index: number) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 mt-2 rounded-full bg-gray-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-900">
+                        {history.fromStatus} → {history.toStatus}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(history.changedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowUploadModal(false)} />
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Evidence</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="label">File</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="label">Description</label>
+                  <textarea
+                    value={evidenceDescription}
+                    onChange={(e) => setEvidenceDescription(e.target.value)}
+                    className="input"
+                    rows={3}
+                    placeholder="Describe the evidence..."
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setShowUploadModal(false)} className="btn btn-secondary">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpload}
+                    disabled={uploadMutation.isPending}
+                    className="btn btn-primary"
+                  >
+                    {uploadMutation.isPending ? 'Uploading...' : 'Upload'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Comment Modal */}
+      {showCommentModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowCommentModal(false)} />
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Comment</h3>
+              <div className="space-y-4">
+                <div>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="input"
+                    rows={4}
+                    placeholder="Enter your comment..."
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setShowCommentModal(false)} className="btn btn-secondary">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddComment}
+                    disabled={commentMutation.isPending}
+                    className="btn btn-primary"
+                  >
+                    {commentMutation.isPending ? 'Adding...' : 'Add Comment'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
