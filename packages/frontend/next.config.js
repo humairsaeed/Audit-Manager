@@ -10,10 +10,12 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
+    // Backend URL - use Docker internal hostname in production, localhost for development
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/:path*`,
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },

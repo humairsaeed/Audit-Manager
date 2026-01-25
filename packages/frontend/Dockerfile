@@ -3,6 +3,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build argument for backend URL
+ARG BACKEND_URL=http://backend:3001
+ENV BACKEND_URL=${BACKEND_URL}
+
 # Copy package files
 COPY package*.json ./
 

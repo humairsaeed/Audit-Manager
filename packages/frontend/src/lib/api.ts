@@ -1,7 +1,9 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+// Use relative URL so Next.js rewrites can proxy to backend
+// This works in both development and Docker environments
+const API_BASE_URL = '/api/v1';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -35,7 +37,7 @@ api.interceptors.response.use(
       const refreshToken = useAuthStore.getState().refreshToken;
       if (refreshToken) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          const response = await axios.post('/api/v1/auth/refresh', {
             refreshToken,
           });
 
