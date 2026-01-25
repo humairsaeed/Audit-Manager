@@ -26,6 +26,7 @@ interface Audit {
   reference: string;
   type: string;
   status: string;
+  year: number;
   description?: string;
   scope?: string;
   startDate?: string;
