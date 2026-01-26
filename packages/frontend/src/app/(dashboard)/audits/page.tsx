@@ -282,8 +282,8 @@ export default function AuditsPage() {
                   <div className="flex items-center gap-2">
                     <CalendarIcon className="h-4 w-4 text-gray-400" />
                     <span>
-                      {new Date(audit.startDate).toLocaleDateString()} -{' '}
-                      {new Date(audit.endDate).toLocaleDateString()}
+                      {audit.periodStart ? new Date(audit.periodStart).toLocaleDateString() : 'N/A'} -{' '}
+                      {audit.periodEnd ? new Date(audit.periodEnd).toLocaleDateString() : 'N/A'}
                     </span>
                   </div>
 

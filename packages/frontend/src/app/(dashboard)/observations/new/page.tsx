@@ -21,13 +21,11 @@ const observationSchema = z.object({
   recommendation: z.string().optional(),
   rootCause: z.string().optional(),
   managementResponse: z.string().optional(),
-  actionPlan: z.string().optional(),
+  correctiveActionPlan: z.string().optional(),
   ownerId: z.string().optional(),
   reviewerId: z.string().optional(),
+  openDate: z.string().min(1, 'Open date is required'),
   targetDate: z.string().min(1, 'Target date is required'),
-  department: z.string().optional(),
-  category: z.string().optional(),
-  complianceReference: z.string().optional(),
 });
 
 type ObservationFormData = z.infer<typeof observationSchema>;
@@ -47,6 +45,7 @@ export default function NewObservationPage() {
     resolver: zodResolver(observationSchema),
     defaultValues: {
       riskRating: 'MEDIUM',
+      openDate: new Date().toISOString().split('T')[0],
       targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     },
   });
@@ -89,10 +88,12 @@ export default function NewObservationPage() {
     mutationFn: async (data: ObservationFormData) => {
       const payload = {
         ...data,
+        openDate: new Date(data.openDate).toISOString(),
         targetDate: new Date(data.targetDate).toISOString(),
         entityId: data.entityId || undefined,
         ownerId: data.ownerId || undefined,
         reviewerId: data.reviewerId || undefined,
+        correctiveActionPlan: data.correctiveActionPlan || undefined,
       };
       return observationsApi.create(payload);
     },
@@ -195,7 +196,7 @@ export default function NewObservationPage() {
         {/* Risk & Classification */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Risk & Classification</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Risk Rating *</label>
               <select {...register('riskRating')} className="input">
@@ -205,36 +206,6 @@ export default function NewObservationPage() {
                 <option value="LOW">Low</option>
                 <option value="INFORMATIONAL">Informational</option>
               </select>
-            </div>
-
-            <div>
-              <label className="label">Category</label>
-              <input
-                type="text"
-                {...register('category')}
-                className="input"
-                placeholder="e.g., Access Control"
-              />
-            </div>
-
-            <div>
-              <label className="label">Department</label>
-              <input
-                type="text"
-                {...register('department')}
-                className="input"
-                placeholder="e.g., IT Security"
-              />
-            </div>
-
-            <div className="md:col-span-3">
-              <label className="label">Compliance Reference</label>
-              <input
-                type="text"
-                {...register('complianceReference')}
-                className="input"
-                placeholder="e.g., ISO 27001:2022 A.9.2.1"
-              />
             </div>
           </div>
         </div>
@@ -280,9 +251,9 @@ export default function NewObservationPage() {
             </div>
 
             <div>
-              <label className="label">Action Plan</label>
+              <label className="label">Corrective Action Plan</label>
               <textarea
-                {...register('actionPlan')}
+                {...register('correctiveActionPlan')}
                 className="input"
                 rows={3}
                 placeholder="Planned actions to remediate the observation..."
@@ -294,7 +265,7 @@ export default function NewObservationPage() {
         {/* Assignment */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Assignment & Timeline</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Owner</label>
               <select {...register('ownerId')} className="input">
@@ -317,6 +288,18 @@ export default function NewObservationPage() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="label">Open Date *</label>
+              <input
+                type="date"
+                {...register('openDate')}
+                className="input"
+              />
+              {errors.openDate && (
+                <p className="mt-1 text-sm text-red-600">{errors.openDate.message}</p>
+              )}
             </div>
 
             <div>
