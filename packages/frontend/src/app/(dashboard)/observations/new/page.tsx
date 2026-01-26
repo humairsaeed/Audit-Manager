@@ -53,12 +53,16 @@ export default function NewObservationPage() {
 
   const watchAuditId = watch('auditId');
 
-  // Fetch audits
+  // Fetch audits (include PLANNED and IN_PROGRESS audits for observation creation)
   const { data: audits } = useQuery({
     queryKey: ['audits-select'],
     queryFn: async () => {
-      const response = await auditsApi.list({ limit: 100, status: 'IN_PROGRESS' });
-      return response.data?.data || [];
+      const response = await auditsApi.list({ limit: 100 });
+      // Filter out CLOSED and CANCELLED audits on the client side
+      const allAudits = response.data?.data || [];
+      return allAudits.filter((audit: any) =>
+        audit.status !== 'CLOSED' && audit.status !== 'CANCELLED'
+      );
     },
   });
 

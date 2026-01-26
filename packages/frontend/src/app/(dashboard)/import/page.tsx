@@ -60,12 +60,16 @@ export default function ImportPage() {
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
-  // Fetch audits for selection
+  // Fetch audits for selection (include PLANNED and IN_PROGRESS audits)
   const { data: audits } = useQuery({
     queryKey: ['audits-import'],
     queryFn: async () => {
-      const response = await auditsApi.list({ limit: 100, status: 'IN_PROGRESS' });
-      return response.data?.data || [];
+      const response = await auditsApi.list({ limit: 100 });
+      // Filter out CLOSED and CANCELLED audits on the client side
+      const allAudits = response.data?.data || [];
+      return allAudits.filter((audit: any) =>
+        audit.status !== 'CLOSED' && audit.status !== 'CANCELLED'
+      );
     },
   });
 
