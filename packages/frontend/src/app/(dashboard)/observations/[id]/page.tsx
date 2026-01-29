@@ -576,6 +576,11 @@ export default function ObservationDetailPage() {
                       <p className="text-xs text-gray-500">
                         {new Date(history.changedAt).toLocaleString()}
                       </p>
+                      {history.changedByName && (
+                        <p className="text-xs text-gray-500">
+                          by {history.changedByName}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}

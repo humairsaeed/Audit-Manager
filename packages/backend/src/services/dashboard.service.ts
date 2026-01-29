@@ -97,8 +97,32 @@ export class DashboardService {
         description: true,
         timestamp: true,
         resourceId: true,
+        resource: true,
       },
     });
+
+    const observationIds = Array.from(
+      new Set(
+        recentActivity
+          .filter((activity) => activity.resource === 'observation' || activity.resource === 'observations')
+          .map((activity) => activity.resourceId)
+          .filter(Boolean)
+      )
+    ) as string[];
+
+    const observationSummaries = observationIds.length
+      ? await prisma.observation.findMany({
+          where: { id: { in: observationIds } },
+          select: { id: true, globalSequence: true, title: true },
+        })
+      : [];
+
+    const observationMap = new Map(
+      observationSummaries.map((obs) => [
+        obs.id,
+        `${obs.globalSequence}${obs.title ? ` - ${obs.title}` : ''}`,
+      ])
+    );
 
     return {
       myObservations,
@@ -106,7 +130,23 @@ export class DashboardService {
       recentActivity: recentActivity.map((a) => ({
         id: a.id,
         type: a.action,
-        description: a.description,
+        description: (() => {
+          const label = a.resourceId ? observationMap.get(a.resourceId) : undefined;
+          if (!label) return a.description;
+
+          if (a.description.includes(a.resourceId)) {
+            return a.description
+              .replace(/observations\b/g, 'observation')
+              .replaceAll(a.resourceId, label);
+          }
+
+          if (['CREATE', 'UPDATE', 'DELETE'].includes(a.action)) {
+            const verb = a.action === 'CREATE' ? 'Created' : a.action === 'DELETE' ? 'Deleted' : 'Updated';
+            return `${verb} observation ${label}`;
+          }
+
+          return a.description;
+        })(),
         timestamp: a.timestamp,
         observationId: a.resourceId || undefined,
       })),

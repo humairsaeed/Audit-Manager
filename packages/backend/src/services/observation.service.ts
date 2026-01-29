@@ -193,7 +193,38 @@ export class ObservationService {
       throw AppError.notFound('Observation');
     }
 
-    return observation;
+    const statusHistory = observation.statusHistory || [];
+    const userIds = Array.from(
+      new Set(
+        statusHistory
+          .map((history) => history.changedById)
+          .filter((id) => id && id !== 'SYSTEM')
+      )
+    );
+
+    const users = userIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, firstName: true, lastName: true, displayName: true, email: true },
+        })
+      : [];
+
+    const userMap = new Map(
+      users.map((user) => [
+        user.id,
+        user.displayName || `${user.firstName} ${user.lastName}`.trim() || user.email,
+      ])
+    );
+
+    const enrichedStatusHistory = statusHistory.map((history) => ({
+      ...history,
+      changedByName:
+        history.changedById === 'SYSTEM'
+          ? 'System'
+          : userMap.get(history.changedById) || history.changedById,
+    }));
+
+    return { ...observation, statusHistory: enrichedStatusHistory };
   }
 
   /**
