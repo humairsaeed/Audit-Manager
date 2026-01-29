@@ -75,8 +75,11 @@ export default function ObservationDetailPage() {
     queryKey: ['observation', observationId],
     queryFn: async () => {
       const response = await observationsApi.getById(observationId);
-      return response.data;
+      // Handle both response structures: { observation: {...} } or direct data
+      const data = response.data as any;
+      return data?.observation || data;
     },
+    enabled: !!observationId && observationId !== 'undefined',
   });
 
   // Fetch evidence for this observation
@@ -84,9 +87,10 @@ export default function ObservationDetailPage() {
     queryKey: ['evidence', observationId],
     queryFn: async () => {
       const response = await evidenceApi.list(observationId);
-      return response.data?.data || [];
+      const data = response.data as any;
+      return data?.evidence || data?.data || [];
     },
-    enabled: !!observationId,
+    enabled: !!observationId && observationId !== 'undefined',
   });
 
   // Status transition mutation

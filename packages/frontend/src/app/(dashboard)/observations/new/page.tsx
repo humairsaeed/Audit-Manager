@@ -97,9 +97,10 @@ export default function NewObservationPage() {
       };
       return observationsApi.create(payload);
     },
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       toast.success('Observation created successfully');
-      router.push(`/observations/${response.data.id}`);
+      const observationId = response.data?.observation?.id || response.data?.id;
+      router.push(`/observations/${observationId}`);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to create observation');
