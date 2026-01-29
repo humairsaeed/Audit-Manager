@@ -549,4 +549,120 @@ export class DashboardService {
 
     return buckets;
   }
+
+  /**
+   * Get compliance status by entity
+   */
+  static async getComplianceStatus(filters?: { entityId?: string }) {
+    // Get all active entities
+    const entities = await prisma.entity.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    // Get observations grouped by entity
+    const observationsByEntity = await prisma.observation.groupBy({
+      by: ['entityId', 'status'],
+      where: {
+        deletedAt: null,
+        entityId: filters?.entityId || undefined,
+      },
+      _count: true,
+    });
+
+    // Build compliance data
+    const entityMap = new Map<string, { total: number; closed: number }>();
+
+    for (const obs of observationsByEntity) {
+      if (!obs.entityId) continue;
+
+      if (!entityMap.has(obs.entityId)) {
+        entityMap.set(obs.entityId, { total: 0, closed: 0 });
+      }
+
+      const entry = entityMap.get(obs.entityId)!;
+      entry.total += obs._count;
+      if (obs.status === 'CLOSED') {
+        entry.closed += obs._count;
+      }
+    }
+
+    const entitiesWithCompliance = entities
+      .map((entity) => {
+        const stats = entityMap.get(entity.id) || { total: 0, closed: 0 };
+        const complianceRate = stats.total > 0 ? (stats.closed / stats.total) * 100 : 100;
+
+        return {
+          id: entity.id,
+          name: entity.name,
+          totalCount: stats.total,
+          closedCount: stats.closed,
+          openCount: stats.total - stats.closed,
+          complianceRate,
+        };
+      })
+      .filter((e) => e.totalCount > 0);
+
+    return { entities: entitiesWithCompliance };
+  }
+
+  /**
+   * Get aging report data
+   */
+  static async getAgingReport(filters?: { entityId?: string }) {
+    const where: Prisma.ObservationWhereInput = {
+      deletedAt: null,
+      status: { not: 'CLOSED' },
+    };
+
+    if (filters?.entityId) {
+      where.entityId = filters.entityId;
+    }
+
+    const observations = await prisma.observation.findMany({
+      where,
+      select: {
+        openDate: true,
+        riskRating: true,
+      },
+    });
+
+    const now = new Date();
+    const bucketRanges = [
+      { range: '0-30 days', min: 0, max: 30 },
+      { range: '31-60 days', min: 31, max: 60 },
+      { range: '61-90 days', min: 61, max: 90 },
+      { range: '91-180 days', min: 91, max: 180 },
+      { range: '180+ days', min: 181, max: Infinity },
+    ];
+
+    const buckets = bucketRanges.map((range) => ({
+      range: range.range,
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      informational: 0,
+      total: 0,
+    }));
+
+    for (const obs of observations) {
+      const daysOpen = differenceInDays(now, obs.openDate);
+
+      for (let i = 0; i < bucketRanges.length; i++) {
+        const { min, max } = bucketRanges[i];
+        if (daysOpen >= min && daysOpen <= max) {
+          const riskKey = obs.riskRating.toLowerCase() as 'critical' | 'high' | 'medium' | 'low' | 'informational';
+          buckets[i][riskKey]++;
+          buckets[i].total++;
+          break;
+        }
+      }
+    }
+
+    return { buckets };
+  }
 }

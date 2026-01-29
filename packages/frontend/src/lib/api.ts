@@ -414,6 +414,13 @@ export const dashboardApi = {
     });
     return response.data;
   },
+
+  getComplianceStatus: async (filters?: Record<string, any>) => {
+    const response = await api.get<ApiResponse<{ entities: any[] }>>('/dashboard/compliance-status', {
+      params: filters,
+    });
+    return response.data;
+  },
 };
 
 // Entities API

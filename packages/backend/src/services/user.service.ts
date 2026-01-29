@@ -28,13 +28,83 @@ export class UserService {
     });
 
     if (existingUser) {
+      // If user was soft-deleted, we can reactivate/recreate them
+      if (existingUser.deletedAt) {
+        // Hash the new password
+        const passwordHash = await AuthService.hashPassword(data.password);
+
+        // Verify all role IDs exist
+        const roles = await prisma.role.findMany({
+          where: { id: { in: data.roleIds } },
+        });
+
+        if (roles.length !== data.roleIds.length) {
+          throw AppError.badRequest('One or more role IDs are invalid');
+        }
+
+        // Remove old role assignments
+        await prisma.userRole.deleteMany({
+          where: { userId: existingUser.id },
+        });
+
+        // Reactivate the user with new data
+        const reactivatedUser = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            passwordHash,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            displayName: `${data.firstName} ${data.lastName}`,
+            employeeId: data.employeeId,
+            department: data.department,
+            title: data.title,
+            phone: data.phone,
+            status: 'PENDING_ACTIVATION',
+            deletedAt: null,
+            createdById,
+            mustChangePassword: true,
+            failedLoginAttempts: 0,
+            lockoutUntil: null,
+            roles: {
+              create: data.roleIds.map((roleId) => ({
+                roleId,
+                assignedBy: createdById,
+              })),
+            },
+          },
+          include: {
+            roles: {
+              include: {
+                role: true,
+              },
+            },
+          },
+        });
+
+        // Log permission grant
+        await AuditLogService.logPermissionChange(
+          createdById,
+          '',
+          reactivatedUser.id,
+          reactivatedUser.email,
+          'GRANTED',
+          roles.map((r) => r.name),
+          ipAddress
+        );
+
+        return reactivatedUser;
+      }
+
       throw AppError.conflict('A user with this email already exists');
     }
 
-    // Check if employeeId already exists
+    // Check if employeeId already exists (exclude soft-deleted users)
     if (data.employeeId) {
-      const existingEmployee = await prisma.user.findUnique({
-        where: { employeeId: data.employeeId },
+      const existingEmployee = await prisma.user.findFirst({
+        where: {
+          employeeId: data.employeeId,
+          deletedAt: null,
+        },
       });
 
       if (existingEmployee) {

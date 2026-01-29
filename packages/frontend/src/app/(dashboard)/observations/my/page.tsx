@@ -76,7 +76,7 @@ export default function MyObservationsPage() {
     queryFn: async () => {
       const response = await observationsApi.list({
         ownerId: user?.id,
-        overdue: true,
+        overdueOnly: true,
         page,
         limit: 20,
         sortBy: 'targetDate',

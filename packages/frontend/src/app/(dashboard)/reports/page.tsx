@@ -50,7 +50,8 @@ export default function ReportsPage() {
         endDate: dateRange.end,
         ...filters,
       });
-      return response.data;
+      // Extract nested summary data
+      return response.data?.summary || response.data;
     },
     enabled: activeReport === 'summary',
   });
@@ -59,11 +60,12 @@ export default function ReportsPage() {
   const { data: trendsData, isLoading: trendsLoading } = useQuery({
     queryKey: ['report-trends', dateRange],
     queryFn: async () => {
-      const response = await dashboardApi.getTrends({
+      const response = await dashboardApi.getTrends(6, {
         startDate: dateRange.start,
         endDate: dateRange.end,
       });
-      return response.data;
+      // Extract nested trends data
+      return response.data?.trends || response.data;
     },
     enabled: activeReport === 'trends',
   });
@@ -73,7 +75,8 @@ export default function ReportsPage() {
     queryKey: ['report-compliance', dateRange, filters],
     queryFn: async () => {
       const response = await dashboardApi.getComplianceStatus(filters);
-      return response.data;
+      // Return nested data
+      return response.data || { entities: [] };
     },
     enabled: activeReport === 'compliance',
   });
@@ -83,7 +86,8 @@ export default function ReportsPage() {
     queryKey: ['report-aging', filters],
     queryFn: async () => {
       const response = await reportsApi.getAging(filters);
-      return response.data;
+      // Return nested data
+      return (response.data || { buckets: [] }) as { buckets: any[] };
     },
     enabled: activeReport === 'aging',
   });

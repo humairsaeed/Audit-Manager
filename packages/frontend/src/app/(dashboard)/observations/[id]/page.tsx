@@ -110,7 +110,8 @@ export default function ObservationDetailPage() {
   // Upload evidence mutation
   const uploadMutation = useMutation({
     mutationFn: async ({ file, description }: { file: File; description: string }) => {
-      return evidenceApi.upload(observationId, file, description);
+      // Pass file.name as the name parameter and description as optional
+      return evidenceApi.upload(observationId, file, file.name, description);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['evidence', observationId] });

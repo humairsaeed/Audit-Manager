@@ -129,4 +129,27 @@ router.get(
   })
 );
 
+/**
+ * @route GET /api/v1/dashboard/compliance-status
+ * @desc Get compliance status by entity
+ */
+router.get(
+  '/compliance-status',
+  requirePermission(RESOURCES.DASHBOARD, ACTIONS.READ),
+  asyncHandler(async (req: Request, res: Response) => {
+    const filters = {
+      entityId: req.query.entityId as string,
+    };
+
+    const complianceStatus = await DashboardService.getComplianceStatus(filters);
+
+    const response: ApiResponse = {
+      success: true,
+      data: complianceStatus,
+    };
+
+    res.json(response);
+  })
+);
+
 export default router;

@@ -21,6 +21,8 @@ import importRoutes from './routes/import.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import entityRoutes from './routes/entity.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
+import settingsRoutes from './routes/settings.routes.js';
+import reportRoutes from './routes/report.routes.js';
 
 const app = express();
 
@@ -78,6 +80,8 @@ app.use(`${apiPrefix}/import`, importRoutes);
 app.use(`${apiPrefix}/dashboard`, dashboardRoutes);
 app.use(`${apiPrefix}/entities`, entityRoutes);
 app.use(`${apiPrefix}/notifications`, notificationRoutes);
+app.use(`${apiPrefix}/settings`, settingsRoutes);
+app.use(`${apiPrefix}/reports`, reportRoutes);
 
 // Error handlers
 app.use(notFoundHandler);
