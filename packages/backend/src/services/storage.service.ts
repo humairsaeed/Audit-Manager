@@ -4,6 +4,8 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  HeadBucketCommand,
+  CreateBucketCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,8 +26,49 @@ const s3Client = new S3Client({
 });
 
 const bucket = config.storage.s3.bucket;
+let bucketEnsured = false;
 
 export class StorageService {
+  private static async ensureBucketExists(): Promise<void> {
+    if (bucketEnsured) return;
+
+    try {
+      await s3Client.send(new HeadBucketCommand({ Bucket: bucket }));
+      bucketEnsured = true;
+      return;
+    } catch (error: any) {
+      const status = error?.$metadata?.httpStatusCode;
+      const code = error?.name || error?.Code;
+      const notFound =
+        status === 404 ||
+        code === 'NotFound' ||
+        code === 'NoSuchBucket';
+
+      if (!notFound) {
+        logger.error('Error checking bucket:', error);
+        throw AppError.internal('Failed to check storage bucket');
+      }
+    }
+
+    try {
+      const params: Record<string, unknown> = { Bucket: bucket };
+      if (config.storage.s3.region && config.storage.s3.region !== 'us-east-1') {
+        params.CreateBucketConfiguration = { LocationConstraint: config.storage.s3.region };
+      }
+      await s3Client.send(new CreateBucketCommand(params));
+      bucketEnsured = true;
+      logger.info(`Created storage bucket: ${bucket}`);
+    } catch (error: any) {
+      const code = error?.name || error?.Code;
+      if (code === 'BucketAlreadyOwnedByYou' || code === 'BucketAlreadyExists') {
+        bucketEnsured = true;
+        return;
+      }
+      logger.error('Error creating bucket:', error);
+      throw AppError.internal('Failed to create storage bucket');
+    }
+  }
+
   /**
    * Upload a file to S3-compatible storage
    */
@@ -33,6 +76,7 @@ export class StorageService {
     file: Express.Multer.File,
     folder: string = ''
   ): Promise<string> {
+    await this.ensureBucketExists();
     // Validate file type
     const ext = path.extname(file.originalname).toLowerCase().slice(1);
     if (!config.storage.allowedFileTypes.includes(ext)) {
