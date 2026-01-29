@@ -4,7 +4,7 @@ import multer from 'multer';
 import { EvidenceService } from '../services/evidence.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
-import { asyncHandler } from '../middleware/error.middleware.js';
+import { asyncHandler, AppError } from '../middleware/error.middleware.js';
 import { NotificationService } from '../services/notification.service.js';
 import { config } from '../config/index.js';
 import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, ReviewEvidenceDTO } from '../types/index.js';
@@ -23,7 +23,10 @@ const upload = multer({
     if (ext && config.storage.allowedFileTypes.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error(`File type .${ext} not allowed`));
+      const message = ext
+        ? `File type .${ext} not allowed`
+        : 'File type not allowed';
+      cb(AppError.badRequest(message));
     }
   },
 });

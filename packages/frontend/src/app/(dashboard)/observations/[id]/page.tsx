@@ -302,10 +302,10 @@ export default function ObservationDetailPage() {
           )}
 
           {/* Action Plan */}
-          {observation.actionPlan && (
+          {observation.correctiveActionPlan && (
             <div className="card p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">Action Plan</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{observation.actionPlan}</p>
+              <p className="text-gray-700 whitespace-pre-wrap">{observation.correctiveActionPlan}</p>
             </div>
           )}
 

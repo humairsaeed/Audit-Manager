@@ -20,13 +20,10 @@ const observationSchema = z.object({
   recommendation: z.string().optional(),
   rootCause: z.string().optional(),
   managementResponse: z.string().optional(),
-  actionPlan: z.string().optional(),
+  correctiveActionPlan: z.string().optional(),
   ownerId: z.string().optional(),
   reviewerId: z.string().optional(),
   targetDate: z.string().min(1, 'Target date is required'),
-  department: z.string().optional(),
-  category: z.string().optional(),
-  complianceReference: z.string().optional(),
 });
 
 type ObservationFormData = z.infer<typeof observationSchema>;
@@ -46,13 +43,22 @@ export default function EditObservationPage() {
     resolver: zodResolver(observationSchema),
   });
 
+  const toDateInput = (value?: string | Date | null) => {
+    if (!value) return '';
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toISOString().split('T')[0];
+  };
+
   // Fetch observation details
   const { data: observation, isLoading } = useQuery({
     queryKey: ['observation', observationId],
     queryFn: async () => {
       const response = await observationsApi.getById(observationId);
-      return response.data;
+      const data = response.data as any;
+      return data?.observation || data;
     },
+    enabled: !!observationId && observationId !== 'undefined',
   });
 
   // Fetch entities
@@ -76,9 +82,13 @@ export default function EditObservationPage() {
   // Update observation mutation
   const updateMutation = useMutation({
     mutationFn: async (data: ObservationFormData) => {
+      const targetDate = toDateInput(data.targetDate);
+      if (!targetDate) {
+        throw new Error('Target date is invalid');
+      }
       const payload = {
         ...data,
-        targetDate: new Date(data.targetDate).toISOString(),
+        targetDate: new Date(targetDate).toISOString(),
         entityId: data.entityId || undefined,
         ownerId: data.ownerId || undefined,
         reviewerId: data.reviewerId || undefined,
@@ -107,13 +117,10 @@ export default function EditObservationPage() {
         recommendation: observation.recommendation || '',
         rootCause: observation.rootCause || '',
         managementResponse: observation.managementResponse || '',
-        actionPlan: observation.actionPlan || '',
+        correctiveActionPlan: observation.correctiveActionPlan || '',
         ownerId: observation.ownerId || '',
         reviewerId: observation.reviewerId || '',
-        targetDate: observation.targetDate?.split('T')[0] || '',
-        department: observation.department || '',
-        category: observation.category || '',
-        complianceReference: observation.complianceReference || '',
+        targetDate: toDateInput(observation.targetDate),
       });
     }
   }, [observation, reset]);
@@ -233,36 +240,6 @@ export default function EditObservationPage() {
                 <option value="INFORMATIONAL">Informational</option>
               </select>
             </div>
-
-            <div>
-              <label className="label">Category</label>
-              <input
-                type="text"
-                {...register('category')}
-                className="input"
-                placeholder="e.g., Access Control"
-              />
-            </div>
-
-            <div>
-              <label className="label">Department</label>
-              <input
-                type="text"
-                {...register('department')}
-                className="input"
-                placeholder="e.g., IT Security"
-              />
-            </div>
-
-            <div className="md:col-span-3">
-              <label className="label">Compliance Reference</label>
-              <input
-                type="text"
-                {...register('complianceReference')}
-                className="input"
-                placeholder="e.g., ISO 27001:2022 A.9.2.1"
-              />
-            </div>
           </div>
         </div>
 
@@ -307,9 +284,9 @@ export default function EditObservationPage() {
             </div>
 
             <div>
-              <label className="label">Action Plan</label>
+              <label className="label">Corrective Action Plan</label>
               <textarea
-                {...register('actionPlan')}
+                {...register('correctiveActionPlan')}
                 className="input"
                 rows={3}
                 placeholder="Planned actions to remediate the observation..."
