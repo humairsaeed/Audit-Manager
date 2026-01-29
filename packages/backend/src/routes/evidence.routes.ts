@@ -7,9 +7,73 @@ import { requirePermission } from '../middleware/rbac.middleware.js';
 import { asyncHandler, AppError } from '../middleware/error.middleware.js';
 import { NotificationService } from '../services/notification.service.js';
 import { config } from '../config/index.js';
-import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, ReviewEvidenceDTO } from '../types/index.js';
+import { prisma } from '../lib/prisma.js';
+import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, ReviewEvidenceDTO, SYSTEM_ROLES } from '../types/index.js';
 
 const router = Router();
+const hasPermission = (authReq: AuthenticatedRequest, permission: string) =>
+  authReq.user.permissions?.includes(permission);
+
+const isSystemAdmin = (authReq: AuthenticatedRequest) =>
+  authReq.user.roles?.includes(SYSTEM_ROLES.SYSTEM_ADMIN);
+
+const ensureObservationEvidenceReadAccess = async (
+  authReq: AuthenticatedRequest,
+  observationId: string
+) => {
+  if (isSystemAdmin(authReq) || hasPermission(authReq, 'evidence:read:all')) {
+    return;
+  }
+
+  const observation = await prisma.observation.findUnique({
+    where: { id: observationId },
+    select: { ownerId: true, reviewerId: true },
+  });
+
+  if (!observation) {
+    throw AppError.notFound('Observation');
+  }
+
+  if (observation.ownerId === authReq.user.userId || observation.reviewerId === authReq.user.userId) {
+    return;
+  }
+
+  throw AppError.forbidden('Permission denied');
+};
+
+const ensureEvidenceReadAccess = async (
+  authReq: AuthenticatedRequest,
+  evidenceId: string
+) => {
+  if (isSystemAdmin(authReq) || hasPermission(authReq, 'evidence:read:all')) {
+    return;
+  }
+
+  const evidence = await prisma.evidence.findUnique({
+    where: { id: evidenceId },
+    select: {
+      uploadedById: true,
+      observation: { select: { ownerId: true, reviewerId: true } },
+    },
+  });
+
+  if (!evidence) {
+    throw AppError.notFound('Evidence');
+  }
+
+  if (hasPermission(authReq, 'evidence:read:own') && evidence.uploadedById === authReq.user.userId) {
+    return;
+  }
+
+  if (
+    evidence.observation.ownerId === authReq.user.userId ||
+    evidence.observation.reviewerId === authReq.user.userId
+  ) {
+    return;
+  }
+
+  throw AppError.forbidden('Permission denied');
+};
 
 // Configure multer for file uploads
 const upload = multer({
@@ -53,10 +117,12 @@ router.use(authenticate);
  */
 router.get(
   '/observation/:observationId',
-  requirePermission(RESOURCES.EVIDENCE, ACTIONS.READ),
   asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
     const { observationId } = req.params;
     const includeSuperseded = req.query.includeSuperseded === 'true';
+
+    await ensureObservationEvidenceReadAccess(authReq, observationId);
 
     const evidence = await EvidenceService.listEvidence(observationId, includeSuperseded);
 
@@ -174,9 +240,11 @@ router.post(
  */
 router.get(
   '/:id',
-  requirePermission(RESOURCES.EVIDENCE, ACTIONS.READ),
   asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
+
+    await ensureEvidenceReadAccess(authReq, id);
 
     const evidence = await EvidenceService.getEvidenceById(id);
 
@@ -195,10 +263,11 @@ router.get(
  */
 router.get(
   '/:id/download',
-  requirePermission(RESOURCES.EVIDENCE, ACTIONS.READ),
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
+
+    await ensureEvidenceReadAccess(authReq, id);
 
     const { url, fileName, mimeType } = await EvidenceService.getDownloadUrl(
       id,
@@ -262,7 +331,11 @@ router.post(
  */
 router.post(
   '/observation/:observationId/submit-for-review',
-  requirePermission(RESOURCES.OBSERVATION, ACTIONS.UPDATE),
+  requirePermission(RESOURCES.OBSERVATION, ACTIONS.UPDATE, {
+    allowOwner: true,
+    ownerField: 'ownerId',
+    resourceIdParam: 'observationId',
+  }),
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { observationId } = req.params;
@@ -390,9 +463,11 @@ router.post(
  */
 router.get(
   '/observation/:observationId/stats',
-  requirePermission(RESOURCES.EVIDENCE, ACTIONS.READ),
   asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
     const { observationId } = req.params;
+
+    await ensureObservationEvidenceReadAccess(authReq, observationId);
 
     const stats = await EvidenceService.getEvidenceStats(observationId);
 

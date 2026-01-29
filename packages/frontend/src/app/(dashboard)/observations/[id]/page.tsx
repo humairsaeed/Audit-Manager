@@ -67,6 +67,8 @@ export default function ObservationDetailPage() {
   const [comment, setComment] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [evidenceDescription, setEvidenceDescription] = useState('');
+  const [previewEvidence, setPreviewEvidence] = useState<{ id: string; url: string; fileName?: string; mimeType?: string } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
   const canReview = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.COMPLIANCE_MANAGER);
@@ -184,6 +186,50 @@ export default function ObservationDetailPage() {
       return;
     }
     commentMutation.mutate(comment);
+  };
+
+  const getEvidenceUrl = async (evidenceId: string) => {
+    const response = await evidenceApi.getDownloadUrl(evidenceId);
+    const payload = (response as any).data || response;
+    return {
+      url: payload?.url as string | undefined,
+      fileName: payload?.fileName as string | undefined,
+      mimeType: payload?.mimeType as string | undefined,
+    };
+  };
+
+  const handleDownloadEvidence = async (evidenceId: string) => {
+    try {
+      const { url, fileName } = await getEvidenceUrl(evidenceId);
+      if (!url) {
+        throw new Error('Download URL not available');
+      }
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'evidence';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || 'Failed to download evidence');
+    }
+  };
+
+  const handlePreviewEvidence = async (evidenceId: string) => {
+    try {
+      setPreviewLoading(true);
+      const { url, fileName, mimeType } = await getEvidenceUrl(evidenceId);
+      if (!url) {
+        throw new Error('Preview URL not available');
+      }
+      setPreviewEvidence({ id: evidenceId, url, fileName, mimeType });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || 'Failed to load preview');
+    } finally {
+      setPreviewLoading(false);
+    }
   };
 
   const handleDelete = () => {
@@ -333,26 +379,31 @@ export default function ObservationDetailPage() {
                       <div>
                         <p className="text-sm font-medium text-gray-900">{evidence.fileName}</p>
                         <p className="text-xs text-gray-500">
-                          {evidence.description} • v{evidence.version} • {new Date(evidence.createdAt).toLocaleDateString()}
+                          {evidence.description} - v{evidence.version} - {new Date(evidence.uploadedAt || evidence.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={clsx('badge text-xs', {
-                        'bg-yellow-100 text-yellow-800': evidence.status === 'PENDING',
+                        'bg-yellow-100 text-yellow-800': evidence.status === 'PENDING_REVIEW',
                         'bg-green-100 text-green-800': evidence.status === 'APPROVED',
                         'bg-red-100 text-red-800': evidence.status === 'REJECTED',
                       })}>
-                        {evidence.status}
+                        {evidence.status.replace(/_/g, ' ')}
                       </span>
-                      <a
-                        href={evidence.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => handlePreviewEvidence(evidence.id)}
+                        disabled={previewLoading}
+                        className="text-primary-600 hover:text-primary-700 text-sm"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleDownloadEvidence(evidence.id)}
                         className="text-primary-600 hover:text-primary-700 text-sm"
                       >
                         Download
-                      </a>
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -608,6 +659,57 @@ export default function ObservationDetailPage() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewEvidence && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setPreviewEvidence(null)} />
+            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {previewEvidence.fileName || 'Evidence Preview'}
+                </h3>
+                <button onClick={() => setPreviewEvidence(null)} className="btn btn-secondary btn-sm">
+                  Close
+                </button>
+              </div>
+              {previewEvidence.mimeType?.startsWith('image/') ? (
+                <div className="flex justify-center">
+                  <img
+                    src={previewEvidence.url}
+                    alt={previewEvidence.fileName || 'Evidence'}
+                    className="max-h-[70vh] max-w-full object-contain"
+                  />
+                </div>
+              ) : previewEvidence.mimeType === 'application/pdf' ? (
+                <iframe
+                  src={previewEvidence.url}
+                  title={previewEvidence.fileName || 'Evidence'}
+                  className="w-full h-[70vh] border rounded"
+                />
+              ) : (
+                <div className="text-sm text-gray-600">
+                  Preview not available for this file type.
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => handleDownloadEvidence(previewEvidence.id)}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Download
+                    </button>
+                    <button
+                      onClick={() => window.open(previewEvidence.url, '_blank', 'noopener,noreferrer')}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Open in new tab
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

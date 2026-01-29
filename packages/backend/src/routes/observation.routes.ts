@@ -291,7 +291,11 @@ router.put(
  */
 router.patch(
   '/:id/status',
-  requirePermission(RESOURCES.OBSERVATION, ACTIONS.UPDATE),
+  requirePermission(RESOURCES.OBSERVATION, ACTIONS.UPDATE, {
+    allowOwner: true,
+    ownerField: 'ownerId',
+    resourceIdParam: 'id',
+  }),
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
