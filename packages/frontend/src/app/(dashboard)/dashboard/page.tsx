@@ -255,6 +255,7 @@ export default function DashboardPage() {
                       <p className="text-sm text-gray-900">{activity.description}</p>
                       <p className="text-xs text-gray-500">
                         {new Date(activity.timestamp).toLocaleString()}
+                        {activity.userName ? ` • by ${activity.userName}` : ''}
                       </p>
                     </div>
                   </div>

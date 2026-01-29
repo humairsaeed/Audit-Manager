@@ -98,6 +98,7 @@ export class DashboardService {
         timestamp: true,
         resourceId: true,
         resource: true,
+        user: { select: { firstName: true, lastName: true, email: true } },
       },
     });
 
@@ -149,6 +150,9 @@ export class DashboardService {
         })(),
         timestamp: a.timestamp,
         observationId: a.resourceId || undefined,
+        userName: a.user
+          ? `${a.user.firstName} ${a.user.lastName}`.trim() || a.user.email || 'User'
+          : 'System',
       })),
     };
   }
