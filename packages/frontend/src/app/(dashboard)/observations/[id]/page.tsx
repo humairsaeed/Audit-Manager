@@ -15,6 +15,7 @@ import {
   UserIcon,
   CalendarIcon,
   ExclamationTriangleIcon,
+  TrashIcon,
   PaperClipIcon,
   ChatBubbleLeftRightIcon,
   ArrowPathIcon,
@@ -69,6 +70,7 @@ export default function ObservationDetailPage() {
 
   const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
   const canReview = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.COMPLIANCE_MANAGER);
+  const canDelete = hasAnyRole(ROLES.SYSTEM_ADMIN);
 
   // Fetch observation details
   const { data: observation, isLoading, error } = useQuery({
@@ -141,6 +143,23 @@ export default function ObservationDetailPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      return observationsApi.delete(observationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['observations'] });
+      queryClient.invalidateQueries({ queryKey: ['my-observations-owned'] });
+      queryClient.invalidateQueries({ queryKey: ['my-observations-reviewing'] });
+      queryClient.invalidateQueries({ queryKey: ['my-observations-overdue'] });
+      toast.success('Observation deleted successfully');
+      router.push('/observations');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to delete observation');
+    },
+  });
+
   const handleStatusChange = (newStatus: string) => {
     if (newStatus === 'REJECTED') {
       const reason = window.prompt('Please provide a reason for rejection:');
@@ -165,6 +184,13 @@ export default function ObservationDetailPage() {
       return;
     }
     commentMutation.mutate(comment);
+  };
+
+  const handleDelete = () => {
+    if (deleteMutation.isPending) return;
+    const confirmed = window.confirm('Are you sure you want to delete this observation? This action cannot be undone.');
+    if (!confirmed) return;
+    deleteMutation.mutate();
   };
 
   const isOwner = observation?.ownerId === user?.id;
@@ -226,6 +252,16 @@ export default function ObservationDetailPage() {
               <PencilIcon className="h-4 w-4 mr-2" />
               Edit
             </Link>
+          )}
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="btn btn-danger"
+            >
+              <TrashIcon className="h-4 w-4 mr-2" />
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </button>
           )}
         </div>
       </div>

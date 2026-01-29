@@ -33,6 +33,14 @@ const statusColors: Record<string, string> = {
 
 type TabType = 'owned' | 'reviewing' | 'overdue';
 
+const normalizePaginated = (value: any) => {
+  if (!value) return undefined;
+  if (Array.isArray(value)) return { data: value, pagination: undefined };
+  if (Array.isArray(value?.data)) return value;
+  if (Array.isArray(value?.data?.data)) return value.data;
+  return value;
+};
+
 export default function MyObservationsPage() {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('owned');
@@ -42,14 +50,15 @@ export default function MyObservationsPage() {
   const { data: ownedData, isLoading: ownedLoading } = useQuery({
     queryKey: ['my-observations-owned', user?.id, page],
     queryFn: async () => {
-      const response = await observationsApi.list({
-        ownerId: user?.id,
+      const response = await observationsApi.my({
         page,
         limit: 20,
         sortBy: 'targetDate',
         sortOrder: 'asc',
       });
-      return response.data;
+      // Handle nested response: { success, data: { data: [], pagination: {} } }
+      const apiResponse = response as any;
+      return apiResponse?.data || apiResponse;
     },
     enabled: !!user?.id && activeTab === 'owned',
   });
@@ -65,7 +74,9 @@ export default function MyObservationsPage() {
         sortBy: 'targetDate',
         sortOrder: 'asc',
       });
-      return response.data;
+      // Handle nested response: { success, data: { data: [], pagination: {} } }
+      const apiResponse = response as any;
+      return apiResponse?.data || apiResponse;
     },
     enabled: !!user?.id && activeTab === 'reviewing',
   });
@@ -74,15 +85,16 @@ export default function MyObservationsPage() {
   const { data: overdueData, isLoading: overdueLoading } = useQuery({
     queryKey: ['my-observations-overdue', user?.id, page],
     queryFn: async () => {
-      const response = await observationsApi.list({
-        ownerId: user?.id,
+      const response = await observationsApi.my({
         overdueOnly: true,
         page,
         limit: 20,
         sortBy: 'targetDate',
         sortOrder: 'asc',
       });
-      return response.data;
+      // Handle nested response: { success, data: { data: [], pagination: {} } }
+      const apiResponse = response as any;
+      return apiResponse?.data || apiResponse;
     },
     enabled: !!user?.id && activeTab === 'overdue',
   });
@@ -99,13 +111,17 @@ export default function MyObservationsPage() {
   };
 
   const { data, loading } = getCurrentData();
-  const observations = data?.data || [];
-  const pagination = data?.pagination;
+  const normalizedData = normalizePaginated(data);
+  const observations = normalizedData?.data || [];
+  const pagination = normalizedData?.pagination;
 
   // Summary counts
-  const ownedCount = ownedData?.pagination?.total || 0;
-  const reviewingCount = reviewingData?.pagination?.total || 0;
-  const overdueCount = overdueData?.pagination?.total || 0;
+  const ownedNormalized = normalizePaginated(ownedData);
+  const reviewingNormalized = normalizePaginated(reviewingData);
+  const overdueNormalized = normalizePaginated(overdueData);
+  const ownedCount = ownedNormalized?.pagination?.total ?? ownedNormalized?.data?.length ?? 0;
+  const reviewingCount = reviewingNormalized?.pagination?.total ?? reviewingNormalized?.data?.length ?? 0;
+  const overdueCount = overdueNormalized?.pagination?.total ?? overdueNormalized?.data?.length ?? 0;
 
   return (
     <div className="space-y-6">

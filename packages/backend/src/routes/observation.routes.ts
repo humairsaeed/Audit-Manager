@@ -2,11 +2,11 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { ObservationService } from '../services/observation.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { requirePermission } from '../middleware/rbac.middleware.js';
+import { requirePermission, requireRole } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
 import { prisma } from '../lib/prisma.js';
 import { NotificationService } from '../services/notification.service.js';
-import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, CreateObservationDTO } from '../types/index.js';
+import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, CreateObservationDTO, SYSTEM_ROLES } from '../types/index.js';
 
 const router = Router();
 
@@ -133,10 +133,13 @@ router.get(
     const authReq = req as AuthenticatedRequest;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
+    const sortBy = (req.query.sortBy as string) || 'targetDate';
+    const sortOrder = (req.query.sortOrder as string) === 'desc' ? 'desc' : 'asc';
+    const overdueOnly = req.query.overdueOnly === 'true';
 
     const result = await ObservationService.listObservations(
-      { page, limit, sortBy: 'targetDate', sortOrder: 'asc' },
-      { ownerId: authReq.user.userId }
+      { page, limit, sortBy, sortOrder },
+      { ownerId: authReq.user.userId, overdueOnly }
     );
 
     const response: ApiResponse = {
@@ -501,6 +504,7 @@ router.post(
  */
 router.delete(
   '/:id',
+  requireRole(SYSTEM_ROLES.SYSTEM_ADMIN),
   requirePermission(RESOURCES.OBSERVATION, ACTIONS.DELETE),
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
