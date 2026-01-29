@@ -744,7 +744,7 @@ export class ObservationService {
       IN_PROGRESS: ['EVIDENCE_SUBMITTED', 'OPEN', 'CLOSED'],
       EVIDENCE_SUBMITTED: ['UNDER_REVIEW', 'IN_PROGRESS'],
       UNDER_REVIEW: ['CLOSED', 'REJECTED'],
-      REJECTED: ['IN_PROGRESS'],
+      REJECTED: ['IN_PROGRESS', 'EVIDENCE_SUBMITTED'],
       CLOSED: [], // Cannot transition from CLOSED
       OVERDUE: ['IN_PROGRESS', 'EVIDENCE_SUBMITTED', 'CLOSED'],
     };
