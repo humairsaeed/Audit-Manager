@@ -12,7 +12,7 @@ import {
   FunnelIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
-import { observationsApi } from '@/lib/api';
+import { observationsApi, auditsApi } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import clsx from 'clsx';
 
@@ -56,6 +56,14 @@ export default function MyObservationsPage() {
     dueFrom: '',
     dueTo: '',
     daysRemainingMax: '',
+  });
+
+  const { data: auditsData } = useQuery({
+    queryKey: ['audits-filter'],
+    queryFn: async () => {
+      const response = await auditsApi.list({ limit: 100 });
+      return response.data?.data || [];
+    },
   });
 
   // Fetch observations owned by user
@@ -282,13 +290,18 @@ export default function MyObservationsPage() {
           <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="label">Audit</label>
-              <input
-                type="text"
+              <select
                 value={filters.auditId}
                 onChange={(e) => setFilters({ ...filters, auditId: e.target.value })}
                 className="input"
-                placeholder="Audit ID"
-              />
+              >
+                <option value="">All Audits</option>
+                {auditsData?.map((audit: any) => (
+                  <option key={audit.id} value={audit.id}>
+                    {audit.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
