@@ -291,7 +291,7 @@ router.put(
  */
 router.patch(
   '/:id/status',
-  requirePermission(RESOURCES.OBSERVATION, ACTIONS.UPDATE, {
+  requirePermission(RESOURCES.OBSERVATION, ACTIONS.APPROVE, {
     allowOwner: true,
     ownerField: 'ownerId',
     resourceIdParam: 'id',

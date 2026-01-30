@@ -265,6 +265,23 @@ export default function ObservationDetailPage() {
   }
 
   const availableTransitions = statusTransitions[observation.status] || [];
+  const canReviewerAct = canReview || isReviewer;
+  const canOwnerAct = isOwner || canEdit;
+  const filteredTransitions = availableTransitions.filter((transition) => {
+    switch (transition.action) {
+      case 'IN_PROGRESS':
+        return canOwnerAct;
+      case 'EVIDENCE_SUBMITTED':
+        return canOwnerAct;
+      case 'UNDER_REVIEW':
+        return canReviewerAct;
+      case 'CLOSED':
+      case 'REJECTED':
+        return canReviewerAct;
+      default:
+        return false;
+    }
+  });
 
   return (
     <div className="space-y-6">
@@ -456,11 +473,11 @@ export default function ObservationDetailPage() {
           </div>
 
           {/* Status Actions */}
-          {availableTransitions.length > 0 && (canReview || isOwner || isReviewer) && (
+          {filteredTransitions.length > 0 && (
             <div className="card p-6">
               <h3 className="text-sm font-medium text-gray-900 mb-3">Actions</h3>
               <div className="space-y-2">
-                {availableTransitions.map((transition) => (
+                {filteredTransitions.map((transition) => (
                   <button
                     key={transition.action}
                     onClick={() => handleStatusChange(transition.action)}

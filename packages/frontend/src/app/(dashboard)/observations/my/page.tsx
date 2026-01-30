@@ -60,7 +60,7 @@ export default function MyObservationsPage() {
       const apiResponse = response as any;
       return apiResponse?.data || apiResponse;
     },
-    enabled: !!user?.id && activeTab === 'owned',
+    enabled: !!user?.id,
   });
 
   // Fetch observations user is reviewing
@@ -78,7 +78,7 @@ export default function MyObservationsPage() {
       const apiResponse = response as any;
       return apiResponse?.data || apiResponse;
     },
-    enabled: !!user?.id && activeTab === 'reviewing',
+    enabled: !!user?.id,
   });
 
   // Fetch overdue observations owned by user
@@ -96,7 +96,7 @@ export default function MyObservationsPage() {
       const apiResponse = response as any;
       return apiResponse?.data || apiResponse;
     },
-    enabled: !!user?.id && activeTab === 'overdue',
+    enabled: !!user?.id,
   });
 
   const getCurrentData = () => {
