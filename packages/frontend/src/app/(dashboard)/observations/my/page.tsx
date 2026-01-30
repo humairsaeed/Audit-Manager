@@ -9,6 +9,8 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { observationsApi } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
@@ -45,17 +47,34 @@ export default function MyObservationsPage() {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('owned');
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    auditId: '',
+    riskRating: '',
+    status: '',
+    dueFrom: '',
+    dueTo: '',
+    daysRemainingMax: '',
+  });
 
   // Fetch observations owned by user
   const { data: ownedData, isLoading: ownedLoading } = useQuery({
-    queryKey: ['my-observations-owned', user?.id, page],
+    queryKey: ['my-observations-owned', user?.id, page, search, filters],
     queryFn: async () => {
-      const response = await observationsApi.my({
+      const params: Record<string, any> = {
         page,
         limit: 20,
         sortBy: 'targetDate',
         sortOrder: 'asc',
-      });
+      };
+      if (search) params.search = search;
+      if (filters.auditId) params.auditId = filters.auditId;
+      if (filters.riskRating) params.riskRating = filters.riskRating;
+      if (filters.status) params.status = filters.status;
+      if (filters.dueFrom) params.dateFrom = filters.dueFrom;
+      if (filters.dueTo) params.dateTo = filters.dueTo;
+      const response = await observationsApi.my(params);
       // Handle nested response: { success, data: { data: [], pagination: {} } }
       const apiResponse = response as any;
       return apiResponse?.data || apiResponse;
@@ -65,15 +84,22 @@ export default function MyObservationsPage() {
 
   // Fetch observations user is reviewing
   const { data: reviewingData, isLoading: reviewingLoading } = useQuery({
-    queryKey: ['my-observations-reviewing', user?.id, page],
+    queryKey: ['my-observations-reviewing', user?.id, page, search, filters],
     queryFn: async () => {
-      const response = await observationsApi.list({
+      const params: Record<string, any> = {
         reviewerId: user?.id,
         page,
         limit: 20,
         sortBy: 'targetDate',
         sortOrder: 'asc',
-      });
+      };
+      if (search) params.search = search;
+      if (filters.auditId) params.auditId = filters.auditId;
+      if (filters.riskRating) params.riskRating = filters.riskRating;
+      if (filters.status) params.status = filters.status;
+      if (filters.dueFrom) params.dateFrom = filters.dueFrom;
+      if (filters.dueTo) params.dateTo = filters.dueTo;
+      const response = await observationsApi.list(params);
       // Handle nested response: { success, data: { data: [], pagination: {} } }
       const apiResponse = response as any;
       return apiResponse?.data || apiResponse;
@@ -83,15 +109,22 @@ export default function MyObservationsPage() {
 
   // Fetch overdue observations owned by user
   const { data: overdueData, isLoading: overdueLoading } = useQuery({
-    queryKey: ['my-observations-overdue', user?.id, page],
+    queryKey: ['my-observations-overdue', user?.id, page, search, filters],
     queryFn: async () => {
-      const response = await observationsApi.my({
+      const params: Record<string, any> = {
         overdueOnly: true,
         page,
         limit: 20,
         sortBy: 'targetDate',
         sortOrder: 'asc',
-      });
+      };
+      if (search) params.search = search;
+      if (filters.auditId) params.auditId = filters.auditId;
+      if (filters.riskRating) params.riskRating = filters.riskRating;
+      if (filters.status) params.status = filters.status;
+      if (filters.dueFrom) params.dateFrom = filters.dueFrom;
+      if (filters.dueTo) params.dateTo = filters.dueTo;
+      const response = await observationsApi.my(params);
       // Handle nested response: { success, data: { data: [], pagination: {} } }
       const apiResponse = response as any;
       return apiResponse?.data || apiResponse;
@@ -113,6 +146,13 @@ export default function MyObservationsPage() {
   const { data, loading } = getCurrentData();
   const normalizedData = normalizePaginated(data);
   const observations = normalizedData?.data || [];
+  const filteredObservations = observations.filter((obs: any) => {
+    if (!filters.daysRemainingMax) return true;
+    const targetDate = new Date(obs.targetDate);
+    const today = new Date();
+    const daysRemaining = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return daysRemaining <= Number(filters.daysRemainingMax);
+  });
   const pagination = normalizedData?.pagination;
 
   // Summary counts
@@ -199,6 +239,147 @@ export default function MyObservationsPage() {
         </h2>
       </div>
 
+      {/* Search and Filters */}
+      <div className="card p-4">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setPage(1);
+            }}
+            className="flex-1"
+          >
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search observation..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="input pl-10"
+              />
+            </div>
+          </form>
+
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={clsx(
+              'btn btn-secondary',
+              showFilters && 'bg-primary-50 text-primary-700'
+            )}
+          >
+            <FunnelIcon className="h-5 w-5 mr-2" />
+            Filters
+            {(filters.auditId || filters.riskRating || filters.status || filters.dueFrom || filters.dueTo || filters.daysRemainingMax) && (
+              <span className="ml-2 bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full">
+                {[filters.auditId, filters.riskRating, filters.status, filters.dueFrom, filters.dueTo, filters.daysRemainingMax].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="label">Audit</label>
+              <input
+                type="text"
+                value={filters.auditId}
+                onChange={(e) => setFilters({ ...filters, auditId: e.target.value })}
+                className="input"
+                placeholder="Audit ID"
+              />
+            </div>
+
+            <div>
+              <label className="label">Risk</label>
+              <select
+                value={filters.riskRating}
+                onChange={(e) => setFilters({ ...filters, riskRating: e.target.value })}
+                className="input"
+              >
+                <option value="">All Risks</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+                <option value="INFORMATIONAL">Informational</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Status</label>
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                className="input"
+              >
+                <option value="">All Statuses</option>
+                <option value="OPEN">Open</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="EVIDENCE_SUBMITTED">Evidence Submitted</option>
+                <option value="UNDER_REVIEW">Under Review</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="CLOSED">Closed</option>
+                <option value="OVERDUE">Overdue</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Days Remaining ≤</label>
+              <input
+                type="number"
+                min="0"
+                value={filters.daysRemainingMax}
+                onChange={(e) => setFilters({ ...filters, daysRemainingMax: e.target.value })}
+                className="input"
+                placeholder="e.g., 7"
+              />
+            </div>
+
+            <div>
+              <label className="label">Due From</label>
+              <input
+                type="date"
+                value={filters.dueFrom}
+                onChange={(e) => setFilters({ ...filters, dueFrom: e.target.value })}
+                className="input"
+              />
+            </div>
+
+            <div>
+              <label className="label">Due To</label>
+              <input
+                type="date"
+                value={filters.dueTo}
+                onChange={(e) => setFilters({ ...filters, dueTo: e.target.value })}
+                className="input"
+              />
+            </div>
+
+            <div className="lg:col-span-4 flex justify-end">
+              <button
+                onClick={() => {
+                  setFilters({
+                    auditId: '',
+                    riskRating: '',
+                    status: '',
+                    dueFrom: '',
+                    dueTo: '',
+                    daysRemainingMax: '',
+                  });
+                  setSearch('');
+                  setPage(1);
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Clear all filters
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Observations List */}
       <div className="card overflow-hidden">
         {loading ? (
@@ -206,7 +387,7 @@ export default function MyObservationsPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
             <p className="mt-2 text-sm text-gray-500">Loading observations...</p>
           </div>
-        ) : observations.length === 0 ? (
+        ) : filteredObservations.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">
               {activeTab === 'owned' && 'No observations assigned to you'}
@@ -241,7 +422,7 @@ export default function MyObservationsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {observations.map((obs: any) => {
+                  {filteredObservations.map((obs: any) => {
                     const targetDate = new Date(obs.targetDate);
                     const today = new Date();
                     const daysRemaining = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));

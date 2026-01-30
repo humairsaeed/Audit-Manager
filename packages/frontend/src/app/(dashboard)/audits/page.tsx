@@ -30,11 +30,9 @@ const typeColors: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  PLANNING: 'bg-gray-100 text-gray-800',
+  PLANNED: 'bg-gray-100 text-gray-800',
   IN_PROGRESS: 'bg-blue-100 text-blue-800',
-  FIELDWORK_COMPLETE: 'bg-purple-100 text-purple-800',
-  DRAFT_REPORT: 'bg-amber-100 text-amber-800',
-  FINAL_REPORT: 'bg-cyan-100 text-cyan-800',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-800',
   CLOSED: 'bg-green-100 text-green-800',
   CANCELLED: 'bg-red-100 text-red-800',
 };
@@ -185,12 +183,11 @@ export default function AuditsPage() {
                 className="input"
               >
                 <option value="">All Statuses</option>
-                <option value="PLANNING">Planning</option>
+                <option value="PLANNED">Planned</option>
                 <option value="IN_PROGRESS">In Progress</option>
-                <option value="FIELDWORK_COMPLETE">Fieldwork Complete</option>
-                <option value="DRAFT_REPORT">Draft Report</option>
-                <option value="FINAL_REPORT">Final Report</option>
+                <option value="UNDER_REVIEW">Under Review</option>
                 <option value="CLOSED">Closed</option>
+                <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
 
@@ -302,7 +299,7 @@ export default function AuditsPage() {
                 <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                   <div className="text-center">
                     <p className="text-lg font-semibold text-gray-900">
-                      {audit._count?.observations || 0}
+                      {audit.totalObservations ?? audit._count?.observations ?? 0}
                     </p>
                     <p className="text-xs text-gray-500">Observations</p>
                   </div>

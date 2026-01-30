@@ -266,10 +266,58 @@ export class AuditService {
       orderBy: { [sortBy]: sortOrder },
     });
 
+    const auditIds = audits.map((audit) => audit.id);
+    const now = new Date();
+
+    const statusCounts = auditIds.length
+      ? await prisma.observation.groupBy({
+          by: ['auditId', 'status'],
+          where: {
+            auditId: { in: auditIds },
+            deletedAt: null,
+          },
+          _count: { _all: true },
+        })
+      : [];
+
+    const overdueCounts = auditIds.length
+      ? await prisma.observation.groupBy({
+          by: ['auditId'],
+          where: {
+            auditId: { in: auditIds },
+            deletedAt: null,
+            status: { not: 'CLOSED' },
+            targetDate: { lt: now },
+          },
+          _count: { _all: true },
+        })
+      : [];
+
+    const closedMap = new Map<string, number>();
+    const totalMap = new Map<string, number>();
+    for (const row of statusCounts) {
+      const currentTotal = totalMap.get(row.auditId) || 0;
+      totalMap.set(row.auditId, currentTotal + row._count._all);
+      if (row.status === 'CLOSED') {
+        closedMap.set(row.auditId, row._count._all);
+      }
+    }
+
+    const overdueMap = new Map(
+      overdueCounts.map((row) => [row.auditId, row._count._all])
+    );
+
+    const auditsWithStats = audits.map((audit) => ({
+      ...audit,
+      totalObservations: totalMap.get(audit.id) ?? audit._count?.observations ?? 0,
+      closedObservations: closedMap.get(audit.id) ?? 0,
+      overdueObservations: overdueMap.get(audit.id) ?? 0,
+    }));
+
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data: audits,
+      data: auditsWithStats,
       pagination: {
         page,
         limit,
