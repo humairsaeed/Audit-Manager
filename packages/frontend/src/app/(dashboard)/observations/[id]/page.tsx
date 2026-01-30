@@ -162,6 +162,19 @@ export default function ObservationDetailPage() {
     },
   });
 
+  const deleteEvidenceMutation = useMutation({
+    mutationFn: async (evidenceId: string) => {
+      return evidenceApi.delete(evidenceId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['evidence', observationId] });
+      toast.success('Evidence deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to delete evidence');
+    },
+  });
+
   const handleStatusChange = (newStatus: string) => {
     if (newStatus === 'REJECTED') {
       const reason = window.prompt('Please provide a reason for rejection:');
@@ -421,6 +434,14 @@ export default function ObservationDetailPage() {
                       >
                         Download
                       </button>
+                      {(isOwner || canEdit || evidence.uploadedById === user?.id) && observation.status !== 'CLOSED' && (
+                        <button
+                          onClick={() => deleteEvidenceMutation.mutate(evidence.id)}
+                          className="text-red-600 hover:text-red-700 text-sm"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

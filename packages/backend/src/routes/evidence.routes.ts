@@ -75,6 +75,37 @@ const ensureEvidenceReadAccess = async (
   throw AppError.forbidden('Permission denied');
 };
 
+const ensureEvidenceDeleteAccess = async (
+  authReq: AuthenticatedRequest,
+  evidenceId: string
+) => {
+  if (isSystemAdmin(authReq) || hasPermission(authReq, 'evidence:delete:all')) {
+    return;
+  }
+
+  const evidence = await prisma.evidence.findUnique({
+    where: { id: evidenceId },
+    select: {
+      uploadedById: true,
+      observation: { select: { ownerId: true } },
+    },
+  });
+
+  if (!evidence) {
+    throw AppError.notFound('Evidence');
+  }
+
+  if (evidence.uploadedById === authReq.user.userId) {
+    return;
+  }
+
+  if (evidence.observation.ownerId === authReq.user.userId) {
+    return;
+  }
+
+  throw AppError.forbidden('Permission denied');
+};
+
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -486,10 +517,11 @@ router.get(
  */
 router.delete(
   '/:id',
-  requirePermission(RESOURCES.EVIDENCE, ACTIONS.DELETE),
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
+
+    await ensureEvidenceDeleteAccess(authReq, id);
 
     await EvidenceService.deleteEvidence(id, authReq.user.userId);
 
