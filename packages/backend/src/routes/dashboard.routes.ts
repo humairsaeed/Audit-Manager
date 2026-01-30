@@ -116,6 +116,9 @@ router.get(
     const filters = {
       auditIds: req.query.auditIds ? (req.query.auditIds as string).split(',') : undefined,
       entityIds: req.query.entityIds ? (req.query.entityIds as string).split(',') : undefined,
+      auditType: req.query.auditType as string | undefined,
+      dateFrom: req.query.startDate ? new Date(req.query.startDate as string) : req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+      dateTo: req.query.endDate ? new Date(req.query.endDate as string) : req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
     };
 
     const summary = await DashboardService.generateExecutiveSummary(filters);

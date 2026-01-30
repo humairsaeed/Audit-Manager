@@ -482,6 +482,13 @@ export class DashboardService {
   static async generateExecutiveSummary(filters?: ReportFilters): Promise<{
     period: string;
     summary: string;
+    totalObservations: number;
+    closedObservations: number;
+    overdueObservations: number;
+    closureRate: number;
+    byRisk: Record<RiskRating, number>;
+    byStatus: Record<ObservationStatus, number>;
+    byEntity: Record<string, { total: number; open: number; closed: number; overdue: number }>;
     keyMetrics: {
       label: string;
       value: string | number;
@@ -507,8 +514,86 @@ export class DashboardService {
       where.entityId = { in: filters.entityIds };
     }
 
+    if (filters?.auditType) {
+      where.audit = { type: filters.auditType };
+    }
+
+    if (filters?.dateFrom || filters?.dateTo) {
+      where.AND = [];
+      if (filters.dateFrom) {
+        (where.AND as Prisma.ObservationWhereInput[]).push({
+          openDate: { gte: filters.dateFrom },
+        });
+      }
+      if (filters.dateTo) {
+        (where.AND as Prisma.ObservationWhereInput[]).push({
+          openDate: { lte: filters.dateTo },
+        });
+      }
+    }
+
+    const observations = await prisma.observation.findMany({
+      where,
+      include: {
+        entity: { select: { name: true } },
+      },
+    });
+
+    const byStatus: Record<ObservationStatus, number> = {
+      OPEN: 0,
+      IN_PROGRESS: 0,
+      EVIDENCE_SUBMITTED: 0,
+      UNDER_REVIEW: 0,
+      REJECTED: 0,
+      CLOSED: 0,
+      OVERDUE: 0,
+    };
+
+    const byRisk: Record<RiskRating, number> = {
+      CRITICAL: 0,
+      HIGH: 0,
+      MEDIUM: 0,
+      LOW: 0,
+      INFORMATIONAL: 0,
+    };
+
+    const byEntity: Record<string, { total: number; open: number; closed: number; overdue: number }> = {};
+    const now = new Date();
+    let closedObservations = 0;
+    let overdueObservations = 0;
+
+    for (const obs of observations) {
+      byStatus[obs.status]++;
+      byRisk[obs.riskRating]++;
+
+      const entityName = obs.entity?.name || 'Unassigned';
+      if (!byEntity[entityName]) {
+        byEntity[entityName] = { total: 0, open: 0, closed: 0, overdue: 0 };
+      }
+      byEntity[entityName].total++;
+
+      if (obs.status === 'CLOSED') {
+        closedObservations++;
+        byEntity[entityName].closed++;
+      } else {
+        byEntity[entityName].open++;
+        if (obs.targetDate < now) {
+          overdueObservations++;
+          byEntity[entityName].overdue++;
+        }
+      }
+    }
+
+    const totalObservations = observations.length;
+    const closureRate = totalObservations > 0 ? (closedObservations / totalObservations) * 100 : 0;
+
     // Current period stats
-    const currentStats = await this.getManagementDashboard();
+    const currentStats = await this.getManagementDashboard({
+      entityId: filters?.entityIds?.length === 1 ? filters.entityIds[0] : undefined,
+      auditId: filters?.auditIds?.length === 1 ? filters.auditIds[0] : undefined,
+      dateFrom: filters?.dateFrom,
+      dateTo: filters?.dateTo,
+    });
 
     // Previous period stats
     const prevMonthClosed = await prisma.observation.count({
@@ -527,11 +612,11 @@ export class DashboardService {
 
     // Generate highlights
     const riskHighlights: string[] = [];
-    if (currentStats.byRiskRating.CRITICAL > 0) {
-      riskHighlights.push(`${currentStats.byRiskRating.CRITICAL} critical observations require immediate attention`);
+    if (byRisk.CRITICAL > 0) {
+      riskHighlights.push(`${byRisk.CRITICAL} critical observations require immediate attention`);
     }
-    if (currentStats.overdueObservations > 0) {
-      riskHighlights.push(`${currentStats.overdueObservations} observations are past their due date`);
+    if (overdueObservations > 0) {
+      riskHighlights.push(`${overdueObservations} observations are past their due date`);
     }
     if (currentStats.slaCompliance < 80) {
       riskHighlights.push(`SLA compliance is below target at ${currentStats.slaCompliance}%`);
@@ -539,10 +624,10 @@ export class DashboardService {
 
     // Generate recommendations
     const recommendations: string[] = [];
-    if (currentStats.overdueObservations > 5) {
+    if (overdueObservations > 5) {
       recommendations.push('Consider escalating overdue observations to management');
     }
-    if (currentStats.byRiskRating.CRITICAL > 3) {
+    if (byRisk.CRITICAL > 3) {
       recommendations.push('Schedule urgent review meeting for critical findings');
     }
     if (currentStats.byStatus.UNDER_REVIEW > 10) {
@@ -552,13 +637,20 @@ export class DashboardService {
     return {
       period: now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
       summary: `As of ${now.toLocaleDateString()}, there are ${currentStats.openObservations} open observations across the organization. ${currentStats.closedThisMonth} observations were closed this month, with an SLA compliance rate of ${currentStats.slaCompliance}%.`,
+      totalObservations,
+      closedObservations,
+      overdueObservations,
+      closureRate,
+      byRisk,
+      byStatus,
+      byEntity,
       keyMetrics: [
         { label: 'Open Observations', value: currentStats.openObservations },
-        { label: 'Overdue', value: currentStats.overdueObservations },
+        { label: 'Overdue', value: overdueObservations },
         { label: 'Closed This Month', value: currentStats.closedThisMonth, trend: closedTrend },
         { label: 'SLA Compliance', value: `${currentStats.slaCompliance}%` },
-        { label: 'Critical Risk', value: currentStats.byRiskRating.CRITICAL },
-        { label: 'High Risk', value: currentStats.byRiskRating.HIGH },
+        { label: 'Critical Risk', value: byRisk.CRITICAL },
+        { label: 'High Risk', value: byRisk.HIGH },
       ],
       riskHighlights,
       recommendations,

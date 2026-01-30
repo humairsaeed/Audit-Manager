@@ -304,6 +304,7 @@ export interface ActivityItem {
 
 export interface ReportFilters {
   auditIds?: string[];
+  auditType?: AuditType;
   entityIds?: string[];
   riskRatings?: RiskRating[];
   statuses?: ObservationStatus[];

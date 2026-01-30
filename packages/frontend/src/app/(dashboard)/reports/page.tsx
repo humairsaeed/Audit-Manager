@@ -70,6 +70,20 @@ export default function ReportsPage() {
     enabled: activeReport === 'trends',
   });
 
+  const trendsMonthly = (() => {
+    if (!trendsData) return [];
+    if (Array.isArray(trendsData.monthly)) return trendsData.monthly;
+    if (Array.isArray(trendsData.labels)) {
+      return trendsData.labels.map((label: string, index: number) => ({
+        month: label,
+        created: trendsData.opened?.[index] ?? 0,
+        closed: trendsData.closed?.[index] ?? 0,
+        overdue: trendsData.overdue?.[index] ?? 0,
+      }));
+    }
+    return [];
+  })();
+
   // Fetch compliance data
   const { data: complianceData, isLoading: complianceLoading } = useQuery({
     queryKey: ['report-compliance', dateRange, filters],
@@ -337,8 +351,8 @@ export default function ReportsPage() {
                 {/* Simple bar chart representation */}
                 <div className="overflow-x-auto">
                   <div className="flex items-end gap-2 min-w-max h-64 p-4">
-                    {trendsData?.monthly?.map((month: any, index: number) => {
-                      const maxCount = Math.max(...(trendsData.monthly?.map((m: any) => m.created) || [1]));
+                    {trendsMonthly.map((month: any, index: number) => {
+                      const maxCount = Math.max(...(trendsMonthly.map((m: any) => m.created) || [1]));
                       const height = (month.created / maxCount) * 200;
                       return (
                         <div key={index} className="flex flex-col items-center gap-2">
