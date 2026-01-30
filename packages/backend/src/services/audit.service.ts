@@ -514,7 +514,6 @@ export class AuditService {
   static async deleteAudit(id: string): Promise<boolean> {
     const audit = await prisma.audit.findUnique({
       where: { id },
-      include: { _count: { select: { observations: true } } },
     });
 
     if (!audit) {
@@ -522,7 +521,10 @@ export class AuditService {
     }
 
     // Check if audit has observations
-    if (audit._count.observations > 0) {
+    const activeObservations = await prisma.observation.count({
+      where: { auditId: id, deletedAt: null },
+    });
+    if (activeObservations > 0) {
       throw AppError.badRequest(
         'Cannot delete audit with observations. Please delete all observations first.'
       );
@@ -549,6 +551,7 @@ export class AuditService {
             riskRating: true,
             targetDate: true,
           },
+          where: { deletedAt: null },
         },
       },
     });
