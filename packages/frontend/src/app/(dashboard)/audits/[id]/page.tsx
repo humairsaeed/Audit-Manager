@@ -109,11 +109,12 @@ export default function AuditDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { hasAnyRole, hasPermission } = useAuthStore();
+  const { hasAnyRole, hasPermission, user } = useAuthStore();
   const auditId = params.id as string;
 
   const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN);
   const canAddObservation = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
+  const isReviewer = hasAnyRole(ROLES.REVIEWER);
   const canReadAllObservations =
     hasAnyRole(
       ROLES.SYSTEM_ADMIN,
@@ -140,14 +141,16 @@ export default function AuditDetailPage() {
 
   // Fetch observations for this audit
   const { data: observationsData, isLoading: observationsLoading } = useQuery({
-    queryKey: ['audit-observations', auditId, canReadAllObservations],
+    queryKey: ['audit-observations', auditId, canReadAllObservations, isReviewer, user?.id],
     queryFn: async () => {
       const response = canReadAllObservations
         ? await observationsApi.list({ auditId, limit: 100 })
-        : await observationsApi.my({ auditId, limit: 100 });
+        : isReviewer
+          ? await observationsApi.list({ auditId, reviewerId: user?.id, limit: 100 })
+          : await observationsApi.my({ auditId, limit: 100 });
       return response?.data ?? response;
     },
-    enabled: !!auditId,
+    enabled: !!auditId && (!!user?.id || canReadAllObservations),
   });
 
   const { data: auditStatsData } = useQuery({
