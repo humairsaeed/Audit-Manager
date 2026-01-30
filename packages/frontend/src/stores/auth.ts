@@ -111,6 +111,7 @@ export const useAuthStore = create<AuthState>()(
       hasPermission: (permission) => {
         const { user } = get();
         if (!user) return false;
+        if (!Array.isArray(user.permissions)) return false;
 
         // System admins have all permissions
         if (user.roles.some((r) => r.name === 'system_admin')) return true;
