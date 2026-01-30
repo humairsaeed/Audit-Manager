@@ -136,10 +136,11 @@ router.get(
     const sortBy = (req.query.sortBy as string) || 'targetDate';
     const sortOrder = (req.query.sortOrder as string) === 'desc' ? 'desc' : 'asc';
     const overdueOnly = req.query.overdueOnly === 'true';
+    const auditId = req.query.auditId as string | undefined;
 
     const result = await ObservationService.listObservations(
       { page, limit, sortBy, sortOrder },
-      { ownerId: authReq.user.userId, overdueOnly }
+      { ownerId: authReq.user.userId, overdueOnly, auditId }
     );
 
     const response: ApiResponse = {

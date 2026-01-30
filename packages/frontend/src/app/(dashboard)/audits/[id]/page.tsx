@@ -64,11 +64,9 @@ const typeColors: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  PLANNING: 'bg-gray-100 text-gray-800',
+  PLANNED: 'bg-gray-100 text-gray-800',
   IN_PROGRESS: 'bg-blue-100 text-blue-800',
-  FIELDWORK_COMPLETE: 'bg-purple-100 text-purple-800',
-  DRAFT_REPORT: 'bg-amber-100 text-amber-800',
-  FINAL_REPORT: 'bg-cyan-100 text-cyan-800',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-800',
   CLOSED: 'bg-green-100 text-green-800',
   CANCELLED: 'bg-red-100 text-red-800',
 };
@@ -91,22 +89,42 @@ const obsStatusColors: Record<string, string> = {
 };
 
 const statusTransitions: Record<string, { label: string; action: string }[]> = {
-  PLANNING: [{ label: 'Start Audit', action: 'IN_PROGRESS' }],
-  IN_PROGRESS: [{ label: 'Complete Fieldwork', action: 'FIELDWORK_COMPLETE' }],
-  FIELDWORK_COMPLETE: [{ label: 'Create Draft Report', action: 'DRAFT_REPORT' }],
-  DRAFT_REPORT: [{ label: 'Finalize Report', action: 'FINAL_REPORT' }],
-  FINAL_REPORT: [{ label: 'Close Audit', action: 'CLOSED' }],
+  PLANNED: [{ label: 'Start Audit', action: 'IN_PROGRESS' }],
+  IN_PROGRESS: [{ label: 'Submit for Review', action: 'UNDER_REVIEW' }],
+  UNDER_REVIEW: [
+    { label: 'Reopen', action: 'IN_PROGRESS' },
+    { label: 'Close Audit', action: 'CLOSED' },
+  ],
+};
+
+const normalizePaginated = (value: any) => {
+  if (!value) return undefined;
+  if (Array.isArray(value)) return { data: value, pagination: undefined };
+  if (Array.isArray(value?.data)) return value;
+  if (Array.isArray(value?.data?.data)) return value.data;
+  return value;
 };
 
 export default function AuditDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { hasAnyRole } = useAuthStore();
+  const { hasAnyRole, hasPermission } = useAuthStore();
   const auditId = params.id as string;
 
   const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN);
   const canAddObservation = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
+  const canReadAllObservations =
+    hasAnyRole(
+      ROLES.SYSTEM_ADMIN,
+      ROLES.AUDIT_ADMIN,
+      ROLES.AUDITOR,
+      ROLES.COMPLIANCE_MANAGER,
+      ROLES.EXECUTIVE
+    ) ||
+    hasPermission('observation:read:all') ||
+    hasPermission('observation:read:entity') ||
+    hasPermission('observation:read:team');
 
   const [activeTab, setActiveTab] = useState<'overview' | 'observations' | 'team'>('overview');
 
@@ -121,13 +139,24 @@ export default function AuditDetailPage() {
   });
 
   // Fetch observations for this audit
-  const { data: observationsData } = useQuery({
-    queryKey: ['audit-observations', auditId],
+  const { data: observationsData, isLoading: observationsLoading } = useQuery({
+    queryKey: ['audit-observations', auditId, canReadAllObservations],
     queryFn: async () => {
-      const response = await observationsApi.list({ auditId, limit: 100 });
-      return response.data?.data || [];
+      const response = canReadAllObservations
+        ? await observationsApi.list({ auditId, limit: 100 })
+        : await observationsApi.my({ auditId, limit: 100 });
+      return response?.data ?? response;
     },
     enabled: !!auditId,
+  });
+
+  const { data: auditStatsData } = useQuery({
+    queryKey: ['audit-stats', auditId],
+    queryFn: async () => {
+      const response = await auditsApi.getStats(auditId);
+      return response.data?.stats ?? response.data?.data?.stats ?? response.data;
+    },
+    enabled: !!auditId && canReadAllObservations,
   });
 
   // Status transition mutation
@@ -184,19 +213,39 @@ export default function AuditDetailPage() {
     );
   }
 
-  const observations = observationsData || [];
+  const normalizedObservations = normalizePaginated(observationsData);
+  const observations = normalizedObservations?.data || [];
   const availableTransitions = statusTransitions[audit.status] || [];
 
   // Calculate stats
-  const stats = {
+  const fallbackStats = {
     total: observations.length,
     open: observations.filter((o: any) => o.status === 'OPEN').length,
-    inProgress: observations.filter((o: any) => ['IN_PROGRESS', 'EVIDENCE_SUBMITTED', 'UNDER_REVIEW'].includes(o.status)).length,
+    inProgress: observations.filter((o: any) =>
+      ['IN_PROGRESS', 'EVIDENCE_SUBMITTED', 'UNDER_REVIEW'].includes(o.status)
+    ).length,
     closed: observations.filter((o: any) => o.status === 'CLOSED').length,
-    overdue: observations.filter((o: any) => new Date(o.targetDate) < new Date() && o.status !== 'CLOSED').length,
+    overdue: observations.filter(
+      (o: any) => new Date(o.targetDate) < new Date() && o.status !== 'CLOSED'
+    ).length,
     critical: observations.filter((o: any) => o.riskRating === 'CRITICAL').length,
     high: observations.filter((o: any) => o.riskRating === 'HIGH').length,
   };
+
+  const stats = canReadAllObservations && auditStatsData
+    ? {
+        total: auditStatsData.total ?? 0,
+        open: auditStatsData.byStatus?.OPEN ?? 0,
+        inProgress:
+          (auditStatsData.byStatus?.IN_PROGRESS ?? 0) +
+          (auditStatsData.byStatus?.EVIDENCE_SUBMITTED ?? 0) +
+          (auditStatsData.byStatus?.UNDER_REVIEW ?? 0),
+        closed: auditStatsData.byStatus?.CLOSED ?? 0,
+        overdue: auditStatsData.overdue ?? 0,
+        critical: auditStatsData.byRiskRating?.CRITICAL ?? 0,
+        high: auditStatsData.byRiskRating?.HIGH ?? 0,
+      }
+    : fallbackStats;
 
   return (
     <div className="space-y-6">
@@ -460,7 +509,12 @@ export default function AuditDetailPage() {
 
       {activeTab === 'observations' && (
         <div className="card overflow-hidden">
-          {observations.length === 0 ? (
+          {observationsLoading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-500">Loading observations...</p>
+            </div>
+          ) : observations.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-gray-500">No observations for this audit</p>
               {canAddObservation && audit.status === 'IN_PROGRESS' && (
