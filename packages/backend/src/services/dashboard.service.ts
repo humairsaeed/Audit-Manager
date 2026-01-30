@@ -558,7 +558,6 @@ export class DashboardService {
     };
 
     const byEntity: Record<string, { total: number; open: number; closed: number; overdue: number }> = {};
-    const now = new Date();
     let closedObservations = 0;
     let overdueObservations = 0;
 
