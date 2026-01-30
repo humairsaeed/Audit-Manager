@@ -9,7 +9,7 @@ import { AuthenticatedRequest, ApiResponse, SYSTEM_ROLES, ColumnMapping } from '
 
 const router = Router();
 
-// Configure multer for Excel uploads
+// Configure multer for Excel/CSV uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -17,12 +17,12 @@ const upload = multer({
     files: 1,
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['xlsx', 'xls'];
+    const allowedTypes = ['xlsx', 'xls', 'csv'];
     const ext = file.originalname.split('.').pop()?.toLowerCase();
     if (ext && allowedTypes.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Only Excel files (.xlsx, .xls) are allowed'));
+      cb(new Error('Only Excel (.xlsx, .xls) or CSV (.csv) files are allowed'));
     }
   },
 });

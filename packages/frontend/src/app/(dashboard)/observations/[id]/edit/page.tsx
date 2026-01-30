@@ -17,6 +17,7 @@ const observationSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   riskRating: z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL']),
   externalReference: z.string().optional(),
+  impact: z.string().optional(),
   recommendation: z.string().optional(),
   rootCause: z.string().optional(),
   managementResponse: z.string().optional(),
@@ -116,6 +117,7 @@ export default function EditObservationPage() {
         externalReference: observation.externalReference || '',
         recommendation: observation.recommendation || '',
         rootCause: observation.rootCause || '',
+        impact: observation.impact || '',
         managementResponse: observation.managementResponse || '',
         correctiveActionPlan: observation.correctiveActionPlan || '',
         ownerId: observation.ownerId || '',
@@ -247,6 +249,16 @@ export default function EditObservationPage() {
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Analysis & Recommendations</h2>
           <div className="space-y-4">
+            <div>
+              <label className="label">Risk</label>
+              <textarea
+                {...register('impact')}
+                className="input"
+                rows={3}
+                placeholder="Describe the risk associated with the observation..."
+              />
+            </div>
+
             <div>
               <label className="label">Root Cause</label>
               <textarea

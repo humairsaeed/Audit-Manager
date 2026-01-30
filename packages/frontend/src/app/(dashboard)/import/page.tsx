@@ -33,12 +33,22 @@ interface ImportResult {
   errors: Array<{ row: number; error: string }>;
 }
 
+interface ImportValidation {
+  isValid: boolean;
+  totalRows: number;
+  validRows: number;
+  errors: Array<{ row: number; message: string }>;
+  warnings?: Array<{ row: number; message: string }>;
+  preview: any[];
+}
+
 const TARGET_FIELDS = [
   { value: '', label: 'Skip this column' },
   { value: 'externalReference', label: 'External Reference' },
   { value: 'title', label: 'Title' },
   { value: 'description', label: 'Description' },
   { value: 'riskRating', label: 'Risk Rating' },
+  { value: 'impact', label: 'Risk' },
   { value: 'recommendation', label: 'Recommendation' },
   { value: 'rootCause', label: 'Root Cause' },
   { value: 'managementResponse', label: 'Management Response' },
@@ -55,9 +65,11 @@ export default function ImportPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('upload');
   const [selectedAuditId, setSelectedAuditId] = useState('');
+  const [importJobId, setImportJobId] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [columnMappings, setColumnMappings] = useState<ColumnMapping[]>([]);
   const [previewData, setPreviewData] = useState<any[]>([]);
+  const [validationResult, setValidationResult] = useState<ImportValidation | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
   // Fetch audits for selection (include PLANNED and IN_PROGRESS audits)
@@ -76,16 +88,36 @@ export default function ImportPage() {
   // Analyze file mutation
   const analyzeMutation = useMutation({
     mutationFn: async (file: File) => {
-      return importApi.analyze(file);
+      const uploadResponse = await importApi.upload(selectedAuditId, file);
+      const uploadData = uploadResponse as any;
+      const importJob =
+        uploadData?.data?.importJob || uploadData?.importJob || uploadData?.data?.data?.importJob;
+      if (!importJob?.id) {
+        throw new Error('Failed to create import job');
+      }
+
+      const detectResponse = await importApi.analyze(file);
+      const detectData = (detectResponse as any)?.data || detectResponse;
+
+      return { importJobId: importJob.id, detectData };
     },
     onSuccess: (response) => {
-      const { headers, suggestedMappings, sampleData } = response.data;
+      const { importJobId: jobId, detectData } = response as any;
+      const { headers, autoMapping, sampleRows } = detectData;
+
+      setImportJobId(jobId);
+      setValidationResult(null);
+      setPreviewData([]);
 
       // Create column mappings with suggestions
+      const mappingLookup = new Map(
+        (autoMapping || []).map((m: any) => [String(m.excelColumn || '').toLowerCase(), m.systemField])
+      );
+
       const mappings: ColumnMapping[] = headers.map((header: string, index: number) => ({
         sourceColumn: header,
-        targetField: suggestedMappings[header] || '',
-        sampleData: sampleData.map((row: any[]) => row[index]?.toString() || ''),
+        targetField: mappingLookup.get(String(header).toLowerCase()) || '',
+        sampleData: (sampleRows || []).map((row: any[]) => row[index]?.toString() || ''),
       }));
 
       setColumnMappings(mappings);
@@ -99,19 +131,33 @@ export default function ImportPage() {
   // Validate and preview mutation
   const previewMutation = useMutation({
     mutationFn: async () => {
-      if (!file) throw new Error('No file selected');
+      if (!importJobId) throw new Error('Import job not created');
 
-      const mappings = columnMappings.reduce((acc, m) => {
-        if (m.targetField) {
-          acc[m.sourceColumn] = m.targetField;
-        }
-        return acc;
-      }, {} as Record<string, string>);
+      const mappings = columnMappings
+        .filter((m) => m.targetField)
+        .map((m) => ({
+          excelColumn: m.sourceColumn,
+          systemField: m.targetField,
+          required: ['title', 'description'].includes(m.targetField),
+        }));
 
-      return importApi.preview(file, selectedAuditId, mappings);
+      return importApi.preview(importJobId, { mappings });
     },
     onSuccess: (response) => {
-      setPreviewData(response.data.preview || []);
+      const apiResponse = response as any;
+      const validation =
+        apiResponse?.data?.validation || apiResponse?.validation || apiResponse?.data?.data?.validation;
+      if (!validation) {
+        throw new Error('Invalid validation response');
+      }
+
+      const preview = (validation.preview || []).map((row: any) => ({
+        ...row,
+        isValid: true,
+      }));
+
+      setValidationResult(validation);
+      setPreviewData(preview);
       setStep('preview');
     },
     onError: (error: any) => {
@@ -122,21 +168,34 @@ export default function ImportPage() {
   // Import mutation
   const importMutation = useMutation({
     mutationFn: async () => {
-      if (!file) throw new Error('No file selected');
+      if (!importJobId) throw new Error('Import job not created');
 
-      const mappings = columnMappings.reduce((acc, m) => {
-        if (m.targetField) {
-          acc[m.sourceColumn] = m.targetField;
-        }
-        return acc;
-      }, {} as Record<string, string>);
+      const mappings = columnMappings
+        .filter((m) => m.targetField)
+        .map((m) => ({
+          excelColumn: m.sourceColumn,
+          systemField: m.targetField,
+          required: ['title', 'description'].includes(m.targetField),
+        }));
 
-      return importApi.execute(file, selectedAuditId, mappings);
+      return importApi.execute(importJobId, { mappings });
     },
     onSuccess: (response) => {
-      setImportResult(response.data);
+      const apiResponse = response as any;
+      const result = apiResponse?.data?.result || apiResponse?.result || apiResponse?.data?.data?.result;
+      const mappedResult: ImportResult = {
+        success: true,
+        imported: result?.successfulRows ?? 0,
+        failed: result?.failedRows ?? 0,
+        errors: (result?.errors || []).map((err: any) => ({
+          row: err.row,
+          error: err.message || err.error || 'Unknown error',
+        })),
+      };
+
+      setImportResult(mappedResult);
       setStep('complete');
-      toast.success(`Successfully imported ${response.data.imported} observations`);
+      toast.success(`Successfully imported ${mappedResult.imported} observations`);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Import failed');
@@ -207,8 +266,10 @@ export default function ImportPage() {
   const handleReset = () => {
     setStep('upload');
     setFile(null);
+    setImportJobId('');
     setColumnMappings([]);
     setPreviewData([]);
+    setValidationResult(null);
     setImportResult(null);
   };
 
@@ -438,6 +499,7 @@ export default function ImportPage() {
                   <th className="px-3 py-2 text-left font-medium text-gray-500">#</th>
                   <th className="px-3 py-2 text-left font-medium text-gray-500">Title</th>
                   <th className="px-3 py-2 text-left font-medium text-gray-500">Risk</th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-500">Risk Rating</th>
                   <th className="px-3 py-2 text-left font-medium text-gray-500">Target Date</th>
                   <th className="px-3 py-2 text-left font-medium text-gray-500">Status</th>
                 </tr>
@@ -449,10 +511,11 @@ export default function ImportPage() {
                     <td className="px-3 py-2 font-medium text-gray-900 max-w-xs truncate">
                       {row.title}
                     </td>
+                    <td className="px-3 py-2 max-w-xs truncate">{row.impact || '-'}</td>
                     <td className="px-3 py-2">{row.riskRating || 'MEDIUM'}</td>
                     <td className="px-3 py-2">{row.targetDate || 'Auto-calculated'}</td>
                     <td className="px-3 py-2">
-                      {row.isValid ? (
+                      {row.isValid !== false ? (
                         <span className="text-green-600 flex items-center gap-1">
                           <CheckCircleIcon className="h-4 w-4" />
                           Valid
@@ -472,13 +535,13 @@ export default function ImportPage() {
 
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-700">
-              <strong>{previewData.length}</strong> total rows found.{' '}
+              <strong>{validationResult?.totalRows ?? previewData.length}</strong> total rows found.{' '}
               <strong className="text-green-600">
-                {previewData.filter((r) => r.isValid !== false).length}
+                {validationResult?.validRows ?? previewData.filter((r) => r.isValid !== false).length}
               </strong>{' '}
               valid,{' '}
               <strong className="text-red-600">
-                {previewData.filter((r) => r.isValid === false).length}
+                {validationResult?.errors?.length ?? previewData.filter((r) => r.isValid === false).length}
               </strong>{' '}
               with errors.
             </p>
@@ -491,11 +554,11 @@ export default function ImportPage() {
             </button>
             <button
               onClick={handleImport}
-              disabled={previewData.filter((r) => r.isValid !== false).length === 0}
+              disabled={(validationResult?.validRows ?? previewData.filter((r) => r.isValid !== false).length) === 0}
               className="btn btn-primary"
             >
               <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
-              Import {previewData.filter((r) => r.isValid !== false).length} Observations
+              Import {validationResult?.validRows ?? previewData.filter((r) => r.isValid !== false).length} Observations
             </button>
           </div>
         </div>

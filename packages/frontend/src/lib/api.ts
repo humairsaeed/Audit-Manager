@@ -314,39 +314,25 @@ export const importApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await api.post<ApiResponse<{ headers: string[]; suggestedMappings: Record<string, string>; sampleData: any[] }>>(
-      '/import/analyze',
+    const response = await api.post<ApiResponse<{ headers: string[]; autoMapping: any[]; sampleRows: any[] }>>(
+      '/import/detect-columns',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response.data;
   },
 
-  preview: async (file: File, auditId: string, mappings: Record<string, string>) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('auditId', auditId);
-    formData.append('mappings', JSON.stringify(mappings));
-
-    const response = await api.post<ApiResponse<{ preview: any[] }>>(
-      '/import/preview',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+  preview: async (jobId: string, mappingConfig?: any) => {
+    const response = await api.post<ApiResponse<{ validation: any }>>(`/import/${jobId}/validate`, {
+      mappingConfig,
+    });
     return response.data;
   },
 
-  execute: async (file: File, auditId: string, mappings: Record<string, string>) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('auditId', auditId);
-    formData.append('mappings', JSON.stringify(mappings));
-
-    const response = await api.post<ApiResponse<{ imported: number; failed: number; errors: Array<{ row: number; error: string }> }>>(
-      '/import/execute',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+  execute: async (jobId: string, mappingConfig?: any) => {
+    const response = await api.post<ApiResponse<{ result: any }>>(`/import/${jobId}/execute`, {
+      mappingConfig,
+    });
     return response.data;
   },
 
