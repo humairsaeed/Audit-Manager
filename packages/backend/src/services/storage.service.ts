@@ -14,8 +14,8 @@ import { config } from '../config/index.js';
 import { AppError } from '../middleware/error.middleware.js';
 import logger from '../lib/logger.js';
 
-// Initialize S3 client
-const s3Client = new S3Client({
+// Initialize S3 clients
+const s3ClientInternal = new S3Client({
   endpoint: config.storage.s3.endpoint,
   region: config.storage.s3.region,
   credentials: {
@@ -25,6 +25,18 @@ const s3Client = new S3Client({
   forcePathStyle: true, // Required for MinIO
 });
 
+const s3ClientPublic = config.storage.s3.publicUrl
+  ? new S3Client({
+      endpoint: config.storage.s3.publicUrl,
+      region: config.storage.s3.region,
+      credentials: {
+        accessKeyId: config.storage.s3.accessKey || '',
+        secretAccessKey: config.storage.s3.secretKey || '',
+      },
+      forcePathStyle: true,
+    })
+  : null;
+
 const bucket = config.storage.s3.bucket;
 let bucketEnsured = false;
 
@@ -33,7 +45,7 @@ export class StorageService {
     if (bucketEnsured) return;
 
     try {
-      await s3Client.send(new HeadBucketCommand({ Bucket: bucket }));
+      await s3ClientInternal.send(new HeadBucketCommand({ Bucket: bucket }));
       bucketEnsured = true;
       return;
     } catch (error: any) {
@@ -55,7 +67,7 @@ export class StorageService {
       if (config.storage.s3.region && config.storage.s3.region !== 'us-east-1') {
         params.CreateBucketConfiguration = { LocationConstraint: config.storage.s3.region };
       }
-      await s3Client.send(new CreateBucketCommand(params));
+      await s3ClientInternal.send(new CreateBucketCommand(params));
       bucketEnsured = true;
       logger.info(`Created storage bucket: ${bucket}`);
     } catch (error: any) {
@@ -113,7 +125,7 @@ export class StorageService {
         },
       });
 
-      await s3Client.send(command);
+      await s3ClientInternal.send(command);
 
       logger.info(`File uploaded: ${filePath}`);
       return filePath;
@@ -137,7 +149,7 @@ export class StorageService {
         Key: filePath,
       });
 
-      await s3Client.send(headCommand);
+      await s3ClientInternal.send(headCommand);
 
       // Generate signed URL
       const getCommand = new GetObjectCommand({
@@ -145,20 +157,9 @@ export class StorageService {
         Key: filePath,
       });
 
-      const url = await getSignedUrl(s3Client, getCommand, { expiresIn });
-      if (!config.storage.s3.publicUrl) {
-        return url;
-      }
-
-      try {
-        const signedUrl = new URL(url);
-        const publicBase = new URL(config.storage.s3.publicUrl);
-        signedUrl.protocol = publicBase.protocol;
-        signedUrl.host = publicBase.host;
-        return signedUrl.toString();
-      } catch {
-        return url;
-      }
+      const signerClient = s3ClientPublic || s3ClientInternal;
+      const url = await getSignedUrl(signerClient, getCommand, { expiresIn });
+      return url;
     } catch (error: any) {
       if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
         throw AppError.notFound('File');
@@ -182,7 +183,7 @@ export class StorageService {
         Key: filePath,
       });
 
-      const response = await s3Client.send(command);
+      const response = await s3ClientInternal.send(command);
 
       // Convert stream to buffer
       const chunks: Uint8Array[] = [];
@@ -215,7 +216,7 @@ export class StorageService {
         Key: filePath,
       });
 
-      await s3Client.send(command);
+      await s3ClientInternal.send(command);
       logger.info(`File deleted: ${filePath}`);
       return true;
     } catch (error) {
@@ -234,7 +235,7 @@ export class StorageService {
         Key: filePath,
       });
 
-      await s3Client.send(command);
+      await s3ClientInternal.send(command);
       return true;
     } catch (error: any) {
       if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
@@ -259,7 +260,7 @@ export class StorageService {
         Key: filePath,
       });
 
-      const response = await s3Client.send(command);
+      const response = await s3ClientInternal.send(command);
 
       return {
         size: response.ContentLength || 0,
@@ -295,7 +296,7 @@ export class StorageService {
         },
       });
 
-      await s3Client.send(command);
+      await s3ClientInternal.send(command);
       return destinationPath;
     } catch (error) {
       logger.error('Error copying file:', error);
