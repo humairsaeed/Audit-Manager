@@ -226,11 +226,70 @@ router.post(
       });
     }
 
+    const parseCsv = (content: string): string[][] => {
+      const rows: string[][] = [];
+      let currentRow: string[] = [];
+      let currentCell = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < content.length; i++) {
+        const char = content[i];
+        const next = content[i + 1];
+
+        if (char === '"' && inQuotes && next === '"') {
+          currentCell += '"';
+          i++;
+          continue;
+        }
+
+        if (char === '"') {
+          inQuotes = !inQuotes;
+          continue;
+        }
+
+        if (char === ',' && !inQuotes) {
+          currentRow.push(currentCell);
+          currentCell = '';
+          continue;
+        }
+
+        if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && next === '\n') i++;
+          currentRow.push(currentCell);
+          if (currentRow.some((cell) => cell.trim() !== '')) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentCell = '';
+          continue;
+        }
+
+        currentCell += char;
+      }
+
+      if (currentCell.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentCell);
+        if (currentRow.some((cell) => cell.trim() !== '')) {
+          rows.push(currentRow);
+        }
+      }
+
+      return rows;
+    };
+
     // Parse the first row to get headers
     const XLSX = await import('xlsx');
     const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][];
+    let data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][];
+
+    if (data.length === 0 || (data[0] || []).length === 0) {
+      const ext = req.file.originalname.split('.').pop()?.toLowerCase();
+      if (ext === 'csv') {
+        const csvContent = req.file.buffer.toString('utf8');
+        data = parseCsv(csvContent);
+      }
+    }
 
     if (data.length === 0) {
       return res.status(400).json({
