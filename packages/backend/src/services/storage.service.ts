@@ -146,7 +146,19 @@ export class StorageService {
       });
 
       const url = await getSignedUrl(s3Client, getCommand, { expiresIn });
-      return url;
+      if (!config.storage.s3.publicUrl) {
+        return url;
+      }
+
+      try {
+        const signedUrl = new URL(url);
+        const publicBase = new URL(config.storage.s3.publicUrl);
+        signedUrl.protocol = publicBase.protocol;
+        signedUrl.host = publicBase.host;
+        return signedUrl.toString();
+      } catch {
+        return url;
+      }
     } catch (error: any) {
       if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
         throw AppError.notFound('File');

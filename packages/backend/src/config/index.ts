@@ -36,6 +36,7 @@ const envSchema = z.object({
   // File Storage
   STORAGE_TYPE: z.enum(['s3', 'local']).default('s3'),
   S3_ENDPOINT: z.string().optional(),
+  S3_PUBLIC_URL: z.string().optional(),
   S3_ACCESS_KEY: z.string().optional(),
   S3_SECRET_KEY: z.string().optional(),
   S3_BUCKET: z.string().default('audit-management'),
@@ -116,6 +117,7 @@ export const config = {
     type: parseResult.data.STORAGE_TYPE,
     s3: {
       endpoint: parseResult.data.S3_ENDPOINT,
+      publicUrl: parseResult.data.S3_PUBLIC_URL,
       accessKey: parseResult.data.S3_ACCESS_KEY,
       secretKey: parseResult.data.S3_SECRET_KEY,
       bucket: parseResult.data.S3_BUCKET,
