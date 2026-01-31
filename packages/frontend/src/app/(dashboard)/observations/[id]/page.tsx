@@ -351,9 +351,15 @@ export default function ObservationDetailPage() {
             <p className="text-gray-700 whitespace-pre-wrap">{observation.description}</p>
           </div>
 
-          {/* Recommendation & Root Cause */}
-          {(observation.recommendation || observation.rootCause) && (
+          {/* Analysis & Recommendations */}
+          {(observation.impact || observation.recommendation || observation.rootCause) && (
             <div className="card p-6">
+              {observation.impact && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Risk</h2>
+                  <p className="text-gray-700 whitespace-pre-wrap">{observation.impact}</p>
+                </div>
+              )}
               {observation.recommendation && (
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold text-gray-900 mb-2">Recommendation</h2>
