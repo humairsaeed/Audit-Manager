@@ -28,10 +28,10 @@ interface User {
 }
 
 const statusColors: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-800',
-  INACTIVE: 'bg-gray-100 text-gray-800',
-  LOCKED: 'bg-red-100 text-red-800',
-  PENDING: 'bg-yellow-100 text-yellow-800',
+  ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  INACTIVE: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  LOCKED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
 };
 
 export default function UsersPage() {
@@ -215,8 +215,8 @@ export default function UsersPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Manage system users and their roles
           </p>
         </div>
@@ -258,53 +258,53 @@ export default function UsersPage() {
           </div>
         ) : users.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">No users found</p>
+            <p className="text-gray-500 dark:text-gray-400">No users found</p>
           </div>
         ) : (
           <>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                     Roles
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                     Last Login
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {users.map((user: User) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                          <span className="text-primary-600 font-medium">
+                        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                          <span className="text-primary-600 dark:text-primary-400 font-medium">
                             {user.firstName?.[0]}
                             {user.lastName?.[0]}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 dark:text-gray-100">
                             {user.displayName || `${user.firstName} ${user.lastName}`}
                           </p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {user.roles.map((role) => (
-                          <span key={role.id} className="badge bg-gray-100 text-gray-700 text-xs">
+                          <span key={role.id} className="badge bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs">
                             {role.displayName}
                           </span>
                         ))}
@@ -315,7 +315,7 @@ export default function UsersPage() {
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                       {user.lastLoginAt
                         ? new Date(user.lastLoginAt).toLocaleDateString()
                         : 'Never'}
@@ -324,21 +324,21 @@ export default function UsersPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleResetPassword(user)}
-                          className="p-1 text-gray-400 hover:text-gray-600"
+                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                           title="Reset Password"
                         >
                           <KeyIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleEdit(user)}
-                          className="p-1 text-gray-400 hover:text-gray-600"
+                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                           title="Edit"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(user)}
-                          className="p-1 text-gray-400 hover:text-red-600"
+                          className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                           title="Delete"
                         >
                           <TrashIcon className="h-5 w-5" />
@@ -352,8 +352,8 @@ export default function UsersPage() {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <p className="text-sm text-gray-500">
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
                 </p>
@@ -384,8 +384,8 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowModal(false)} />
-            <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 {editingUser ? 'Edit User' : 'Add User'}
               </h3>
 
@@ -449,7 +449,7 @@ export default function UsersPage() {
                         minLength={12}
                         required
                       />
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Must be at least 12 characters with uppercase, lowercase, numbers, and special characters
                       </p>
                     </div>
@@ -461,7 +461,7 @@ export default function UsersPage() {
                         onChange={(e) => setFormData({ ...formData, sendInvite: e.target.checked })}
                         className="h-4 w-4 text-primary-600 rounded"
                       />
-                      <label htmlFor="sendInvite" className="text-sm text-gray-700">
+                      <label htmlFor="sendInvite" className="text-sm text-gray-700 dark:text-gray-300">
                         Send welcome email with credentials
                       </label>
                     </div>
@@ -470,7 +470,7 @@ export default function UsersPage() {
 
                 <div>
                   <label className="label">Roles *</label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border rounded-lg">
+                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
                     {roles?.map((role: any) => (
                       <label key={role.id} className="flex items-center gap-2">
                         <input
@@ -479,7 +479,7 @@ export default function UsersPage() {
                           onChange={() => handleRoleToggle(role.id)}
                           className="h-4 w-4 text-primary-600 rounded"
                         />
-                        <span className="text-sm text-gray-700">{role.displayName}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{role.displayName}</span>
                       </label>
                     ))}
                   </div>
