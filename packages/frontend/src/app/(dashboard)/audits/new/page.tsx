@@ -96,19 +96,19 @@ export default function NewAuditPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/audits" className="text-gray-400 hover:text-gray-600">
+        <Link href="/audits" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">New Audit</h1>
-          <p className="text-sm text-gray-500">Create a new audit engagement</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">New Audit</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Create a new audit engagement</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="label">Audit Name *</label>
@@ -167,7 +167,7 @@ export default function NewAuditPage() {
 
         {/* Scope & Objectives */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Scope & Objectives</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Scope & Objectives</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Scope</label>
@@ -193,7 +193,7 @@ export default function NewAuditPage() {
 
         {/* Audit Period */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Audit Period</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Audit Period</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Period Start *</label>
@@ -241,7 +241,7 @@ export default function NewAuditPage() {
 
         {/* Team Assignment */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Team Assignment</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Team Assignment</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Lead Auditor</label>

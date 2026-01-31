@@ -62,16 +62,16 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <ShieldCheckIcon className="w-10 h-10 text-primary-600" />
+          <div className="mx-auto w-16 h-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg">
+            <ShieldCheckIcon className="w-10 h-10 text-primary-600 dark:text-primary-400" />
           </div>
           <h1 className="mt-4 text-3xl font-bold text-white">Audit Management</h1>
           <p className="mt-2 text-primary-200">Enterprise Compliance System</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Sign in to your account</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Sign in to your account</h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
@@ -87,7 +87,7 @@ export default function LoginPage() {
                 placeholder="you@company.com"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
             </div>
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -117,7 +117,7 @@ export default function LoginPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
               )}
             </div>
 
@@ -127,14 +127,14 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                   Remember me
                 </label>
               </div>
 
-              <a href="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-primary-500">
+              <a href="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
                 Forgot password?
               </a>
             </div>

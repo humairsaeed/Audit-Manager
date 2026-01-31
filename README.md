@@ -11,7 +11,8 @@ This system provides a centralized platform for:
 - Collecting and reviewing evidence with versioning
 - Enforcing due dates and SLAs with automated notifications
 - Providing executive dashboards and compliance reporting
-- Importing observations from Excel files with intelligent mapping
+- Importing observations from Excel/CSV files with intelligent mapping
+- Exporting executive summary, trends, compliance, and aging reports to PDF/Excel
 
 ## 🏗️ Architecture
 
@@ -31,7 +32,8 @@ This system provides a centralized platform for:
 | **Zod** | Runtime request validation |
 | **Winston** | Structured logging |
 | **Nodemailer** | Email notifications |
-| **ExcelJS** | Excel file processing |
+| **xlsx** | Excel/CSV processing |
+| **pdfkit** | PDF report generation |
 
 #### Frontend Technologies
 
@@ -324,10 +326,10 @@ SMTP_PASSWORD=password
 TEAMS_WEBHOOK_URL=https://outlook.office.com/webhook/...
 ```
 
-## 📥 Excel Import Feature
+## 📥 Import Feature
 
 ### Supported Formats
-- .xlsx, .xls
+- .xlsx, .xls, .csv
 - Up to 10,000 rows per import
 
 ### Auto-Detection
@@ -352,6 +354,16 @@ The system automatically detects and maps common column headers:
 5. Execute import
 6. View import results
 
+## 📤 Report Export
+
+Reports can be exported to **Excel (.xlsx)** or **PDF** from the Reports & Analytics page.
+
+Supported report types:
+- Executive Summary
+- Trends Analysis
+- Compliance Status
+- Aging Report
+
 ## 📊 API Documentation
 
 ### Authentication Endpoints
@@ -362,6 +374,8 @@ POST /api/v1/auth/logout       - User logout
 POST /api/v1/auth/refresh      - Refresh access token
 GET  /api/v1/auth/me           - Get current user
 POST /api/v1/auth/change-password - Change password
+POST /api/v1/auth/forgot-password - Request password reset
+POST /api/v1/auth/reset-password  - Reset password with token
 ```
 
 ### Audit Endpoints
@@ -405,6 +419,7 @@ POST /api/v1/import/:jobId/validate  - Validate import
 POST /api/v1/import/:jobId/execute   - Execute import
 GET  /api/v1/import/:jobId/status    - Get import status
 POST /api/v1/import/:jobId/rollback  - Rollback import
+POST /api/v1/import/detect-columns   - Detect headers + auto mapping
 ```
 
 ## 🔐 Security Features
@@ -436,6 +451,16 @@ POST /api/v1/import/:jobId/rollback  - Rollback import
 - In-app notifications
 - Email (SMTP)
 - Microsoft Teams (Webhook)
+
+## 🗄 Forgot Password
+
+A **Forgot Password** page is available at:
+- `/forgot-password`
+
+It calls:
+- `POST /api/v1/auth/forgot-password`
+
+The backend returns a generic success message to avoid user enumeration.
 
 ## 📁 Project Structure
 
