@@ -116,19 +116,19 @@ export default function NewObservationPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/observations" className="text-gray-400 hover:text-gray-600">
+        <Link href="/observations" className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">New Observation</h1>
-          <p className="text-sm text-gray-500">Create a new audit observation</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Observation</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Create a new audit observation</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="label">Audit *</label>
@@ -197,7 +197,7 @@ export default function NewObservationPage() {
 
         {/* Risk & Classification */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Risk & Classification</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Risk & Classification</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Risk Rating *</label>
@@ -214,7 +214,7 @@ export default function NewObservationPage() {
 
         {/* Root Cause & Recommendation */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Analysis & Recommendations</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Analysis & Recommendations</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Risk</label>
@@ -250,7 +250,7 @@ export default function NewObservationPage() {
 
         {/* Management Response */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Management Response</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Management Response</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Management Response</label>
@@ -276,7 +276,7 @@ export default function NewObservationPage() {
 
         {/* Assignment */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Assignment & Timeline</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Assignment & Timeline</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Owner</label>
