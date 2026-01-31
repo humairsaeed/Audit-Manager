@@ -218,7 +218,7 @@ export default function ReportsPage() {
             <p className={clsx(
               'font-medium',
               activeReport === report.id
-                ? 'text-primary-800 dark:text-primary-100'
+                ? 'text-primary-900 dark:text-white'
                 : 'text-gray-900 dark:text-gray-100'
             )}>{report.label}</p>
             <p className={clsx(
