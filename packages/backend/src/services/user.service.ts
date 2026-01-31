@@ -28,8 +28,8 @@ export class UserService {
     });
 
     if (existingUser) {
-      // If user was soft-deleted, we can reactivate/recreate them
-      if (existingUser.deletedAt) {
+      // If user was soft-deleted or pending activation, reactivate/recreate them
+      if (existingUser.deletedAt || existingUser.status === 'PENDING_ACTIVATION') {
         // Hash the new password
         const passwordHash = await AuthService.hashPassword(data.password);
 
@@ -59,7 +59,8 @@ export class UserService {
             department: data.department,
             title: data.title,
             phone: data.phone,
-            status: 'PENDING_ACTIVATION',
+            status: 'ACTIVE',
+            emailVerified: true,
             deletedAt: null,
             createdById,
             mustChangePassword: true,
@@ -136,8 +137,10 @@ export class UserService {
         department: data.department,
         title: data.title,
         phone: data.phone,
-        status: 'PENDING_ACTIVATION',
+        status: 'ACTIVE',
+        emailVerified: true,
         createdById,
+        mustChangePassword: true,
         roles: {
           create: data.roleIds.map((roleId) => ({
             roleId,

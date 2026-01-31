@@ -17,20 +17,20 @@ import { useAuthStore } from '@/stores/auth';
 import clsx from 'clsx';
 
 const riskColors: Record<string, string> = {
-  CRITICAL: 'bg-red-100 text-red-800',
-  HIGH: 'bg-orange-100 text-orange-800',
-  MEDIUM: 'bg-yellow-100 text-yellow-800',
-  LOW: 'bg-green-100 text-green-800',
-  INFORMATIONAL: 'bg-gray-100 text-gray-800',
+  CRITICAL: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+  MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+  LOW: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  INFORMATIONAL: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
 };
 
 const statusColors: Record<string, string> = {
-  OPEN: 'bg-blue-100 text-blue-800',
-  IN_PROGRESS: 'bg-purple-100 text-purple-800',
-  EVIDENCE_SUBMITTED: 'bg-cyan-100 text-cyan-800',
-  UNDER_REVIEW: 'bg-amber-100 text-amber-800',
-  REJECTED: 'bg-red-100 text-red-800',
-  CLOSED: 'bg-green-100 text-green-800',
+  OPEN: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  IN_PROGRESS: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+  EVIDENCE_SUBMITTED: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+  REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  CLOSED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
 };
 
 type TabType = 'owned' | 'reviewing' | 'overdue';
@@ -175,8 +175,8 @@ export default function MyObservationsPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Observations</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Observations</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Observations assigned to you or pending your review
         </p>
       </div>
@@ -191,12 +191,12 @@ export default function MyObservationsPage() {
           )}
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <ClockIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <ClockIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{ownedCount}</p>
-              <p className="text-sm text-gray-500">Assigned to Me</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{ownedCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Assigned to Me</p>
             </div>
           </div>
         </button>
@@ -209,12 +209,12 @@ export default function MyObservationsPage() {
           )}
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-purple-600" />
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <CheckCircleIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{reviewingCount}</p>
-              <p className="text-sm text-gray-500">Pending My Review</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{reviewingCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Pending My Review</p>
             </div>
           </div>
         </button>
@@ -227,12 +227,12 @@ export default function MyObservationsPage() {
           )}
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+              <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{overdueCount}</p>
-              <p className="text-sm text-gray-500">Overdue</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{overdueCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Overdue</p>
             </div>
           </div>
         </button>
@@ -240,7 +240,7 @@ export default function MyObservationsPage() {
 
       {/* Tab Content Title */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-gray-900">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
           {activeTab === 'owned' && 'Observations Assigned to Me'}
           {activeTab === 'reviewing' && 'Observations Pending My Review'}
           {activeTab === 'overdue' && 'Overdue Observations'}
@@ -273,7 +273,7 @@ export default function MyObservationsPage() {
             onClick={() => setShowFilters(!showFilters)}
             className={clsx(
               'btn btn-secondary',
-              showFilters && 'bg-primary-50 text-primary-700'
+              showFilters && 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
             )}
           >
             <FunnelIcon className="h-5 w-5 mr-2" />
@@ -287,7 +287,7 @@ export default function MyObservationsPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="label">Audit</label>
               <select
@@ -384,7 +384,7 @@ export default function MyObservationsPage() {
                   setSearch('');
                   setPage(1);
                 }}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
               >
                 Clear all filters
               </button>
@@ -398,11 +398,11 @@ export default function MyObservationsPage() {
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-500">Loading observations...</p>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading observations...</p>
           </div>
         ) : filteredObservations.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400">
               {activeTab === 'owned' && 'No observations assigned to you'}
               {activeTab === 'reviewing' && 'No observations pending your review'}
               {activeTab === 'overdue' && 'No overdue observations'}
@@ -411,30 +411,30 @@ export default function MyObservationsPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Observation
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Audit
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Risk
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Due Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Days Remaining
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredObservations.map((obs: any) => {
                     const targetDate = new Date(obs.targetDate);
                     const today = new Date();
@@ -442,17 +442,17 @@ export default function MyObservationsPage() {
                     const isOverdue = daysRemaining < 0 && obs.status !== 'CLOSED';
 
                     return (
-                      <tr key={obs.id} className="hover:bg-gray-50">
+                      <tr key={obs.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <td className="px-6 py-4">
                           <Link href={`/observations/${obs.id}`} className="block">
-                            <p className="text-sm font-medium text-gray-900 hover:text-primary-600">
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-primary-600">
                               {obs.title}
                             </p>
-                            <p className="text-xs text-gray-500">{obs.globalSequence}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{obs.globalSequence}</p>
                           </Link>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900">{obs.audit?.name}</p>
+                          <p className="text-sm text-gray-900 dark:text-gray-100">{obs.audit?.name}</p>
                         </td>
                         <td className="px-6 py-4">
                           <span className={clsx('badge', riskColors[obs.riskRating])}>
@@ -465,22 +465,22 @@ export default function MyObservationsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <p className={clsx('text-sm', isOverdue ? 'text-red-600 font-medium' : 'text-gray-900')}>
+                          <p className={clsx('text-sm', isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-900 dark:text-gray-100')}>
                             {targetDate.toLocaleDateString()}
                           </p>
                         </td>
                         <td className="px-6 py-4">
                           {obs.status === 'CLOSED' ? (
-                            <span className="text-sm text-green-600">Completed</span>
+                            <span className="text-sm text-green-600 dark:text-green-400">Completed</span>
                           ) : isOverdue ? (
-                            <span className="text-sm text-red-600 font-medium">
+                            <span className="text-sm text-red-600 dark:text-red-400 font-medium">
                               {Math.abs(daysRemaining)} days overdue
                             </span>
                           ) : (
                             <span className={clsx('text-sm', {
-                              'text-red-600 font-medium': daysRemaining <= 3,
-                              'text-orange-600': daysRemaining <= 7,
-                              'text-gray-600': daysRemaining > 7,
+                              'text-red-600 dark:text-red-400 font-medium': daysRemaining <= 3,
+                              'text-orange-600 dark:text-orange-400': daysRemaining <= 7,
+                              'text-gray-600 dark:text-gray-400': daysRemaining > 7,
                             })}>
                               {daysRemaining} days
                             </span>
@@ -495,8 +495,8 @@ export default function MyObservationsPage() {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <p className="text-sm text-gray-500">
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
                 </p>
@@ -508,7 +508,7 @@ export default function MyObservationsPage() {
                   >
                     <ChevronLeftIcon className="h-5 w-5" />
                   </button>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
                     Page {pagination.page} of {pagination.totalPages}
                   </span>
                   <button
