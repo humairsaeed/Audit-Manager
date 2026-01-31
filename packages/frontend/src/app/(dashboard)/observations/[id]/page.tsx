@@ -25,21 +25,21 @@ import { useAuthStore, ROLES } from '@/stores/auth';
 import clsx from 'clsx';
 
 const riskColors: Record<string, string> = {
-  CRITICAL: 'bg-red-100 text-red-800 border-red-300',
-  HIGH: 'bg-orange-100 text-orange-800 border-orange-300',
-  MEDIUM: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  LOW: 'bg-green-100 text-green-800 border-green-300',
-  INFORMATIONAL: 'bg-gray-100 text-gray-800 border-gray-300',
+  CRITICAL: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700',
+  HIGH: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700',
+  MEDIUM: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700',
+  LOW: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700',
+  INFORMATIONAL: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600',
 };
 
 const statusColors: Record<string, string> = {
-  OPEN: 'bg-blue-100 text-blue-800',
-  IN_PROGRESS: 'bg-purple-100 text-purple-800',
-  EVIDENCE_SUBMITTED: 'bg-cyan-100 text-cyan-800',
-  UNDER_REVIEW: 'bg-amber-100 text-amber-800',
-  REJECTED: 'bg-red-100 text-red-800',
-  CLOSED: 'bg-green-100 text-green-800',
-  OVERDUE: 'bg-red-100 text-red-800',
+  OPEN: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  IN_PROGRESS: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+  EVIDENCE_SUBMITTED: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+  REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  CLOSED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  OVERDUE: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const statusTransitions: Record<string, { label: string; action: string; color: string }[]> = {
@@ -267,9 +267,9 @@ export default function ObservationDetailPage() {
   if (error || !observation) {
     return (
       <div className="text-center py-12">
-        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500" />
-        <h3 className="mt-2 text-lg font-medium text-gray-900">Observation not found</h3>
-        <p className="mt-1 text-sm text-gray-500">The observation you're looking for doesn't exist.</p>
+        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500 dark:text-red-400" />
+        <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">Observation not found</h3>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">The observation you're looking for doesn't exist.</p>
         <Link href="/observations" className="btn btn-primary mt-4">
           Back to Observations
         </Link>
@@ -301,22 +301,22 @@ export default function ObservationDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <Link href="/observations" className="mt-1 text-gray-400 hover:text-gray-600">
+          <Link href="/observations" className="mt-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">{observation.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{observation.title}</h1>
               <span className={clsx('badge', statusColors[observation.status])}>
                 {observation.status.replace(/_/g, ' ')}
               </span>
               {isOverdue && (
-                <span className="badge bg-red-100 text-red-800 ring-2 ring-red-500">
+                <span className="badge bg-red-100 text-red-800 ring-2 ring-red-500 dark:bg-red-900/30 dark:text-red-400">
                   OVERDUE
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {observation.globalSequence}
               {observation.externalReference && ` • ${observation.externalReference}`}
             </p>
@@ -347,8 +347,8 @@ export default function ObservationDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Description</h2>
-            <p className="text-gray-700 whitespace-pre-wrap">{observation.description}</p>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Description</h2>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.description}</p>
           </div>
 
           {/* Analysis & Recommendations */}
@@ -356,20 +356,20 @@ export default function ObservationDetailPage() {
             <div className="card p-6">
               {observation.impact && (
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Risk</h2>
-                  <p className="text-gray-700 whitespace-pre-wrap">{observation.impact}</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Risk</h2>
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.impact}</p>
                 </div>
               )}
               {observation.recommendation && (
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Recommendation</h2>
-                  <p className="text-gray-700 whitespace-pre-wrap">{observation.recommendation}</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Recommendation</h2>
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.recommendation}</p>
                 </div>
               )}
               {observation.rootCause && (
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Root Cause</h2>
-                  <p className="text-gray-700 whitespace-pre-wrap">{observation.rootCause}</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Root Cause</h2>
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.rootCause}</p>
                 </div>
               )}
             </div>
@@ -378,23 +378,23 @@ export default function ObservationDetailPage() {
           {/* Management Response */}
           {observation.managementResponse && (
             <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Management Response</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{observation.managementResponse}</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Management Response</h2>
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.managementResponse}</p>
             </div>
           )}
 
           {/* Action Plan */}
           {observation.correctiveActionPlan && (
             <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Action Plan</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{observation.correctiveActionPlan}</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Action Plan</h2>
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.correctiveActionPlan}</p>
             </div>
           )}
 
           {/* Evidence Section */}
           <div className="card p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 <PaperClipIcon className="inline h-5 w-5 mr-2" />
                 Evidence
               </h2>
@@ -409,41 +409,41 @@ export default function ObservationDetailPage() {
             {evidenceList && evidenceList.length > 0 ? (
               <div className="space-y-3">
                 {evidenceList.map((evidence: any) => (
-                  <div key={evidence.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={evidence.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <PaperClipIcon className="h-5 w-5 text-gray-400" />
+                      <PaperClipIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{evidence.fileName}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{evidence.fileName}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {evidence.description} - v{evidence.version} - {new Date(evidence.uploadedAt || evidence.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={clsx('badge text-xs', {
-                        'bg-yellow-100 text-yellow-800': evidence.status === 'PENDING_REVIEW',
-                        'bg-green-100 text-green-800': evidence.status === 'APPROVED',
-                        'bg-red-100 text-red-800': evidence.status === 'REJECTED',
+                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': evidence.status === 'PENDING_REVIEW',
+                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': evidence.status === 'APPROVED',
+                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': evidence.status === 'REJECTED',
                       })}>
                         {evidence.status.replace(/_/g, ' ')}
                       </span>
                       <button
                         onClick={() => handlePreviewEvidence(evidence.id)}
                         disabled={previewLoading}
-                        className="text-primary-600 hover:text-primary-700 text-sm"
+                        className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
                       >
                         View
                       </button>
                       <button
                         onClick={() => handleDownloadEvidence(evidence.id)}
-                        className="text-primary-600 hover:text-primary-700 text-sm"
+                        className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
                       >
                         Download
                       </button>
                       {(isOwner || canEdit || evidence.uploadedById === user?.id) && observation.status !== 'CLOSED' && (
                         <button
                           onClick={() => deleteEvidenceMutation.mutate(evidence.id)}
-                          className="text-red-600 hover:text-red-700 text-sm"
+                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm"
                         >
                           Delete
                         </button>
@@ -453,14 +453,14 @@ export default function ObservationDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">No evidence uploaded yet</p>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">No evidence uploaded yet</p>
             )}
           </div>
 
           {/* Comments Section */}
           <div className="card p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 <ChatBubbleLeftRightIcon className="inline h-5 w-5 mr-2" />
                 Comments
               </h2>
@@ -472,21 +472,21 @@ export default function ObservationDetailPage() {
             {observation.comments && observation.comments.length > 0 ? (
               <div className="space-y-4">
                 {observation.comments.map((comment: any) => (
-                  <div key={comment.id} className="border-l-2 border-gray-200 pl-4">
+                  <div key={comment.id} className="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {comment.user?.displayName || `${comment.user?.firstName} ${comment.user?.lastName}`}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(comment.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700">{comment.content}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{comment.content}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">No comments yet</p>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">No comments yet</p>
             )}
           </div>
         </div>
@@ -495,14 +495,14 @@ export default function ObservationDetailPage() {
         <div className="space-y-6">
           {/* Risk Rating Card */}
           <div className={clsx('card p-6 border-2', riskColors[observation.riskRating])}>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Rating</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Risk Rating</h3>
             <p className="text-2xl font-bold">{observation.riskRating}</p>
           </div>
 
           {/* Status Actions */}
           {filteredTransitions.length > 0 && (
             <div className="card p-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Actions</h3>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Actions</h3>
               <div className="space-y-2">
                 {filteredTransitions.map((transition) => (
                   <button
@@ -523,25 +523,25 @@ export default function ObservationDetailPage() {
 
           {/* Details Card */}
           <div className="card p-6">
-            <h3 className="text-sm font-medium text-gray-900 mb-4">Details</h3>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Details</h3>
             <dl className="space-y-4">
               <div>
-                <dt className="text-sm text-gray-500 flex items-center gap-2">
+                <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                   <ClockIcon className="h-4 w-4" />
                   Due Date
                 </dt>
-                <dd className={clsx('text-sm font-medium', isOverdue ? 'text-red-600' : 'text-gray-900')}>
+                <dd className={clsx('text-sm font-medium', isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100')}>
                   {new Date(observation.targetDate).toLocaleDateString()}
                   {isOverdue && ' (Overdue)'}
                 </dd>
               </div>
 
               <div>
-                <dt className="text-sm text-gray-500 flex items-center gap-2">
+                <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                   <UserIcon className="h-4 w-4" />
                   Owner
                 </dt>
-                <dd className="text-sm font-medium text-gray-900">
+                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {observation.owner?.displayName || observation.owner?.firstName
                     ? `${observation.owner.firstName} ${observation.owner.lastName}`
                     : 'Unassigned'}
@@ -550,11 +550,11 @@ export default function ObservationDetailPage() {
 
               {observation.reviewer && (
                 <div>
-                  <dt className="text-sm text-gray-500 flex items-center gap-2">
+                  <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                     <CheckCircleIcon className="h-4 w-4" />
                     Reviewer
                   </dt>
-                  <dd className="text-sm font-medium text-gray-900">
+                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {observation.reviewer.displayName ||
                       `${observation.reviewer.firstName} ${observation.reviewer.lastName}`}
                   </dd>
@@ -562,9 +562,9 @@ export default function ObservationDetailPage() {
               )}
 
               <div>
-                <dt className="text-sm text-gray-500">Audit</dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  <Link href={`/audits/${observation.auditId}`} className="text-primary-600 hover:text-primary-700">
+                <dt className="text-sm text-gray-500 dark:text-gray-400">Audit</dt>
+                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <Link href={`/audits/${observation.auditId}`} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                     {observation.audit?.name}
                   </Link>
                 </dd>
@@ -572,31 +572,31 @@ export default function ObservationDetailPage() {
 
               {observation.entity && (
                 <div>
-                  <dt className="text-sm text-gray-500">Entity</dt>
-                  <dd className="text-sm font-medium text-gray-900">{observation.entity.name}</dd>
+                  <dt className="text-sm text-gray-500 dark:text-gray-400">Entity</dt>
+                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{observation.entity.name}</dd>
                 </div>
               )}
 
               {observation.department && (
                 <div>
-                  <dt className="text-sm text-gray-500">Department</dt>
-                  <dd className="text-sm font-medium text-gray-900">{observation.department}</dd>
+                  <dt className="text-sm text-gray-500 dark:text-gray-400">Department</dt>
+                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{observation.department}</dd>
                 </div>
               )}
 
               {observation.category && (
                 <div>
-                  <dt className="text-sm text-gray-500">Category</dt>
-                  <dd className="text-sm font-medium text-gray-900">{observation.category}</dd>
+                  <dt className="text-sm text-gray-500 dark:text-gray-400">Category</dt>
+                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{observation.category}</dd>
                 </div>
               )}
 
               <div>
-                <dt className="text-sm text-gray-500 flex items-center gap-2">
+                <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4" />
                   Created
                 </dt>
-                <dd className="text-sm font-medium text-gray-900">
+                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {new Date(observation.createdAt).toLocaleDateString()}
                 </dd>
               </div>
@@ -606,22 +606,22 @@ export default function ObservationDetailPage() {
           {/* History */}
           {observation.statusHistory && observation.statusHistory.length > 0 && (
             <div className="card p-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">Status History</h3>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Status History</h3>
               <div className="space-y-3">
                 {observation.statusHistory.slice(0, 5).map((history: any, index: number) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <div className="w-2 h-2 mt-2 rounded-full bg-gray-400" />
+                      <div className="w-2 h-2 mt-2 rounded-full bg-gray-400 dark:bg-gray-500" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-900">
+                      <p className="text-sm text-gray-900 dark:text-gray-100">
                         {history.fromStatus} → {history.toStatus}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(history.changedAt).toLocaleString()}
                       </p>
                       {history.changedByName && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           by {history.changedByName}
                         </p>
                       )}
@@ -639,8 +639,8 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowUploadModal(false)} />
-            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Evidence</h3>
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Upload Evidence</h3>
               <div className="space-y-4">
                 <div>
                   <label className="label">File</label>
@@ -683,8 +683,8 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowCommentModal(false)} />
-            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Comment</h3>
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Add Comment</h3>
               <div className="space-y-4">
                 <div>
                   <textarea
@@ -717,9 +717,9 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setPreviewEvidence(null)} />
-            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full p-6">
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {previewEvidence.fileName || 'Evidence Preview'}
                 </h3>
                 <button onClick={() => setPreviewEvidence(null)} className="btn btn-secondary btn-sm">
@@ -738,10 +738,10 @@ export default function ObservationDetailPage() {
                 <iframe
                   src={previewEvidence.url}
                   title={previewEvidence.fileName || 'Evidence'}
-                  className="w-full h-[70vh] border rounded"
+                  className="w-full h-[70vh] border rounded dark:border-gray-700"
                 />
               ) : (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   Preview not available for this file type.
                   <div className="mt-3 flex items-center justify-center gap-2">
                     <button
