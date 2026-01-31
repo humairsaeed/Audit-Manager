@@ -211,20 +211,20 @@ export default function ReportsPage() {
             className={clsx(
               'px-4 py-3 rounded-lg text-left min-w-[180px] transition-colors',
               activeReport === report.id
-                ? 'bg-primary-100 border-2 border-primary-500 dark:bg-primary-900/50 dark:border-primary-400'
+                ? 'bg-primary-600 border-2 border-primary-700 dark:bg-primary-700 dark:border-primary-500'
                 : 'bg-white border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
             )}
           >
             <p className={clsx(
               'font-medium',
               activeReport === report.id
-                ? 'text-primary-900 dark:text-white'
+                ? 'text-white'
                 : 'text-gray-900 dark:text-gray-100'
             )}>{report.label}</p>
             <p className={clsx(
               'text-xs',
               activeReport === report.id
-                ? 'text-primary-600 dark:text-primary-300'
+                ? 'text-primary-100'
                 : 'text-gray-500 dark:text-gray-400'
             )}>{report.description}</p>
           </button>
