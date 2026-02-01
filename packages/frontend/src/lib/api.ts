@@ -512,8 +512,8 @@ export const usersApi = {
     return response.data;
   },
 
-  resetPassword: async (userId: string) => {
-    const response = await api.post<ApiResponse>(`/users/${userId}/reset-password`);
+  resetPassword: async (userId: string, options?: { mode?: 'email' | 'direct'; password?: string }) => {
+    const response = await api.post<ApiResponse>(`/users/${userId}/reset-password`, options || {});
     return response.data;
   },
 };

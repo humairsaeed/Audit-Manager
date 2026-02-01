@@ -303,6 +303,36 @@ export class AuthService {
   }
 
   /**
+   * Admin sets a new password directly (no email)
+   */
+  static async adminSetPassword(
+    userId: string,
+    newPassword: string
+  ): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw AppError.notFound('User');
+    }
+
+    this.validatePassword(newPassword);
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        mustChangePassword: true,
+        lastPasswordChangeAt: new Date(),
+        failedLoginAttempts: 0,
+        lockoutUntil: null,
+      },
+    });
+
+    await prisma.session.deleteMany({ where: { userId } });
+    logger.info(`Password reset directly by admin for user: ${user.email}`);
+  }
+
+  /**
    * Reset password with token
    */
   static async resetPassword(token: string, newPassword: string): Promise<void> {

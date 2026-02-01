@@ -5,7 +5,7 @@ import { UserService } from '../services/user.service.js';
 import { AuthService } from '../services/auth.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission, requireRole } from '../middleware/rbac.middleware.js';
-import { asyncHandler } from '../middleware/error.middleware.js';
+import { asyncHandler, AppError } from '../middleware/error.middleware.js';
 import { AuthenticatedRequest, ApiResponse, SYSTEM_ROLES, RESOURCES, ACTIONS, CreateUserDTO } from '../types/index.js';
 import { StorageService } from '../services/storage.service.js';
 import { prisma } from '../lib/prisma.js';
@@ -445,15 +445,28 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
+    const { mode, password } = z.object({
+      mode: z.enum(['email', 'direct']).optional(),
+      password: z.string().optional(),
+    }).parse(req.body || {});
 
-    await AuthService.requestPasswordResetByAdmin(id, {
-      id: authReq.user.userId,
-      email: authReq.user.email,
-    });
+    if (mode === 'direct') {
+      if (!password) {
+        throw AppError.badRequest('Password is required for direct reset');
+      }
+      await AuthService.adminSetPassword(id, password);
+    } else {
+      await AuthService.requestPasswordResetByAdmin(id, {
+        id: authReq.user.userId,
+        email: authReq.user.email,
+      });
+    }
 
     const response: ApiResponse = {
       success: true,
-      message: 'Password reset link sent to user',
+      message: mode === 'direct'
+        ? 'Password updated successfully'
+        : 'Password reset link sent to user',
     };
 
     res.json(response);

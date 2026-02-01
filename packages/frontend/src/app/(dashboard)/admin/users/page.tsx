@@ -23,7 +23,7 @@ interface User {
   displayName?: string;
   avatarUrl?: string | null;
   status: string;
-  roles: Array<{ id: string; name: string; displayName: string }>;
+  roles: Array<{ id: string; name: string; displayName: string } | { role: { id: string; name: string; displayName: string } }>;
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -120,11 +120,11 @@ export default function UsersPage() {
 
   // Reset password mutation
   const resetPasswordMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      return usersApi.resetPassword(userId);
+    mutationFn: async (params: { userId: string; mode?: 'email' | 'direct'; password?: string }) => {
+      return usersApi.resetPassword(params.userId, { mode: params.mode, password: params.password });
     },
     onSuccess: () => {
-      toast.success('Password reset email sent');
+      toast.success('Password reset action completed');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to reset password');
@@ -153,7 +153,7 @@ export default function UsersPage() {
       firstName: user.firstName,
       lastName: user.lastName,
       displayName: user.displayName || '',
-      roleIds: user.roles.map((r) => r.id),
+      roleIds: user.roles.map((r: any) => (r.role ? r.role.id : r.id)),
       password: '',
       sendInvite: false,
     });
@@ -167,8 +167,22 @@ export default function UsersPage() {
   };
 
   const handleResetPassword = async (user: User) => {
+    const input = window.prompt(
+      `Enter a temporary password for ${user.email}.\nLeave blank to send a reset email link.`,
+      ''
+    );
+
+    if (input === null) {
+      return;
+    }
+
+    if (input.trim().length > 0) {
+      resetPasswordMutation.mutate({ userId: user.id, mode: 'direct', password: input.trim() });
+      return;
+    }
+
     if (window.confirm(`Send password reset email to ${user.email}?`)) {
-      resetPasswordMutation.mutate(user.id);
+      resetPasswordMutation.mutate({ userId: user.id, mode: 'email' });
     }
   };
 
@@ -312,9 +326,9 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {user.roles.map((role) => (
-                          <span key={role.id} className="badge bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs">
-                            {role.displayName}
+                        {user.roles.map((role: any) => (
+                          <span key={role.role?.id || role.id} className="badge bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs">
+                            {role.role?.displayName || role.displayName}
                           </span>
                         ))}
                       </div>
