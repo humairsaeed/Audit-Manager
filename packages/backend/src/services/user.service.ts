@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { AuthService } from './auth.service.js';
 import { AuditLogService } from '../middleware/audit-log.middleware.js';
+import { StorageService } from './storage.service.js';
 import {
   CreateUserDTO,
   UpdateUserDTO,
@@ -285,10 +286,19 @@ export class UserService {
       orderBy: { [sortBy]: sortOrder },
     });
 
+    const usersWithAvatar = await Promise.all(
+      users.map(async (user) => {
+        const avatarUrl = user.avatar
+          ? await StorageService.getSignedUrl(user.avatar, 3600).catch(() => null)
+          : null;
+        return { ...user, avatarUrl };
+      })
+    );
+
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data: users,
+      data: usersWithAvatar,
       pagination: {
         page,
         limit,

@@ -188,7 +188,8 @@ export class AuditService {
       leadAuditorId?: string;
       periodStart?: Date;
       periodEnd?: Date;
-    }
+    },
+    userContext?: { userId: string; roles: string[] }
   ): Promise<PaginatedResponse<AuditWithRelations>> {
     const { page, limit, sortBy = 'createdAt', sortOrder = 'desc' } = params;
     const skip = (page - 1) * limit;
@@ -233,6 +234,27 @@ export class AuditService {
         (where.AND as Prisma.AuditWhereInput[]).push({
           periodStart: { lte: filters.periodEnd },
         });
+      }
+    }
+
+    if (userContext?.userId && userContext.roles?.length) {
+      const privilegedRoles = new Set([
+        'system_admin',
+        'audit_admin',
+        'compliance_manager',
+        'auditor',
+      ]);
+      const limitedRoles = new Set(['observation_owner', 'reviewer', 'executive']);
+      const hasPrivilegedRole = userContext.roles.some((role) => privilegedRoles.has(role));
+      const hasLimitedRole = userContext.roles.some((role) => limitedRoles.has(role));
+
+      if (hasLimitedRole && !hasPrivilegedRole) {
+        where.observations = {
+          some: {
+            deletedAt: null,
+            OR: [{ ownerId: userContext.userId }, { reviewerId: userContext.userId }],
+          },
+        };
       }
     }
 

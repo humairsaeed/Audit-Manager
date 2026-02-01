@@ -21,6 +21,7 @@ interface User {
   firstName: string;
   lastName: string;
   displayName?: string;
+  avatarUrl?: string | null;
   status: string;
   roles: Array<{ id: string; name: string; displayName: string }>;
   createdAt: string;
@@ -287,12 +288,20 @@ export default function UsersPage() {
                   <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                          <span className="text-primary-600 dark:text-primary-400 font-medium">
-                            {user.firstName?.[0]}
-                            {user.lastName?.[0]}
-                          </span>
-                        </div>
+                        {user.avatarUrl ? (
+                          <img
+                            src={user.avatarUrl}
+                            alt={user.displayName || `${user.firstName} ${user.lastName}`}
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                            <span className="text-primary-600 dark:text-primary-400 font-medium">
+                              {user.firstName?.[0]}
+                              {user.lastName?.[0]}
+                            </span>
+                          </div>
+                        )}
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">
                             {user.displayName || `${user.firstName} ${user.lastName}`}

@@ -61,6 +61,7 @@ router.get(
   '/',
   requirePermission(RESOURCES.AUDIT, ACTIONS.READ),
   asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const sortBy = (req.query.sortBy as string) || 'createdAt';
@@ -78,7 +79,8 @@ router.get(
 
     const result = await AuditService.listAudits(
       { page, limit, sortBy, sortOrder },
-      filters
+      filters,
+      { userId: authReq.user.userId, roles: authReq.user.roles }
     );
 
     const response: ApiResponse = {
