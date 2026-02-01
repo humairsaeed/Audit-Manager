@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
 import { UserService } from '../services/user.service.js';
+import { AuthService } from '../services/auth.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission, requireRole } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
@@ -428,6 +429,31 @@ router.post(
       success: true,
       data: { user },
       message: 'User unlocked successfully',
+    };
+
+    res.json(response);
+  })
+);
+
+/**
+ * @route POST /api/v1/users/:id/reset-password
+ * @desc Send password reset link to user (admin initiated)
+ */
+router.post(
+  '/:id/reset-password',
+  requireRole(SYSTEM_ROLES.SYSTEM_ADMIN, SYSTEM_ROLES.AUDIT_ADMIN),
+  asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    const { id } = req.params;
+
+    await AuthService.requestPasswordResetByAdmin(id, {
+      id: authReq.user.userId,
+      email: authReq.user.email,
+    });
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'Password reset link sent to user',
     };
 
     res.json(response);

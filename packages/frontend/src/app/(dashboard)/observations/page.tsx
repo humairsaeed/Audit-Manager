@@ -82,8 +82,27 @@ export default function ObservationsPage() {
   const { data: auditsData } = useQuery({
     queryKey: ['audits-filter'],
     queryFn: async () => {
-      const response = await auditsApi.list({ limit: 100 });
-      return response.data?.data || [];
+      const allAudits: any[] = [];
+      let currentPage = 1;
+      let hasNext = true;
+
+      while (hasNext) {
+        const response = await auditsApi.list({ page: currentPage, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
+        const payload = response.data;
+        const audits = payload?.data || [];
+        allAudits.push(...audits);
+        const pagination = payload?.pagination;
+        hasNext = Boolean(pagination?.hasNext);
+        currentPage += 1;
+        if (currentPage > 50) break;
+      }
+
+      const seen = new Set<string>();
+      return allAudits.filter((audit) => {
+        if (!audit?.id || seen.has(audit.id)) return false;
+        seen.add(audit.id);
+        return true;
+      });
     },
   });
 

@@ -23,6 +23,7 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const filters = {
       entityId: req.query.entityId as string,
+      auditId: req.query.auditId as string,
     };
 
     const agingData = await DashboardService.getAgingReport(filters);
@@ -56,6 +57,7 @@ router.post(
       filters: z
         .object({
           entityId: z.string().optional(),
+          auditId: z.string().optional(),
           auditType: z.string().optional(),
           auditIds: z.array(z.string()).optional(),
           entityIds: z.array(z.string()).optional(),
@@ -79,7 +81,7 @@ router.post(
 
     const filters: ReportFilters = {
       auditType: payload.filters?.auditType as any,
-      auditIds: payload.filters?.auditIds,
+      auditIds: payload.filters?.auditIds ?? (payload.filters?.auditId ? [payload.filters.auditId] : undefined),
       entityIds: payload.filters?.entityIds,
       dateFrom,
       dateTo,
@@ -131,7 +133,7 @@ router.post(
       } else if (type === 'trends') {
         const trends = await DashboardService.getTrendData(12, {
           entityId: payload.filters?.entityId,
-          auditId: undefined,
+          auditId: payload.filters?.auditId,
         });
         const sheet = XLSX.utils.aoa_to_sheet([
           ['Month', 'Opened', 'Closed', 'Overdue'],
@@ -146,6 +148,7 @@ router.post(
       } else if (type === 'compliance') {
         const compliance = await DashboardService.getComplianceStatus({
           entityId: payload.filters?.entityId,
+          auditId: payload.filters?.auditId,
         });
         const sheet = XLSX.utils.aoa_to_sheet([
           ['Entity', 'Compliance Rate (%)', 'Total', 'Closed', 'Open'],
@@ -161,6 +164,7 @@ router.post(
       } else if (type === 'aging') {
         const aging = await DashboardService.getAgingReport({
           entityId: payload.filters?.entityId,
+          auditId: payload.filters?.auditId,
         });
         const sheet = XLSX.utils.aoa_to_sheet([
           ['Age Bucket', 'Critical', 'High', 'Medium', 'Low', 'Informational', 'Total'],
@@ -222,7 +226,7 @@ router.post(
     } else if (type === 'trends') {
       const trends = await DashboardService.getTrendData(12, {
         entityId: payload.filters?.entityId,
-        auditId: undefined,
+        auditId: payload.filters?.auditId,
       });
       doc.fontSize(14).text('Trends Analysis', { underline: true });
       doc.moveDown(0.5);
@@ -234,6 +238,7 @@ router.post(
     } else if (type === 'compliance') {
       const compliance = await DashboardService.getComplianceStatus({
         entityId: payload.filters?.entityId,
+        auditId: payload.filters?.auditId,
       });
       doc.fontSize(14).text('Compliance Status', { underline: true });
       doc.moveDown(0.5);
@@ -245,6 +250,7 @@ router.post(
     } else if (type === 'aging') {
       const aging = await DashboardService.getAgingReport({
         entityId: payload.filters?.entityId,
+        auditId: payload.filters?.auditId,
       });
       doc.fontSize(14).text('Aging Report', { underline: true });
       doc.moveDown(0.5);

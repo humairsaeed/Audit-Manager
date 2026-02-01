@@ -8,7 +8,7 @@ import {
   FunnelIcon,
   CalendarIcon,
 } from '@heroicons/react/24/outline';
-import { dashboardApi, reportsApi } from '@/lib/api';
+import { dashboardApi, reportsApi, auditsApi } from '@/lib/api';
 import clsx from 'clsx';
 
 type ReportType = 'summary' | 'trends' | 'compliance' | 'aging';
@@ -39,6 +39,34 @@ export default function ReportsPage() {
   const [filters, setFilters] = useState({
     entityId: '',
     auditType: '',
+    auditId: '',
+  });
+
+  const { data: auditsData } = useQuery({
+    queryKey: ['audits-report-filter'],
+    queryFn: async () => {
+      const allAudits: any[] = [];
+      let currentPage = 1;
+      let hasNext = true;
+
+      while (hasNext) {
+        const response = await auditsApi.list({ page: currentPage, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
+        const payload = response.data;
+        const audits = payload?.data || [];
+        allAudits.push(...audits);
+        const pagination = payload?.pagination;
+        hasNext = Boolean(pagination?.hasNext);
+        currentPage += 1;
+        if (currentPage > 50) break;
+      }
+
+      const seen = new Set<string>();
+      return allAudits.filter((audit) => {
+        if (!audit?.id || seen.has(audit.id)) return false;
+        seen.add(audit.id);
+        return true;
+      });
+    },
   });
 
   // Fetch executive summary
@@ -48,7 +76,9 @@ export default function ReportsPage() {
       const response = await dashboardApi.getExecutiveSummary({
         startDate: dateRange.start,
         endDate: dateRange.end,
-        ...filters,
+        auditIds: filters.auditId ? [filters.auditId] : undefined,
+        auditType: filters.auditType || undefined,
+        entityId: filters.entityId || undefined,
       });
       // Extract nested summary data
       return response.data?.summary || response.data;
@@ -58,11 +88,13 @@ export default function ReportsPage() {
 
   // Fetch trends data
   const { data: trendsData, isLoading: trendsLoading } = useQuery({
-    queryKey: ['report-trends', dateRange],
+    queryKey: ['report-trends', dateRange, filters],
     queryFn: async () => {
       const response = await dashboardApi.getTrends(6, {
         startDate: dateRange.start,
         endDate: dateRange.end,
+        auditId: filters.auditId || undefined,
+        entityId: filters.entityId || undefined,
       });
       // Extract nested trends data
       return response.data?.trends || response.data;
@@ -88,7 +120,10 @@ export default function ReportsPage() {
   const { data: complianceData, isLoading: complianceLoading } = useQuery({
     queryKey: ['report-compliance', dateRange, filters],
     queryFn: async () => {
-      const response = await dashboardApi.getComplianceStatus(filters);
+      const response = await dashboardApi.getComplianceStatus({
+        entityId: filters.entityId || undefined,
+        auditId: filters.auditId || undefined,
+      });
       // Return nested data
       return response.data || { entities: [] };
     },
@@ -99,7 +134,10 @@ export default function ReportsPage() {
   const { data: agingData, isLoading: agingLoading } = useQuery({
     queryKey: ['report-aging', filters],
     queryFn: async () => {
-      const response = await reportsApi.getAging(filters);
+      const response = await reportsApi.getAging({
+        entityId: filters.entityId || undefined,
+        auditId: filters.auditId || undefined,
+      });
       // Return nested data
       return (response.data || { buckets: [] }) as { buckets: any[] };
     },
@@ -112,7 +150,12 @@ export default function ReportsPage() {
         type: activeReport,
         format,
         dateRange,
-        filters,
+        filters: {
+          entityId: filters.entityId || undefined,
+          auditType: filters.auditType || undefined,
+          auditId: filters.auditId || undefined,
+          auditIds: filters.auditId ? [filters.auditId] : undefined,
+        },
       });
 
       const contentType = response.headers?.['content-type'] || '';
@@ -187,6 +230,18 @@ export default function ReportsPage() {
               className="input"
             />
           </div>
+          <select
+            value={filters.auditId}
+            onChange={(e) => setFilters({ ...filters, auditId: e.target.value })}
+            className="input"
+          >
+            <option value="">All Audits</option>
+            {auditsData?.map((audit: any) => (
+              <option key={audit.id} value={audit.id}>
+                {audit.name}
+              </option>
+            ))}
+          </select>
           <select
             value={filters.auditType}
             onChange={(e) => setFilters({ ...filters, auditType: e.target.value })}

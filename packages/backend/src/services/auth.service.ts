@@ -6,6 +6,7 @@ import { config } from '../config/index.js';
 import logger from '../lib/logger.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { AuditLogService } from '../middleware/audit-log.middleware.js';
+import { NotificationService } from './notification.service.js';
 import { TokenPair, JWTPayload, UserWithRoles } from '../types/index.js';
 
 export class AuthService {
@@ -277,17 +278,28 @@ export class AuthService {
       return 'If an account with that email exists, a password reset link has been sent';
     }
 
-    // Generate reset token (you would typically send this via email)
-    const resetToken = jwt.sign(
-      { userId: user.id, purpose: 'password_reset' },
-      config.jwt.secret,
-      { expiresIn: '1h' }
-    );
-
-    // In production, send email with reset link
+    const resetToken = this.generatePasswordResetToken(user.id);
+    await this.sendPasswordResetEmail(user, resetToken);
     logger.info(`Password reset requested for: ${email}`);
 
-    return resetToken; // In production, don't return this - send via email
+    return resetToken;
+  }
+
+  /**
+   * Request password reset by admin
+   */
+  static async requestPasswordResetByAdmin(
+    userId: string,
+    initiatedBy?: { id: string; email: string }
+  ): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw AppError.notFound('User');
+    }
+
+    const resetToken = this.generatePasswordResetToken(user.id);
+    await this.sendPasswordResetEmail(user, resetToken, initiatedBy?.email);
+    logger.info(`Password reset initiated by admin for user: ${user.email}`);
   }
 
   /**
@@ -426,6 +438,42 @@ export class AuthService {
    */
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 12);
+  }
+
+  private static generatePasswordResetToken(userId: string): string {
+    return jwt.sign(
+      { userId, purpose: 'password_reset' },
+      config.jwt.secret,
+      { expiresIn: '1h' }
+    );
+  }
+
+  private static async sendPasswordResetEmail(
+    user: { id: string; email: string; firstName: string; lastName: string; displayName?: string | null },
+    token: string,
+    initiatedBy?: string
+  ): Promise<void> {
+    const baseUrl =
+      process.env.FRONTEND_URL ||
+      config.app.corsOrigins[0] ||
+      'http://localhost:3000';
+    const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
+    const displayName =
+      user.displayName ||
+      `${user.firstName} ${user.lastName}`.trim() ||
+      user.email;
+
+    await NotificationService.sendNotification({
+      type: 'PASSWORD_RESET',
+      userId: user.id,
+      channels: ['EMAIL'],
+      data: {
+        email: user.email,
+        displayName,
+        resetUrl,
+        initiatedBy,
+      },
+    });
   }
 
   /**

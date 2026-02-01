@@ -114,6 +114,11 @@ export const authApi = {
     const response = await api.post<ApiResponse>('/auth/forgot-password', { email });
     return response.data;
   },
+
+  resetPassword: async (token: string, password: string) => {
+    const response = await api.post<ApiResponse>('/auth/reset-password', { token, password });
+    return response.data;
+  },
 };
 
 // Audits API

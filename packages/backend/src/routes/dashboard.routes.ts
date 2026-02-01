@@ -142,6 +142,7 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const filters = {
       entityId: req.query.entityId as string,
+      auditId: req.query.auditId as string,
     };
 
     const complianceStatus = await DashboardService.getComplianceStatus(filters);

@@ -27,6 +27,37 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, {
   emailBody: (data: Record<string, unknown>) => string;
   teamsMessage: (data: Record<string, unknown>) => TeamsMessage;
 }> = {
+  PASSWORD_RESET: {
+    subject: 'Reset Your Audit Management Password',
+    emailBody: (data) => `
+      <h2>Password Reset Requested</h2>
+      <p>Hello ${data.displayName || 'User'},</p>
+      <p>A password reset was requested for your account.</p>
+      ${data.initiatedBy ? `<p><strong>Requested by:</strong> ${data.initiatedBy}</p>` : ''}
+      <p>Click the link below to set a new password:</p>
+      <p><a href="${data.resetUrl}">Reset Password</a></p>
+      <p>This link will expire in 1 hour.</p>
+    `,
+    teamsMessage: (data) => ({
+      '@type': 'MessageCard',
+      '@context': 'http://schema.org/extensions',
+      themeColor: '1976D2',
+      summary: 'Password Reset Requested',
+      sections: [{
+        activityTitle: 'Password Reset Requested',
+        facts: [
+          { name: 'User', value: String(data.displayName || data.email || 'User') },
+          { name: 'Requested by', value: String(data.initiatedBy || 'System') },
+        ],
+        markdown: true,
+      }],
+      potentialAction: [{
+        '@type': 'OpenUri',
+        name: 'Reset Password',
+        targets: [{ os: 'default', uri: String(data.resetUrl) }],
+      }],
+    }),
+  },
   OBSERVATION_ASSIGNED: {
     subject: 'New Observation Assigned: {title}',
     emailBody: (data) => `

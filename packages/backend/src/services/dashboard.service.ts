@@ -688,7 +688,7 @@ export class DashboardService {
   /**
    * Get compliance status by entity
    */
-  static async getComplianceStatus(filters?: { entityId?: string }) {
+  static async getComplianceStatus(filters?: { entityId?: string; auditId?: string }) {
     // Get all active entities
     const entities = await prisma.entity.findMany({
       where: { isActive: true },
@@ -704,6 +704,7 @@ export class DashboardService {
       where: {
         deletedAt: null,
         entityId: filters?.entityId || undefined,
+        auditId: filters?.auditId || undefined,
       },
       _count: true,
     });
@@ -747,7 +748,7 @@ export class DashboardService {
   /**
    * Get aging report data
    */
-  static async getAgingReport(filters?: { entityId?: string }) {
+  static async getAgingReport(filters?: { entityId?: string; auditId?: string }) {
     const where: Prisma.ObservationWhereInput = {
       deletedAt: null,
       status: { not: 'CLOSED' },
@@ -755,6 +756,9 @@ export class DashboardService {
 
     if (filters?.entityId) {
       where.entityId = filters.entityId;
+    }
+    if (filters?.auditId) {
+      where.auditId = filters.auditId;
     }
 
     const observations = await prisma.observation.findMany({
