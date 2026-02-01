@@ -1,10 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import multer from 'multer';
 import { UserService } from '../services/user.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission, requireRole } from '../middleware/rbac.middleware.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
 import { AuthenticatedRequest, ApiResponse, SYSTEM_ROLES, RESOURCES, ACTIONS, CreateUserDTO } from '../types/index.js';
+import { StorageService } from '../services/storage.service.js';
+import { prisma } from '../lib/prisma.js';
 
 const router = Router();
 
@@ -33,6 +36,14 @@ const updateUserSchema = z.object({
 const assignRolesSchema = z.object({
   roleIds: z.array(z.string().uuid()).min(1),
   entityId: z.string().uuid().optional(),
+});
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 1,
+  },
 });
 
 // All routes require authentication
@@ -87,6 +98,161 @@ router.get(
     const response: ApiResponse = {
       success: true,
       data: { users },
+    };
+
+    res.json(response);
+  })
+);
+
+const ensureSelfOrAdmin = (authReq: AuthenticatedRequest, targetUserId: string) => {
+  if (
+    authReq.user.userId !== targetUserId &&
+    !authReq.user.roles?.includes(SYSTEM_ROLES.SYSTEM_ADMIN)
+  ) {
+    throw new Error('FORBIDDEN');
+  }
+};
+
+/**
+ * @route GET /api/v1/users/:id/avatar
+ * @desc Get user's avatar URL
+ */
+router.get(
+  '/:id/avatar',
+  requirePermission(RESOURCES.USER, ACTIONS.READ),
+  asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    const { id } = req.params;
+
+    try {
+      ensureSelfOrAdmin(authReq, id);
+    } catch {
+      return res.status(403).json({
+        success: false,
+        message: 'Permission denied',
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!user.avatar) {
+      return res.json({ success: true, data: { url: null } });
+    }
+
+    const url = await StorageService.getSignedUrl(user.avatar, 3600);
+    const response: ApiResponse = {
+      success: true,
+      data: { url },
+    };
+
+    res.json(response);
+  })
+);
+
+/**
+ * @route POST /api/v1/users/:id/avatar
+ * @desc Upload user avatar
+ */
+router.post(
+  '/:id/avatar',
+  requirePermission(RESOURCES.USER, ACTIONS.UPDATE),
+  upload.single('file'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    const { id } = req.params;
+
+    try {
+      ensureSelfOrAdmin(authReq, id);
+    } catch {
+      return res.status(403).json({
+        success: false,
+        message: 'Permission denied',
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded',
+      });
+    }
+
+    StorageService.validateFile(req.file);
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Only image files are allowed for avatars',
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const filePath = await StorageService.uploadFile(req.file, `users/${id}/avatar`);
+
+    const previousAvatar = user.avatar;
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { avatar: filePath },
+    });
+
+    if (previousAvatar && previousAvatar !== filePath) {
+      await StorageService.deleteFile(previousAvatar).catch(() => undefined);
+    }
+
+    const url = await StorageService.getSignedUrl(updated.avatar as string, 3600);
+    const response: ApiResponse = {
+      success: true,
+      data: { url },
+      message: 'Avatar updated successfully',
+    };
+
+    res.json(response);
+  })
+);
+
+/**
+ * @route DELETE /api/v1/users/:id/avatar
+ * @desc Remove user avatar
+ */
+router.delete(
+  '/:id/avatar',
+  requirePermission(RESOURCES.USER, ACTIONS.UPDATE),
+  asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    const { id } = req.params;
+
+    try {
+      ensureSelfOrAdmin(authReq, id);
+    } catch {
+      return res.status(403).json({
+        success: false,
+        message: 'Permission denied',
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (user.avatar) {
+      await StorageService.deleteFile(user.avatar).catch(() => undefined);
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: { avatar: null },
+    });
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'Avatar removed successfully',
     };
 
     res.json(response);

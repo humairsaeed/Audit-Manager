@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,6 +40,7 @@ type PasswordFormData = z.infer<typeof passwordSchema>;
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const {
     register: registerProfile,
@@ -90,6 +91,50 @@ export default function ProfilePage() {
     },
   });
 
+  const { data: avatarData } = useQuery({
+    queryKey: ['profile-avatar', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const response = await usersApi.getAvatar(user.id);
+      return response.data?.url ?? null;
+    },
+    enabled: !!user?.id,
+  });
+
+  const uploadAvatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      if (!user?.id) throw new Error('User not found');
+      return usersApi.uploadAvatar(user.id, file);
+    },
+    onSuccess: (response) => {
+      const url = response.data?.url;
+      if (user) {
+        setUser({ ...user, avatarUrl: url || null });
+      }
+      toast.success('Profile photo updated');
+      setAvatarFile(null);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to upload profile photo');
+    },
+  });
+
+  const deleteAvatarMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('User not found');
+      return usersApi.deleteAvatar(user.id);
+    },
+    onSuccess: () => {
+      if (user) {
+        setUser({ ...user, avatarUrl: null, avatar: undefined });
+      }
+      toast.success('Profile photo removed');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to remove profile photo');
+    },
+  });
+
   // Change password mutation
   const changePasswordMutation = useMutation({
     mutationFn: async (data: PasswordFormData) => {
@@ -112,6 +157,8 @@ export default function ProfilePage() {
     changePasswordMutation.mutate(data);
   };
 
+  const avatarUrl = user?.avatarUrl ?? avatarData ?? null;
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
@@ -125,17 +172,50 @@ export default function ProfilePage() {
       {/* Profile Card */}
       <div className="card p-6 mb-6">
         <div className="flex items-center gap-4">
-          <div className="h-20 w-20 rounded-full bg-primary-600 flex items-center justify-center">
-            <span className="text-2xl font-bold text-white">
-              {user?.firstName?.[0]}
-              {user?.lastName?.[0]}
-            </span>
+          <div className="h-20 w-20 rounded-full bg-primary-600 flex items-center justify-center overflow-hidden">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-2xl font-bold text-white">
+                {user?.firstName?.[0]}
+                {user?.lastName?.[0]}
+              </span>
+            )}
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {user?.displayName || `${user?.firstName} ${user?.lastName}`}
             </h2>
             <p className="text-gray-500 dark:text-gray-400">{user?.email}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <label className="btn btn-secondary btn-sm cursor-pointer">
+                Upload Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => avatarFile && uploadAvatarMutation.mutate(avatarFile)}
+                disabled={!avatarFile || uploadAvatarMutation.isPending}
+                className="btn btn-primary btn-sm"
+              >
+                {uploadAvatarMutation.isPending ? 'Uploading...' : 'Save Photo'}
+              </button>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => deleteAvatarMutation.mutate()}
+                  disabled={deleteAvatarMutation.isPending}
+                  className="btn btn-secondary btn-sm text-red-600"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2 mt-2">
               {user?.roles?.map((role) => (
                 <span

@@ -11,6 +11,8 @@ export interface User {
   firstName: string;
   lastName: string;
   displayName?: string;
+  avatar?: string;
+  avatarUrl?: string | null;
   department?: string;
   title?: string;
   roles: Array<{

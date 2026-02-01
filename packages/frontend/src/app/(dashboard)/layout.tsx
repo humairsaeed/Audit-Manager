@@ -207,11 +207,15 @@ export default function DashboardLayout({
               <Menu as="div" className="relative">
                 <Menu.Button className="-m-1.5 flex items-center p-1.5">
                   <span className="sr-only">Open user menu</span>
-                  <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {user?.firstName?.[0]}
-                      {user?.lastName?.[0]}
-                    </span>
+                  <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center overflow-hidden">
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-medium text-white">
+                        {user?.firstName?.[0]}
+                        {user?.lastName?.[0]}
+                      </span>
+                    )}
                   </div>
                   <span className="hidden lg:flex lg:items-center">
                     <span className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100" aria-hidden="true">

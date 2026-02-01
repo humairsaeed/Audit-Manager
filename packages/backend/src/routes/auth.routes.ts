@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { AuthService } from '../services/auth.service.js';
+import { StorageService } from '../services/storage.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler, AppError } from '../middleware/error.middleware.js';
 import { AuthenticatedRequest, ApiResponse } from '../types/index.js';
@@ -45,6 +46,10 @@ router.post(
 
     const result = await AuthService.login(email, password, ipAddress, userAgent);
 
+    const avatarUrl = result.user.avatar
+      ? await StorageService.getSignedUrl(result.user.avatar, 3600).catch(() => null)
+      : null;
+
     const response: ApiResponse = {
       success: true,
       data: {
@@ -54,6 +59,8 @@ router.post(
           firstName: result.user.firstName,
           lastName: result.user.lastName,
           displayName: result.user.displayName,
+          avatar: result.user.avatar,
+          avatarUrl,
           roles: result.user.roles.map((r) => ({
             id: r.role.id,
             name: r.role.name,
@@ -237,12 +244,18 @@ import { prisma } from '../lib/prisma.js';
     });
   });
 
+  const avatarUrl = user.avatar
+    ? await StorageService.getSignedUrl(user.avatar, 3600).catch(() => null)
+    : null;
+
   return {
     id: user.id,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
     displayName: user.displayName,
+    avatar: user.avatar,
+    avatarUrl,
     department: user.department,
     title: user.title,
     status: user.status,

@@ -473,6 +473,25 @@ export const usersApi = {
     return response.data;
   },
 
+  uploadAvatar: async (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post<ApiResponse<{ url: string }>>(`/users/${id}/avatar`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  getAvatar: async (id: string) => {
+    const response = await api.get<ApiResponse<{ url: string | null }>>(`/users/${id}/avatar`);
+    return response.data;
+  },
+
+  deleteAvatar: async (id: string) => {
+    const response = await api.delete<ApiResponse>(`/users/${id}/avatar`);
+    return response.data;
+  },
+
   activate: async (id: string) => {
     const response = await api.post<ApiResponse>(`/users/${id}/activate`);
     return response.data;
