@@ -67,6 +67,7 @@ enum EvidenceStatus {
 }
 
 enum NotificationType {
+  PASSWORD_RESET
   OBSERVATION_ASSIGNED
   DUE_DATE_REMINDER
   OVERDUE_ALERT

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
@@ -41,6 +42,10 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [resetUser, setResetUser] = useState<User | null>(null);
+  const [resetMode, setResetMode] = useState<'email' | 'direct'>('email');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetErrors, setResetErrors] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
@@ -167,23 +172,10 @@ export default function UsersPage() {
   };
 
   const handleResetPassword = async (user: User) => {
-    const input = window.prompt(
-      `Enter a temporary password for ${user.email}.\nLeave blank to send a reset email link.`,
-      ''
-    );
-
-    if (input === null) {
-      return;
-    }
-
-    if (input.trim().length > 0) {
-      resetPasswordMutation.mutate({ userId: user.id, mode: 'direct', password: input.trim() });
-      return;
-    }
-
-    if (window.confirm(`Send password reset email to ${user.email}?`)) {
-      resetPasswordMutation.mutate({ userId: user.id, mode: 'email' });
-    }
+    setResetUser(user);
+    setResetMode('email');
+    setResetPassword('');
+    setResetErrors([]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -223,6 +215,39 @@ export default function UsersPage() {
         ? prev.roleIds.filter((id) => id !== roleId)
         : [...prev.roleIds, roleId],
     }));
+  };
+
+  const passwordPolicySchema = z
+    .string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
+
+  const handleResetSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetUser) return;
+
+    if (resetMode === 'email') {
+      resetPasswordMutation.mutate({ userId: resetUser.id, mode: 'email' });
+      setResetUser(null);
+      return;
+    }
+
+    const result = passwordPolicySchema.safeParse(resetPassword);
+    if (!result.success) {
+      const messages = result.error.errors.map((err) => err.message);
+      setResetErrors(messages);
+      return;
+    }
+
+    resetPasswordMutation.mutate({
+      userId: resetUser.id,
+      mode: 'direct',
+      password: resetPassword,
+    });
+    setResetUser(null);
   };
 
   return (
@@ -533,6 +558,99 @@ export default function UsersPage() {
                       : editingUser
                       ? 'Update User'
                       : 'Create User'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {resetUser && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setResetUser(null)} />
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Reset Password
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Choose how to reset the password for <span className="font-medium">{resetUser.email}</span>.
+              </p>
+
+              <form onSubmit={handleResetSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <input
+                      type="radio"
+                      name="resetMode"
+                      value="email"
+                      checked={resetMode === 'email'}
+                      onChange={() => {
+                        setResetMode('email');
+                        setResetErrors([]);
+                      }}
+                      className="h-4 w-4 text-primary-600"
+                    />
+                    Send reset email link
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <input
+                      type="radio"
+                      name="resetMode"
+                      value="direct"
+                      checked={resetMode === 'direct'}
+                      onChange={() => {
+                        setResetMode('direct');
+                        setResetErrors([]);
+                      }}
+                      className="h-4 w-4 text-primary-600"
+                    />
+                    Set a temporary password now
+                  </label>
+                </div>
+
+                {resetMode === 'direct' && (
+                  <div>
+                    <label className="label">Temporary Password</label>
+                    <input
+                      type="password"
+                      value={resetPassword}
+                      onChange={(e) => {
+                        setResetPassword(e.target.value);
+                        setResetErrors([]);
+                      }}
+                      className="input"
+                      placeholder="Enter a strong temporary password"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Must be at least 12 characters with uppercase, lowercase, numbers, and special characters.
+                    </p>
+                    {resetErrors.length > 0 && (
+                      <div className="mt-2 text-xs text-red-600 space-y-1">
+                        {resetErrors.map((err, index) => (
+                          <p key={index}>{err}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setResetUser(null)}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetPasswordMutation.isPending}
+                    className="btn btn-primary"
+                  >
+                    {resetPasswordMutation.isPending ? 'Processing...' : 'Reset Password'}
                   </button>
                 </div>
               </form>
