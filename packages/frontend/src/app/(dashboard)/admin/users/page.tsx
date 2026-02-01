@@ -12,6 +12,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   KeyIcon,
+  UserMinusIcon,
+  UserPlusIcon,
 } from '@heroicons/react/24/outline';
 import { usersApi, rolesApi } from '@/lib/api';
 import clsx from 'clsx';
@@ -123,6 +125,22 @@ export default function UsersPage() {
     },
   });
 
+  const toggleStatusMutation = useMutation({
+    mutationFn: async (user: User) => {
+      if (user.status === 'ACTIVE') {
+        return usersApi.deactivate(user.id);
+      }
+      return usersApi.activate(user.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('User status updated');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to update user status');
+    },
+  });
+
   // Reset password mutation
   const resetPasswordMutation = useMutation({
     mutationFn: async (params: { userId: string; mode?: 'email' | 'direct'; password?: string }) => {
@@ -176,6 +194,13 @@ export default function UsersPage() {
     setResetMode('email');
     setResetPassword('');
     setResetErrors([]);
+  };
+
+  const handleToggleStatus = (user: User) => {
+    const action = user.status === 'ACTIVE' ? 'deactivate' : 'activate';
+    if (window.confirm(`Are you sure you want to ${action} ${user.email}?`)) {
+      toggleStatusMutation.mutate(user);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -376,6 +401,17 @@ export default function UsersPage() {
                           title="Reset Password"
                         >
                           <KeyIcon className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(user)}
+                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          title={user.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                        >
+                          {user.status === 'ACTIVE' ? (
+                            <UserMinusIcon className="h-5 w-5" />
+                          ) : (
+                            <UserPlusIcon className="h-5 w-5" />
+                          )}
                         </button>
                         <button
                           onClick={() => handleEdit(user)}
