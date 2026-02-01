@@ -359,6 +359,12 @@ export class ObservationService {
     if (observation.status === 'CLOSED') {
       throw AppError.badRequest('Cannot edit a closed observation');
     }
+    if (
+      observation.ownerId === updatedById &&
+      ['EVIDENCE_SUBMITTED', 'UNDER_REVIEW'].includes(observation.status)
+    ) {
+      throw AppError.badRequest('Owner cannot edit an observation after evidence submission');
+    }
 
     // Handle target date extension
     let extensionData = {};

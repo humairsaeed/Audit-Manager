@@ -323,7 +323,8 @@ export default function ObservationDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {(canEdit || isOwner) && observation.status !== 'CLOSED' && (
+          {(canEdit || (isOwner && !['EVIDENCE_SUBMITTED', 'UNDER_REVIEW'].includes(observation.status))) &&
+            observation.status !== 'CLOSED' && (
             <Link href={`/observations/${observationId}/edit`} className="btn btn-secondary">
               <PencilIcon className="h-4 w-4 mr-2" />
               Edit

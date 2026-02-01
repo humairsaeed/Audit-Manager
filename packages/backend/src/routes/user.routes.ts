@@ -113,19 +113,27 @@ const ensureSelfOrAdmin = (authReq: AuthenticatedRequest, targetUserId: string) 
   }
 };
 
+const hasPermission = (authReq: AuthenticatedRequest, permission: string) =>
+  authReq.user.permissions?.includes(permission);
+
 /**
  * @route GET /api/v1/users/:id/avatar
  * @desc Get user's avatar URL
  */
 router.get(
   '/:id/avatar',
-  requirePermission(RESOURCES.USER, ACTIONS.READ),
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
 
     try {
-      ensureSelfOrAdmin(authReq, id);
+      if (
+        authReq.user.userId !== id &&
+        !authReq.user.roles?.includes(SYSTEM_ROLES.SYSTEM_ADMIN) &&
+        !hasPermission(authReq, 'user:read:all')
+      ) {
+        throw new Error('FORBIDDEN');
+      }
     } catch {
       return res.status(403).json({
         success: false,
@@ -158,14 +166,19 @@ router.get(
  */
 router.post(
   '/:id/avatar',
-  requirePermission(RESOURCES.USER, ACTIONS.UPDATE),
   upload.single('file'),
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
 
     try {
-      ensureSelfOrAdmin(authReq, id);
+      if (
+        authReq.user.userId !== id &&
+        !authReq.user.roles?.includes(SYSTEM_ROLES.SYSTEM_ADMIN) &&
+        !hasPermission(authReq, 'user:update:all')
+      ) {
+        throw new Error('FORBIDDEN');
+      }
     } catch {
       return res.status(403).json({
         success: false,
@@ -222,13 +235,18 @@ router.post(
  */
 router.delete(
   '/:id/avatar',
-  requirePermission(RESOURCES.USER, ACTIONS.UPDATE),
   asyncHandler(async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     const { id } = req.params;
 
     try {
-      ensureSelfOrAdmin(authReq, id);
+      if (
+        authReq.user.userId !== id &&
+        !authReq.user.roles?.includes(SYSTEM_ROLES.SYSTEM_ADMIN) &&
+        !hasPermission(authReq, 'user:update:all')
+      ) {
+        throw new Error('FORBIDDEN');
+      }
     } catch {
       return res.status(403).json({
         success: false,
