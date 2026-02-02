@@ -383,16 +383,21 @@ Provide complete analysis as JSON.`,
 
   /**
    * Evidence Review prompt - analyzes uploaded evidence against observation requirements
+   * Includes standards mapping and compliance validation
    */
   static getEvidenceReviewPrompt(input: EvidenceReviewInput): AIPrompt {
     return {
-      system: `You are an expert audit evidence reviewer who evaluates whether submitted evidence adequately addresses audit findings. You have deep experience in:
-- Evaluating documentary evidence for audit findings
-- Assessing evidence sufficiency and relevance
-- Identifying gaps in evidence documentation
-- Understanding what constitutes acceptable audit evidence
+      system: `You are an expert audit evidence reviewer and compliance specialist with deep knowledge of:
+- ISO 27001:2022 Information Security Management System
+- NIST Cybersecurity Framework (CSF) 2.0
+- SOC 2 Trust Services Criteria
+- CIS Critical Security Controls v8
 
-Analyze the submitted evidence against the audit observation requirements and provide a comprehensive review.
+Your task is to:
+1. Evaluate whether submitted evidence adequately addresses audit findings
+2. Map the evidence to relevant audit standards, domains, and controls
+3. Validate compliance against the audit scope
+4. Provide specific control numbers and domain references
 
 Provide a JSON response with EXACTLY this structure:
 {
@@ -407,23 +412,48 @@ Provide a JSON response with EXACTLY this structure:
   "addressesRisk": <true|false>,
   "addressesRecommendation": <true|false>,
   "suggestedNextSteps": ["<step 1>", "<step 2>", ...],
-  "aiConfidence": <number 0-1>
+  "aiConfidence": <number 0-1>,
+  "standardsCompliance": [
+    {
+      "standard": "<ISO_27001|NIST_CSF|SOC2|CIS_CONTROLS>",
+      "domain": "<domain name, e.g., 'Access Control', 'Protect', 'Security'>",
+      "controlNumber": "<specific control number, e.g., 'A.9.2.3', 'PR.AC-1', 'CC6.1', 'CIS 5.2'>",
+      "controlName": "<full control name>",
+      "complianceStatus": "<COMPLIANT|PARTIAL|NON_COMPLIANT|NOT_APPLICABLE>",
+      "evidenceAlignment": "<how this evidence supports/addresses the control>",
+      "gaps": "<optional: what's missing for full compliance>"
+    }
+  ],
+  "scopeValidation": {
+    "withinScope": <true|false>,
+    "scopeAlignment": "<explanation of how evidence relates to audit scope>",
+    "relevantDomains": ["<domain 1>", "<domain 2>", ...]
+  },
+  "complianceSummary": "<2-3 sentence summary of compliance status across standards>"
 }
 
+Standards Reference Guide:
+- ISO 27001:2022: Use Annex A control numbers (e.g., A.5.1, A.6.1, A.7.1, A.8.1, A.9.1)
+  - A.5: Organizational controls
+  - A.6: People controls
+  - A.7: Physical controls
+  - A.8: Technological controls
+- NIST CSF 2.0: Use function.category format (e.g., ID.AM-1, PR.AC-1, DE.CM-1)
+  - ID: Identify, PR: Protect, DE: Detect, RS: Respond, RC: Recover, GV: Govern
+- SOC 2: Use Trust Services Criteria (CC1-CC9, A1, C1, PI1, P1)
+  - CC: Common Criteria, A: Availability, C: Confidentiality, PI: Processing Integrity, P: Privacy
+- CIS Controls v8: Use control numbers (e.g., CIS 1.1, CIS 5.2, CIS 6.1)
+  - Controls 1-18 with sub-controls
+
 Evaluation criteria:
-1. RELEVANCE: Does the evidence directly relate to the finding?
-2. SUFFICIENCY: Does it demonstrate that the issue has been addressed?
-3. COMPLETENESS: Are there gaps in what the evidence shows?
+1. RELEVANCE: Does the evidence directly relate to the finding and control requirements?
+2. SUFFICIENCY: Does it demonstrate that the issue has been addressed per the standards?
+3. COMPLETENESS: Are there gaps compared to what the standards require?
 4. TIMELINESS: Is the evidence current and applicable?
-5. AUTHENTICITY: Does it appear to be genuine documentation?
+5. COMPLIANCE: Does it meet the specific control requirements?
 
-Assessment guidelines:
-- SUFFICIENT: Evidence clearly demonstrates the finding has been addressed
-- PARTIAL: Evidence shows progress but has gaps or missing elements
-- INSUFFICIENT: Evidence does not adequately address the finding
-
-Be objective and audit-focused. Provide constructive feedback.`,
-      user: `Review this evidence against the audit observation:
+Be specific with control numbers and domain references. Always provide at least 2-3 standards mappings.`,
+      user: `Review this evidence against the audit observation and map to relevant standards:
 
 === AUDIT OBSERVATION CONTEXT ===
 TITLE: ${input.observationContext.title}
@@ -456,7 +486,14 @@ ${input.extractedText || 'Unable to extract text from this file type. Please eva
 
 === END OF EVIDENCE ===
 
-Please analyze whether this evidence adequately addresses the audit finding, risk, and recommendation. Provide your assessment as JSON.`,
+Please:
+1. Analyze whether this evidence adequately addresses the audit finding
+2. Map the evidence to relevant ISO 27001, NIST CSF, SOC 2, and CIS Controls
+3. Specify exact domain names and control numbers for each standard
+4. Validate if the evidence demonstrates compliance within the audit scope
+5. Provide compliance status for each mapped control
+
+Provide your comprehensive assessment as JSON.`,
     };
   }
 }

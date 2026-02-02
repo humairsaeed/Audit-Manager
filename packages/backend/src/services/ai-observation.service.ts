@@ -994,14 +994,21 @@ export class AIObservationService {
         'Ensure evidence clearly addresses the finding description',
         'Provide additional context in the evidence description if needed',
       ],
-      addressesRisk: false, // Cannot determine without AI
-      addressesRecommendation: false, // Cannot determine without AI
+      addressesRisk: false,
+      addressesRecommendation: false,
       suggestedNextSteps: [
         'Wait for manual auditor review',
         'Consider uploading additional supporting evidence',
         'Add detailed description explaining how this evidence addresses the finding',
       ],
       aiConfidence: 0.1,
+      standardsCompliance: [],
+      scopeValidation: {
+        withinScope: false,
+        scopeAlignment: 'Unable to determine - AI service unavailable. Manual review required.',
+        relevantDomains: [],
+      },
+      complianceSummary: 'Standards compliance assessment unavailable. Please request manual review from the assigned auditor to validate compliance against ISO 27001, NIST CSF, SOC 2, and CIS Controls.',
     };
   }
 

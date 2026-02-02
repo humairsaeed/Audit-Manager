@@ -194,6 +194,16 @@ export interface EvidenceReviewInput {
   };
 }
 
+export interface EvidenceStandardsMapping {
+  standard: 'ISO_27001' | 'NIST_CSF' | 'SOC2' | 'CIS_CONTROLS';
+  domain: string;
+  controlNumber: string;
+  controlName: string;
+  complianceStatus: 'COMPLIANT' | 'PARTIAL' | 'NON_COMPLIANT' | 'NOT_APPLICABLE';
+  evidenceAlignment: string; // How the evidence aligns with this control
+  gaps?: string; // What's missing for full compliance
+}
+
 export interface EvidenceReviewResult {
   overallAssessment: 'SUFFICIENT' | 'PARTIAL' | 'INSUFFICIENT';
   relevanceScore: number; // 0-100
@@ -207,6 +217,14 @@ export interface EvidenceReviewResult {
   addressesRecommendation: boolean;
   suggestedNextSteps: string[];
   aiConfidence: number; // 0-1
+  // Standards Compliance
+  standardsCompliance: EvidenceStandardsMapping[];
+  scopeValidation: {
+    withinScope: boolean;
+    scopeAlignment: string;
+    relevantDomains: string[];
+  };
+  complianceSummary: string;
 }
 
 export interface EvidenceReviewResponse {

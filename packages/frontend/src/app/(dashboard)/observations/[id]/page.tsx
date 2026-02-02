@@ -499,27 +499,54 @@ export default function ObservationDetailPage() {
                     {canUseAI && (
                       <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
                         {evidence.aiReview ? (
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <SparklesIcon className="h-4 w-4 text-purple-500" />
-                              <span className="text-xs text-gray-600 dark:text-gray-400">AI Assessment:</span>
-                              <span className={clsx('badge text-xs', {
-                                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': evidence.aiReview.overallAssessment === 'SUFFICIENT',
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': evidence.aiReview.overallAssessment === 'PARTIAL',
-                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': evidence.aiReview.overallAssessment === 'INSUFFICIENT',
-                              })}>
-                                {evidence.aiReview.overallAssessment}
-                              </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                ({evidence.aiReview.relevanceScore}% relevant)
-                              </span>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <SparklesIcon className="h-4 w-4 text-purple-500" />
+                                <span className="text-xs text-gray-600 dark:text-gray-400">AI Assessment:</span>
+                                <span className={clsx('badge text-xs', {
+                                  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': evidence.aiReview.overallAssessment === 'SUFFICIENT',
+                                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': evidence.aiReview.overallAssessment === 'PARTIAL',
+                                  'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': evidence.aiReview.overallAssessment === 'INSUFFICIENT',
+                                })}>
+                                  {evidence.aiReview.overallAssessment}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  ({evidence.aiReview.relevanceScore}% relevant)
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => setAiReviewModal({ evidenceId: evidence.id, review: evidence.aiReview, fileName: evidence.fileName })}
+                                className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-xs font-medium"
+                              >
+                                View Full Review
+                              </button>
                             </div>
-                            <button
-                              onClick={() => setAiReviewModal({ evidenceId: evidence.id, review: evidence.aiReview, fileName: evidence.fileName })}
-                              className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-xs font-medium"
-                            >
-                              View Full Review
-                            </button>
+                            {/* Standards Compliance Summary */}
+                            {evidence.aiReview.standardsCompliance && evidence.aiReview.standardsCompliance.length > 0 && (
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">Standards:</span>
+                                {evidence.aiReview.standardsCompliance.slice(0, 3).map((mapping: any, idx: number) => {
+                                  const labels: Record<string, string> = { ISO_27001: 'ISO', NIST_CSF: 'NIST', SOC2: 'SOC2', CIS_CONTROLS: 'CIS' };
+                                  const colors: Record<string, string> = {
+                                    COMPLIANT: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                    PARTIAL: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                    NON_COMPLIANT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                    NOT_APPLICABLE: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+                                  };
+                                  return (
+                                    <span key={idx} className={clsx('px-1.5 py-0.5 rounded text-xs font-medium', colors[mapping.complianceStatus])}>
+                                      {labels[mapping.standard]} {mapping.controlNumber}
+                                    </span>
+                                  );
+                                })}
+                                {evidence.aiReview.standardsCompliance.length > 3 && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    +{evidence.aiReview.standardsCompliance.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="flex items-center justify-between">
@@ -1034,6 +1061,95 @@ export default function ObservationDetailPage() {
                       </li>
                     ))}
                   </ol>
+                </div>
+              )}
+
+              {/* Scope Validation */}
+              {aiReviewModal.review.scopeValidation && (
+                <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium text-indigo-700 dark:text-indigo-400">Audit Scope Validation</span>
+                    <span className={clsx('badge text-xs', aiReviewModal.review.scopeValidation.withinScope ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400')}>
+                      {aiReviewModal.review.scopeValidation.withinScope ? 'Within Scope' : 'Review Required'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    {aiReviewModal.review.scopeValidation.scopeAlignment}
+                  </p>
+                  {aiReviewModal.review.scopeValidation.relevantDomains && aiReviewModal.review.scopeValidation.relevantDomains.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Relevant Domains:</span>
+                      {aiReviewModal.review.scopeValidation.relevantDomains.map((domain: string, index: number) => (
+                        <span key={index} className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-800/50 text-indigo-700 dark:text-indigo-300 rounded text-xs">
+                          {domain}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Standards Compliance */}
+              {aiReviewModal.review.standardsCompliance && aiReviewModal.review.standardsCompliance.length > 0 && (
+                <div className="mb-6">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Standards Compliance Mapping</span>
+                  <div className="space-y-3">
+                    {aiReviewModal.review.standardsCompliance.map((mapping: any, index: number) => {
+                      const standardLabels: Record<string, string> = {
+                        ISO_27001: 'ISO 27001',
+                        NIST_CSF: 'NIST CSF',
+                        SOC2: 'SOC 2',
+                        CIS_CONTROLS: 'CIS Controls',
+                      };
+                      const statusColors: Record<string, string> = {
+                        COMPLIANT: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                        PARTIAL: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+                        NON_COMPLIANT: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                        NOT_APPLICABLE: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+                      };
+                      return (
+                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded text-xs font-medium">
+                                {standardLabels[mapping.standard] || mapping.standard}
+                              </span>
+                              <span className="text-sm font-mono text-gray-700 dark:text-gray-300">
+                                {mapping.controlNumber}
+                              </span>
+                            </div>
+                            <span className={clsx('badge text-xs', statusColors[mapping.complianceStatus])}>
+                              {mapping.complianceStatus.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">
+                            {mapping.controlName}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                            <span className="font-medium">Domain:</span> {mapping.domain}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {mapping.evidenceAlignment}
+                          </p>
+                          {mapping.gaps && (
+                            <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded">
+                              <span className="font-medium">Gap:</span> {mapping.gaps}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Compliance Summary */}
+              {aiReviewModal.review.complianceSummary && (
+                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Compliance Summary</span>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {aiReviewModal.review.complianceSummary}
+                  </p>
                 </div>
               )}
 
