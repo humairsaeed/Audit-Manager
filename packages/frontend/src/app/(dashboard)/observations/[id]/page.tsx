@@ -20,10 +20,12 @@ import {
   ChatBubbleLeftRightIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
-import { observationsApi, evidenceApi } from '@/lib/api';
+import { observationsApi, evidenceApi, aiInsightsApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
 import { AIAssistPanel } from '@/components/observations/AIAssistPanel';
+import { SparklesIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
+import type { EvidenceReviewResult } from '@/types/ai-insights';
 
 const riskColors: Record<string, string> = {
   CRITICAL: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700',
@@ -70,6 +72,8 @@ export default function ObservationDetailPage() {
   const [evidenceDescription, setEvidenceDescription] = useState('');
   const [previewEvidence, setPreviewEvidence] = useState<{ id: string; url: string; fileName?: string; mimeType?: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [aiReviewModal, setAiReviewModal] = useState<{ evidenceId: string; review: EvidenceReviewResult; fileName: string } | null>(null);
+  const [reviewingEvidenceId, setReviewingEvidenceId] = useState<string | null>(null);
 
   const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
   const canReview = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.COMPLIANCE_MANAGER);
@@ -118,12 +122,25 @@ export default function ObservationDetailPage() {
       // Pass file.name as the name parameter and description as optional
       return evidenceApi.upload(observationId, file, file.name, description);
     },
-    onSuccess: () => {
+    onSuccess: async (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['evidence', observationId] });
       setShowUploadModal(false);
       setSelectedFile(null);
       setEvidenceDescription('');
       toast.success('Evidence uploaded successfully');
+
+      // Trigger AI review automatically if user has access
+      const evidenceId = response?.data?.evidence?.id || response?.data?.id;
+      if (evidenceId && canUseAI) {
+        toast.loading('Analyzing evidence with AI...', { id: 'ai-review' });
+        try {
+          await aiInsightsApi.reviewEvidence(evidenceId);
+          queryClient.invalidateQueries({ queryKey: ['evidence', observationId] });
+          toast.success('AI analysis complete', { id: 'ai-review' });
+        } catch {
+          toast.error('AI analysis unavailable', { id: 'ai-review' });
+        }
+      }
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to upload evidence');
@@ -175,6 +192,27 @@ export default function ObservationDetailPage() {
       toast.error(error.response?.data?.message || 'Failed to delete evidence');
     },
   });
+
+  // AI Evidence Review mutation
+  const aiReviewMutation = useMutation({
+    mutationFn: async (evidenceId: string) => {
+      setReviewingEvidenceId(evidenceId);
+      const response = await aiInsightsApi.reviewEvidence(evidenceId);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['evidence', observationId] });
+      toast.success('AI review completed');
+      setReviewingEvidenceId(null);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'AI review failed');
+      setReviewingEvidenceId(null);
+    },
+  });
+
+  // Check if user can access AI features
+  const canUseAI = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.COMPLIANCE_MANAGER, ROLES.AUDITOR);
 
   const handleStatusChange = (newStatus: string) => {
     if (newStatus === 'REJECTED') {
@@ -414,46 +452,99 @@ export default function ObservationDetailPage() {
             {evidenceList && evidenceList.length > 0 ? (
               <div className="space-y-3">
                 {evidenceList.map((evidence: any) => (
-                  <div key={evidence.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <PaperClipIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{evidence.fileName}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {evidence.description} - v{evidence.version} - {new Date(evidence.uploadedAt || evidence.createdAt).toLocaleDateString()}
-                        </p>
+                  <div key={evidence.id} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <PaperClipIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{evidence.fileName}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {evidence.description} - v{evidence.version} - {new Date(evidence.uploadedAt || evidence.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={clsx('badge text-xs', {
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': evidence.status === 'PENDING_REVIEW',
+                          'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': evidence.status === 'APPROVED',
+                          'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': evidence.status === 'REJECTED',
+                        })}>
+                          {evidence.status.replace(/_/g, ' ')}
+                        </span>
+                        <button
+                          onClick={() => handlePreviewEvidence(evidence.id)}
+                          disabled={previewLoading}
+                          className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleDownloadEvidence(evidence.id)}
+                          className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
+                        >
+                          Download
+                        </button>
+                        {(isOwner || canEdit || evidence.uploadedById === user?.id) && observation.status !== 'CLOSED' && (
+                          <button
+                            onClick={() => deleteEvidenceMutation.mutate(evidence.id)}
+                            className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className={clsx('badge text-xs', {
-                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': evidence.status === 'PENDING_REVIEW',
-                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': evidence.status === 'APPROVED',
-                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': evidence.status === 'REJECTED',
-                      })}>
-                        {evidence.status.replace(/_/g, ' ')}
-                      </span>
-                      <button
-                        onClick={() => handlePreviewEvidence(evidence.id)}
-                        disabled={previewLoading}
-                        className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleDownloadEvidence(evidence.id)}
-                        className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
-                      >
-                        Download
-                      </button>
-                      {(isOwner || canEdit || evidence.uploadedById === user?.id) && observation.status !== 'CLOSED' && (
-                        <button
-                          onClick={() => deleteEvidenceMutation.mutate(evidence.id)}
-                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
+
+                    {/* AI Review Section */}
+                    {canUseAI && (
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                        {evidence.aiReview ? (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <SparklesIcon className="h-4 w-4 text-purple-500" />
+                              <span className="text-xs text-gray-600 dark:text-gray-400">AI Assessment:</span>
+                              <span className={clsx('badge text-xs', {
+                                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': evidence.aiReview.overallAssessment === 'SUFFICIENT',
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': evidence.aiReview.overallAssessment === 'PARTIAL',
+                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': evidence.aiReview.overallAssessment === 'INSUFFICIENT',
+                              })}>
+                                {evidence.aiReview.overallAssessment}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                ({evidence.aiReview.relevanceScore}% relevant)
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => setAiReviewModal({ evidenceId: evidence.id, review: evidence.aiReview, fileName: evidence.fileName })}
+                              className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-xs font-medium"
+                            >
+                              View Full Review
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <SparklesIcon className="h-4 w-4 inline mr-1 text-gray-400" />
+                              No AI review yet
+                            </span>
+                            <button
+                              onClick={() => aiReviewMutation.mutate(evidence.id)}
+                              disabled={reviewingEvidenceId === evidence.id || aiReviewMutation.isPending}
+                              className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 text-xs font-medium disabled:opacity-50"
+                            >
+                              {reviewingEvidenceId === evidence.id ? (
+                                <>
+                                  <ArrowPathIcon className="h-3 w-3 inline mr-1 animate-spin" />
+                                  Analyzing...
+                                </>
+                              ) : (
+                                'Review with AI'
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -764,6 +855,194 @@ export default function ObservationDetailPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Review Modal */}
+      {aiReviewModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setAiReviewModal(null)} />
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <SparklesIcon className="h-5 w-5 text-purple-500" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    AI Evidence Review
+                  </h3>
+                </div>
+                <button onClick={() => setAiReviewModal(null)} className="btn btn-secondary btn-sm">
+                  Close
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Review for: <span className="font-medium text-gray-700 dark:text-gray-300">{aiReviewModal.fileName}</span>
+              </p>
+
+              {/* Overall Assessment */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Assessment</span>
+                  <span className={clsx('badge', {
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': aiReviewModal.review.overallAssessment === 'SUFFICIENT',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': aiReviewModal.review.overallAssessment === 'PARTIAL',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': aiReviewModal.review.overallAssessment === 'INSUFFICIENT',
+                  })}>
+                    {aiReviewModal.review.overallAssessment}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                  {aiReviewModal.review.summary}
+                </p>
+              </div>
+
+              {/* Scores */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Relevance Score</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className={clsx('h-2 rounded-full', {
+                          'bg-green-500': aiReviewModal.review.relevanceScore >= 70,
+                          'bg-yellow-500': aiReviewModal.review.relevanceScore >= 40 && aiReviewModal.review.relevanceScore < 70,
+                          'bg-red-500': aiReviewModal.review.relevanceScore < 40,
+                        })}
+                        style={{ width: `${aiReviewModal.review.relevanceScore}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{aiReviewModal.review.relevanceScore}%</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Sufficiency Score</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className={clsx('h-2 rounded-full', {
+                          'bg-green-500': aiReviewModal.review.sufficiencyScore >= 70,
+                          'bg-yellow-500': aiReviewModal.review.sufficiencyScore >= 40 && aiReviewModal.review.sufficiencyScore < 70,
+                          'bg-red-500': aiReviewModal.review.sufficiencyScore < 40,
+                        })}
+                        style={{ width: `${aiReviewModal.review.sufficiencyScore}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{aiReviewModal.review.sufficiencyScore}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Addresses Risk & Recommendation */}
+              <div className="flex gap-4 mb-6">
+                <div className={clsx('flex-1 p-3 rounded-lg', aiReviewModal.review.addressesRisk ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20')}>
+                  <div className="flex items-center gap-2">
+                    {aiReviewModal.review.addressesRisk ? (
+                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <XCircleIcon className="h-5 w-5 text-red-500" />
+                    )}
+                    <span className={clsx('text-sm font-medium', aiReviewModal.review.addressesRisk ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400')}>
+                      {aiReviewModal.review.addressesRisk ? 'Addresses Risk' : 'Does Not Address Risk'}
+                    </span>
+                  </div>
+                </div>
+                <div className={clsx('flex-1 p-3 rounded-lg', aiReviewModal.review.addressesRecommendation ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20')}>
+                  <div className="flex items-center gap-2">
+                    {aiReviewModal.review.addressesRecommendation ? (
+                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <XCircleIcon className="h-5 w-5 text-red-500" />
+                    )}
+                    <span className={clsx('text-sm font-medium', aiReviewModal.review.addressesRecommendation ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400')}>
+                      {aiReviewModal.review.addressesRecommendation ? 'Addresses Recommendation' : 'Does Not Address Recommendation'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Strengths */}
+              {aiReviewModal.review.strengths && aiReviewModal.review.strengths.length > 0 && (
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-green-700 dark:text-green-400">Strengths</span>
+                  <ul className="mt-2 space-y-1">
+                    {aiReviewModal.review.strengths.map((strength: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                        <CheckCircleIcon className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>{strength}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Weaknesses */}
+              {aiReviewModal.review.weaknesses && aiReviewModal.review.weaknesses.length > 0 && (
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-red-700 dark:text-red-400">Weaknesses</span>
+                  <ul className="mt-2 space-y-1">
+                    {aiReviewModal.review.weaknesses.map((weakness: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                        <XCircleIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                        <span>{weakness}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Missing Elements */}
+              {aiReviewModal.review.missingElements && aiReviewModal.review.missingElements.length > 0 && (
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Missing Elements</span>
+                  <ul className="mt-2 space-y-1">
+                    {aiReviewModal.review.missingElements.map((element: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                        <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                        <span>{element}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Recommendations */}
+              {aiReviewModal.review.recommendations && aiReviewModal.review.recommendations.length > 0 && (
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-purple-700 dark:text-purple-400">AI Recommendations</span>
+                  <ul className="mt-2 space-y-1">
+                    {aiReviewModal.review.recommendations.map((rec: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                        <SparklesIcon className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Suggested Next Steps */}
+              {aiReviewModal.review.suggestedNextSteps && aiReviewModal.review.suggestedNextSteps.length > 0 && (
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-400">Suggested Next Steps</span>
+                  <ol className="mt-2 space-y-1 list-decimal list-inside">
+                    {aiReviewModal.review.suggestedNextSteps.map((step: string, index: number) => (
+                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400">
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  AI Confidence: {Math.round(aiReviewModal.review.aiConfidence * 100)}% • This is an AI-generated assessment and should be reviewed by a qualified auditor.
+                </p>
+              </div>
             </div>
           </div>
         </div>

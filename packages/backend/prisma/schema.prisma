@@ -187,6 +187,7 @@ model User {
   auditTeamMemberships  AuditTeamMember[]
   evidenceUploads       Evidence[] @relation("EvidenceUploadedBy")
   evidenceReviews       Evidence[] @relation("EvidenceReviewedBy")
+  evidenceAIReviews     Evidence[] @relation("EvidenceAIReviewedBy")
   comments              Comment[]
   notifications         Notification[]
   auditLogs             AuditLog[]
@@ -621,10 +622,16 @@ model Evidence {
   supersededById  String?
   deletedAt       DateTime?
 
+  // AI Review fields
+  aiReview        Json?     // AI-generated review of evidence
+  aiReviewedAt    DateTime? // When AI review was performed
+  aiReviewedById  String?   // User who triggered AI review
+
   // Relations
   observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
   uploadedBy      User      @relation("EvidenceUploadedBy", fields: [uploadedById], references: [id])
   reviewedBy      User?     @relation("EvidenceReviewedBy", fields: [reviewedById], references: [id])
+  aiReviewedBy    User?     @relation("EvidenceAIReviewedBy", fields: [aiReviewedById], references: [id])
   supersededBy    Evidence? @relation("EvidenceSupersedes", fields: [supersededById], references: [id])
   supersedes      Evidence[] @relation("EvidenceSupersedes")
 

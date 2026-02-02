@@ -121,4 +121,64 @@ router.get(
   })
 );
 
+/**
+ * @route POST /api/v1/ai/evidence/:evidenceId/review
+ * @desc Review uploaded evidence using AI
+ * @access Auditor, Compliance Manager, Admin roles only
+ */
+router.post(
+  '/evidence/:evidenceId/review',
+  requireRole(
+    SYSTEM_ROLES.SYSTEM_ADMIN,
+    SYSTEM_ROLES.AUDIT_ADMIN,
+    SYSTEM_ROLES.COMPLIANCE_MANAGER,
+    SYSTEM_ROLES.AUDITOR
+  ),
+  asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    const { evidenceId } = req.params;
+
+    const reviewResult = await AIObservationService.reviewEvidence(
+      evidenceId,
+      authReq.user.userId,
+      authReq.user.email,
+      authReq.user.roles
+    );
+
+    const response: ApiResponse = {
+      success: true,
+      data: reviewResult,
+    };
+
+    res.json(response);
+  })
+);
+
+/**
+ * @route GET /api/v1/ai/evidence/:evidenceId/review
+ * @desc Get AI review for a specific evidence item
+ * @access Auditor, Compliance Manager, Admin roles only
+ */
+router.get(
+  '/evidence/:evidenceId/review',
+  requireRole(
+    SYSTEM_ROLES.SYSTEM_ADMIN,
+    SYSTEM_ROLES.AUDIT_ADMIN,
+    SYSTEM_ROLES.COMPLIANCE_MANAGER,
+    SYSTEM_ROLES.AUDITOR
+  ),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { evidenceId } = req.params;
+
+    const review = await AIObservationService.getEvidenceReview(evidenceId);
+
+    const response: ApiResponse = {
+      success: true,
+      data: { review },
+    };
+
+    res.json(response);
+  })
+);
+
 export default router;

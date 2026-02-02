@@ -172,6 +172,56 @@ export interface AIInsightResponse {
 }
 
 // ============================================================================
+// Evidence Review Types
+// ============================================================================
+
+export interface EvidenceReviewInput {
+  evidenceId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  description?: string;
+  extractedText?: string; // Text extracted from document
+  observationContext: {
+    title: string;
+    description: string;
+    riskRating: string;
+    impact?: string;
+    recommendation?: string;
+    rootCause?: string;
+    controlClauseRef?: string;
+    controlRequirement?: string;
+  };
+}
+
+export interface EvidenceReviewResult {
+  overallAssessment: 'SUFFICIENT' | 'PARTIAL' | 'INSUFFICIENT';
+  relevanceScore: number; // 0-100
+  sufficiencyScore: number; // 0-100
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  missingElements: string[];
+  recommendations: string[];
+  addressesRisk: boolean;
+  addressesRecommendation: boolean;
+  suggestedNextSteps: string[];
+  aiConfidence: number; // 0-1
+}
+
+export interface EvidenceReviewResponse {
+  evidenceId: string;
+  observationId: string;
+  review: EvidenceReviewResult;
+  metadata: {
+    reviewedAt: Date;
+    processingTimeMs: number;
+    modelUsed: string;
+  };
+  disclaimer: string;
+}
+
+// ============================================================================
 // Cache Types
 // ============================================================================
 

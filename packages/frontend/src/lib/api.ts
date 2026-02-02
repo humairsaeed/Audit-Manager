@@ -667,6 +667,21 @@ export const aiInsightsApi = {
     );
     return response.data;
   },
+
+  // Evidence Review
+  reviewEvidence: async (evidenceId: string) => {
+    const response = await api.post<ApiResponse<any>>(
+      `/ai/evidence/${evidenceId}/review`
+    );
+    return response.data;
+  },
+
+  getEvidenceReview: async (evidenceId: string) => {
+    const response = await api.get<ApiResponse<{ review: any }>>(
+      `/ai/evidence/${evidenceId}/review`
+    );
+    return response.data;
+  },
 };
 
 export default api;

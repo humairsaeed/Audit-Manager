@@ -159,3 +159,34 @@ export interface AIInsightDetail {
     email: string;
   };
 }
+
+// ============================================================================
+// Evidence Review Types
+// ============================================================================
+
+export interface EvidenceReviewResult {
+  overallAssessment: 'SUFFICIENT' | 'PARTIAL' | 'INSUFFICIENT';
+  relevanceScore: number; // 0-100
+  sufficiencyScore: number; // 0-100
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  missingElements: string[];
+  recommendations: string[];
+  addressesRisk: boolean;
+  addressesRecommendation: boolean;
+  suggestedNextSteps: string[];
+  aiConfidence: number; // 0-1
+}
+
+export interface EvidenceReviewResponse {
+  evidenceId: string;
+  observationId: string;
+  review: EvidenceReviewResult;
+  metadata: {
+    reviewedAt: string;
+    processingTimeMs: number;
+    modelUsed: string;
+  };
+  disclaimer: string;
+}

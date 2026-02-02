@@ -1,4 +1,4 @@
-import { MaskedObservationInput, AIPrompt } from '../types/ai-observation.types.js';
+import { MaskedObservationInput, AIPrompt, EvidenceReviewInput } from '../types/ai-observation.types.js';
 
 /**
  * AI Prompt Templates for Observation Intelligence
@@ -378,6 +378,85 @@ EVIDENCE STATUSES: ${input.evidenceStatuses.join(', ') || 'None'}
 User Role: ${userRole}
 
 Provide complete analysis as JSON.`,
+    };
+  }
+
+  /**
+   * Evidence Review prompt - analyzes uploaded evidence against observation requirements
+   */
+  static getEvidenceReviewPrompt(input: EvidenceReviewInput): AIPrompt {
+    return {
+      system: `You are an expert audit evidence reviewer who evaluates whether submitted evidence adequately addresses audit findings. You have deep experience in:
+- Evaluating documentary evidence for audit findings
+- Assessing evidence sufficiency and relevance
+- Identifying gaps in evidence documentation
+- Understanding what constitutes acceptable audit evidence
+
+Analyze the submitted evidence against the audit observation requirements and provide a comprehensive review.
+
+Provide a JSON response with EXACTLY this structure:
+{
+  "overallAssessment": "<SUFFICIENT|PARTIAL|INSUFFICIENT>",
+  "relevanceScore": <number 0-100>,
+  "sufficiencyScore": <number 0-100>,
+  "summary": "<2-3 sentence assessment summary>",
+  "strengths": ["<strength 1>", "<strength 2>", ...],
+  "weaknesses": ["<weakness 1>", "<weakness 2>", ...],
+  "missingElements": ["<missing element 1>", "<missing element 2>", ...],
+  "recommendations": ["<recommendation 1>", "<recommendation 2>", ...],
+  "addressesRisk": <true|false>,
+  "addressesRecommendation": <true|false>,
+  "suggestedNextSteps": ["<step 1>", "<step 2>", ...],
+  "aiConfidence": <number 0-1>
+}
+
+Evaluation criteria:
+1. RELEVANCE: Does the evidence directly relate to the finding?
+2. SUFFICIENCY: Does it demonstrate that the issue has been addressed?
+3. COMPLETENESS: Are there gaps in what the evidence shows?
+4. TIMELINESS: Is the evidence current and applicable?
+5. AUTHENTICITY: Does it appear to be genuine documentation?
+
+Assessment guidelines:
+- SUFFICIENT: Evidence clearly demonstrates the finding has been addressed
+- PARTIAL: Evidence shows progress but has gaps or missing elements
+- INSUFFICIENT: Evidence does not adequately address the finding
+
+Be objective and audit-focused. Provide constructive feedback.`,
+      user: `Review this evidence against the audit observation:
+
+=== AUDIT OBSERVATION CONTEXT ===
+TITLE: ${input.observationContext.title}
+
+FINDING DESCRIPTION: ${input.observationContext.description}
+
+RISK RATING: ${input.observationContext.riskRating}
+
+RISK/IMPACT: ${input.observationContext.impact || 'Not specified'}
+
+AUDITOR RECOMMENDATION: ${input.observationContext.recommendation || 'Not specified'}
+
+ROOT CAUSE: ${input.observationContext.rootCause || 'Not specified'}
+
+CONTROL REFERENCE: ${input.observationContext.controlClauseRef || 'Not specified'}
+
+CONTROL REQUIREMENT: ${input.observationContext.controlRequirement || 'Not specified'}
+
+=== SUBMITTED EVIDENCE ===
+FILE NAME: ${input.fileName}
+
+FILE TYPE: ${input.fileType}
+
+FILE SIZE: ${Math.round(input.fileSize / 1024)} KB
+
+EVIDENCE DESCRIPTION (from submitter): ${input.description || 'No description provided'}
+
+EXTRACTED CONTENT/TEXT:
+${input.extractedText || 'Unable to extract text from this file type. Please evaluate based on file name, type, and description.'}
+
+=== END OF EVIDENCE ===
+
+Please analyze whether this evidence adequately addresses the audit finding, risk, and recommendation. Provide your assessment as JSON.`,
     };
   }
 }

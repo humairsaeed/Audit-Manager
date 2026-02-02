@@ -17,6 +17,9 @@ import {
   AIInsightRequest,
   AIInsightResponse,
   AIInsightType,
+  EvidenceReviewInput,
+  EvidenceReviewResult,
+  EvidenceReviewResponse,
 } from '../types/ai-observation.types.js';
 import { AIInsightType as PrismaAIInsightType } from '@prisma/client';
 
@@ -648,5 +651,391 @@ export class AIObservationService {
     }
 
     return insight;
+  }
+
+  /**
+   * Review uploaded evidence against observation requirements
+   */
+  static async reviewEvidence(
+    evidenceId: string,
+    userId: string,
+    userEmail: string,
+    userRoles: string[]
+  ): Promise<EvidenceReviewResponse> {
+    const startTime = Date.now();
+
+    // Check RBAC
+    if (!this.canAccessAIInsights(userRoles)) {
+      throw AppError.forbidden('AI evidence review is only available to Auditor and Compliance roles');
+    }
+
+    // Check rate limit
+    await this.checkRateLimit(userId);
+
+    // Get evidence with observation data
+    const evidence = await prisma.evidence.findUnique({
+      where: { id: evidenceId },
+      include: {
+        observation: {
+          include: {
+            control: {
+              select: { clauseRef: true, requirement: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!evidence) {
+      throw AppError.notFound('Evidence');
+    }
+
+    if (!evidence.observation) {
+      throw AppError.notFound('Associated observation');
+    }
+
+    // Prepare evidence review input
+    const reviewInput: EvidenceReviewInput = {
+      evidenceId: evidence.id,
+      fileName: evidence.fileName,
+      fileType: evidence.mimeType || this.getFileTypeFromName(evidence.fileName),
+      fileSize: evidence.fileSize || 0,
+      description: evidence.description || undefined,
+      extractedText: await this.extractTextFromEvidence(evidence),
+      observationContext: {
+        title: evidence.observation.title,
+        description: evidence.observation.description,
+        riskRating: evidence.observation.riskRating,
+        impact: evidence.observation.impact || undefined,
+        recommendation: evidence.observation.recommendation || undefined,
+        rootCause: evidence.observation.rootCause || undefined,
+        controlClauseRef: evidence.observation.controlClauseRef || evidence.observation.control?.clauseRef || undefined,
+        controlRequirement: evidence.observation.controlRequirement || evidence.observation.control?.requirement || undefined,
+      },
+    };
+
+    // Mask PII from the review input
+    const maskedInput = this.maskEvidenceReviewInput(reviewInput);
+
+    try {
+      // Generate review using OpenAI
+      const result = await this.generateEvidenceReview(maskedInput);
+
+      // Store review result in database
+      await this.storeEvidenceReview(evidence.id, evidence.observationId, result, userId, Date.now() - startTime);
+
+      // Log the request
+      await this.logEvidenceReviewRequest(
+        evidence.id,
+        evidence.observationId,
+        userId,
+        userEmail,
+        'success',
+        Date.now() - startTime
+      );
+
+      return {
+        evidenceId: evidence.id,
+        observationId: evidence.observationId,
+        review: result,
+        metadata: {
+          reviewedAt: new Date(),
+          processingTimeMs: Date.now() - startTime,
+          modelUsed: config.ai.openai.model,
+        },
+        disclaimer: AI_DISCLAIMER,
+      };
+    } catch (error) {
+      logger.error('AI evidence review failed:', error);
+
+      // Log the error
+      await this.logEvidenceReviewRequest(
+        evidence.id,
+        evidence.observationId,
+        userId,
+        userEmail,
+        'error',
+        Date.now() - startTime
+      );
+
+      // Return static fallback
+      if (config.ai.fallbackEnabled) {
+        const fallbackResult = this.getStaticEvidenceReviewFallback(reviewInput);
+        return {
+          evidenceId: evidence.id,
+          observationId: evidence.observationId,
+          review: fallbackResult,
+          metadata: {
+            reviewedAt: new Date(),
+            processingTimeMs: Date.now() - startTime,
+            modelUsed: 'fallback',
+          },
+          disclaimer: AI_DISCLAIMER,
+        };
+      }
+
+      throw AppError.internal('Failed to review evidence. Please try again later.');
+    }
+  }
+
+  /**
+   * Get file type from file name
+   */
+  private static getFileTypeFromName(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    const mimeTypes: Record<string, string> = {
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      gif: 'image/gif',
+      txt: 'text/plain',
+      csv: 'text/csv',
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+  }
+
+  /**
+   * Extract text from evidence file (placeholder for actual document parsing)
+   */
+  private static async extractTextFromEvidence(evidence: {
+    fileName: string;
+    mimeType: string | null;
+    description: string | null;
+    filePath: string | null;
+  }): Promise<string | undefined> {
+    // For now, return description as the text content
+    // In a production system, this would integrate with:
+    // - PDF parsing library (pdf-parse, pdfjs)
+    // - Document parsing (mammoth for docx)
+    // - OCR for images (tesseract.js)
+    // - S3/storage service to download and process files
+
+    const fileType = evidence.mimeType || this.getFileTypeFromName(evidence.fileName);
+
+    // For text-based files, we could read content
+    if (fileType === 'text/plain' || fileType === 'text/csv') {
+      // Would read file content here
+      return evidence.description || undefined;
+    }
+
+    // For images, we'd use OCR
+    if (fileType.startsWith('image/')) {
+      return `[Image file: ${evidence.fileName}] ${evidence.description || 'No description provided'}`;
+    }
+
+    // For PDFs and documents, we'd extract text
+    if (fileType === 'application/pdf' || fileType.includes('document')) {
+      return `[Document: ${evidence.fileName}] ${evidence.description || 'No description provided'}`;
+    }
+
+    // For spreadsheets
+    if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
+      return `[Spreadsheet: ${evidence.fileName}] ${evidence.description || 'No description provided'}`;
+    }
+
+    return evidence.description || undefined;
+  }
+
+  /**
+   * Mask PII from evidence review input
+   */
+  private static maskEvidenceReviewInput(input: EvidenceReviewInput): EvidenceReviewInput {
+    const piiPatterns = {
+      email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+      uuid: /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,
+      employeeId: /\b(EMP|USR|ID)[0-9]{4,}\b/gi,
+      phone: /\b\+?[\d\s\-()]{10,}\b/g,
+      name: /\b(Mr\.|Mrs\.|Ms\.|Dr\.)\s+[A-Z][a-z]+\s+[A-Z][a-z]+\b/g,
+      ipAddress: /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g,
+    };
+
+    const maskString = (str: string | undefined): string | undefined => {
+      if (!str) return str;
+      let masked = str;
+      masked = masked.replace(piiPatterns.email, '[EMAIL_REDACTED]');
+      masked = masked.replace(piiPatterns.uuid, '[ID_REDACTED]');
+      masked = masked.replace(piiPatterns.employeeId, '[EMPLOYEE_ID_REDACTED]');
+      masked = masked.replace(piiPatterns.phone, '[PHONE_REDACTED]');
+      masked = masked.replace(piiPatterns.name, '[NAME_REDACTED]');
+      masked = masked.replace(piiPatterns.ipAddress, '[IP_REDACTED]');
+      return masked;
+    };
+
+    return {
+      ...input,
+      description: maskString(input.description),
+      extractedText: maskString(input.extractedText),
+      observationContext: {
+        ...input.observationContext,
+        title: maskString(input.observationContext.title) || '',
+        description: maskString(input.observationContext.description) || '',
+        impact: maskString(input.observationContext.impact),
+        recommendation: maskString(input.observationContext.recommendation),
+        rootCause: maskString(input.observationContext.rootCause),
+        controlRequirement: maskString(input.observationContext.controlRequirement),
+      },
+    };
+  }
+
+  /**
+   * Generate evidence review using OpenAI
+   */
+  private static async generateEvidenceReview(input: EvidenceReviewInput): Promise<EvidenceReviewResult> {
+    const openai = this.getOpenAIClient();
+    const prompt = AIPromptTemplates.getEvidenceReviewPrompt(input);
+
+    const completion = await openai.chat.completions.create({
+      model: config.ai.openai.model,
+      messages: [
+        { role: 'system', content: prompt.system },
+        { role: 'user', content: prompt.user },
+      ],
+      max_tokens: config.ai.openai.maxTokens,
+      temperature: config.ai.openai.temperature,
+      response_format: { type: 'json_object' },
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('Empty response from OpenAI');
+    }
+
+    try {
+      return JSON.parse(content) as EvidenceReviewResult;
+    } catch (parseError) {
+      logger.error('Failed to parse OpenAI evidence review response:', content);
+      throw new Error('Invalid JSON response from OpenAI');
+    }
+  }
+
+  /**
+   * Store evidence review in database
+   */
+  private static async storeEvidenceReview(
+    evidenceId: string,
+    observationId: string,
+    result: EvidenceReviewResult,
+    userId: string,
+    processingTimeMs: number
+  ): Promise<void> {
+    try {
+      // Update evidence with AI review
+      await prisma.evidence.update({
+        where: { id: evidenceId },
+        data: {
+          aiReview: result as object,
+          aiReviewedAt: new Date(),
+          aiReviewedById: userId,
+        },
+      });
+    } catch (error) {
+      logger.error('Failed to store evidence review:', error);
+    }
+  }
+
+  /**
+   * Log evidence review request
+   */
+  private static async logEvidenceReviewRequest(
+    evidenceId: string,
+    observationId: string,
+    userId: string,
+    userEmail: string,
+    status: string,
+    responseTimeMs: number
+  ): Promise<void> {
+    try {
+      await prisma.aIRequestLog.create({
+        data: {
+          observationId,
+          insightType: 'EVIDENCE_GUIDANCE',
+          userId,
+          userEmail,
+          maskedInput: { evidenceId, type: 'EVIDENCE_REVIEW' },
+          inputHash: crypto.createHash('sha256').update(evidenceId).digest('hex').substring(0, 16),
+          responseStatus: status,
+          responseTimeMs,
+          cacheHit: false,
+          timestamp: new Date(),
+        },
+      });
+    } catch (error) {
+      logger.error('Failed to log evidence review request:', error);
+    }
+  }
+
+  /**
+   * Static fallback for evidence review when AI is unavailable
+   */
+  private static getStaticEvidenceReviewFallback(input: EvidenceReviewInput): EvidenceReviewResult {
+    return {
+      overallAssessment: 'PARTIAL',
+      relevanceScore: 50,
+      sufficiencyScore: 50,
+      summary: 'AI review service is temporarily unavailable. Please have this evidence manually reviewed by the assigned auditor.',
+      strengths: [
+        'Evidence has been submitted for review',
+        input.description ? 'Description provided with submission' : 'File submitted successfully',
+      ],
+      weaknesses: [
+        'Automated analysis unavailable',
+        'Manual review required',
+      ],
+      missingElements: [
+        'AI analysis pending - please request manual review',
+      ],
+      recommendations: [
+        'Request manual review from assigned auditor',
+        'Ensure evidence clearly addresses the finding description',
+        'Provide additional context in the evidence description if needed',
+      ],
+      addressesRisk: false, // Cannot determine without AI
+      addressesRecommendation: false, // Cannot determine without AI
+      suggestedNextSteps: [
+        'Wait for manual auditor review',
+        'Consider uploading additional supporting evidence',
+        'Add detailed description explaining how this evidence addresses the finding',
+      ],
+      aiConfidence: 0.1,
+    };
+  }
+
+  /**
+   * Get evidence review for a specific evidence item
+   */
+  static async getEvidenceReview(evidenceId: string) {
+    const evidence = await prisma.evidence.findUnique({
+      where: { id: evidenceId },
+      select: {
+        id: true,
+        observationId: true,
+        aiReview: true,
+        aiReviewedAt: true,
+        aiReviewedBy: {
+          select: { firstName: true, lastName: true, email: true },
+        },
+      },
+    });
+
+    if (!evidence) {
+      throw AppError.notFound('Evidence');
+    }
+
+    if (!evidence.aiReview) {
+      return null;
+    }
+
+    return {
+      evidenceId: evidence.id,
+      observationId: evidence.observationId,
+      review: evidence.aiReview as EvidenceReviewResult,
+      reviewedAt: evidence.aiReviewedAt,
+      reviewedBy: evidence.aiReviewedBy,
+    };
   }
 }
