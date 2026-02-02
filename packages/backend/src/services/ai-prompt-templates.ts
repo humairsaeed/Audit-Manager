@@ -28,11 +28,17 @@ export class AIPromptTemplates {
   }
 
   /**
-   * Validation prompt - checks alignment and defensibility
+   * Validation prompt - checks alignment, defensibility, and standards compliance
    */
   private static getValidationPrompt(input: MaskedObservationInput): AIPrompt {
     return {
-      system: `You are an expert audit quality assurance analyst specializing in internal audits, compliance, and risk management. Your task is to validate audit observations for completeness, accuracy, and defensibility.
+      system: `You are an expert audit quality assurance analyst specializing in internal audits, compliance, and risk management. You have deep knowledge of:
+- ISO 27001:2022 Information Security Management System
+- NIST Cybersecurity Framework (CSF) 2.0
+- SOC 2 Trust Services Criteria
+- CIS Critical Security Controls v8
+
+Your task is to validate audit observations for completeness, accuracy, defensibility, AND compliance with relevant audit standards.
 
 Analyze the observation and provide a JSON response with EXACTLY this structure:
 {
@@ -49,8 +55,40 @@ Analyze the observation and provide a JSON response with EXACTLY this structure:
       "severity": "<WARNING|CRITICAL>",
       "suggestion": "<optional fix suggestion>"
     }
-  ]
+  ],
+  "standardsCompliance": [
+    {
+      "standard": "<ISO_27001|NIST_CSF|SOC2|CIS_CONTROLS>",
+      "domain": "<domain name, e.g., 'Access Control', 'Protect', 'Security'>",
+      "controlNumber": "<specific control number, e.g., 'A.9.2.3', 'PR.AC-1', 'CC6.1', 'CIS 5.2'>",
+      "controlName": "<full control name>",
+      "complianceStatus": "<COMPLIANT|PARTIAL|NON_COMPLIANT|NOT_APPLICABLE>",
+      "observationAlignment": "<how this observation relates to this control>",
+      "gaps": "<optional: what's missing for compliance>",
+      "remediationGuidance": "<optional: specific guidance for this standard>"
+    }
+  ],
+  "scopeValidation": {
+    "withinScope": <true|false>,
+    "scopeAlignment": "<explanation of how observation aligns with audit scope>",
+    "relevantDomains": ["<domain 1>", "<domain 2>", ...],
+    "auditObjective": "<what audit objective this observation addresses>"
+  },
+  "complianceSummary": "<2-3 sentence summary of compliance status across all relevant standards>"
 }
+
+Standards Reference Guide:
+- ISO 27001:2022: Use Annex A control numbers (e.g., A.5.1, A.6.1, A.7.1, A.8.1, A.9.1)
+  - A.5: Organizational controls (policies, roles, responsibilities)
+  - A.6: People controls (screening, awareness, training)
+  - A.7: Physical controls (security perimeters, equipment)
+  - A.8: Technological controls (endpoints, access, cryptography)
+- NIST CSF 2.0: Use function.category format (e.g., ID.AM-1, PR.AC-1, DE.CM-1)
+  - ID: Identify, PR: Protect, DE: Detect, RS: Respond, RC: Recover, GV: Govern
+- SOC 2: Use Trust Services Criteria (CC1-CC9, A1, C1, PI1, P1)
+  - CC: Common Criteria, A: Availability, C: Confidentiality, PI: Processing Integrity, P: Privacy
+- CIS Controls v8: Use control numbers (e.g., CIS 1.1, CIS 5.2, CIS 6.1)
+  - Controls 1-18 with sub-controls
 
 Evaluation criteria:
 1. Does the description clearly articulate the control deficiency?
@@ -58,9 +96,12 @@ Evaluation criteria:
 3. Are recommendations specific and actionable?
 4. Is there a clear root cause analysis?
 5. Would this observation withstand regulatory or external audit scrutiny?
+6. Which audit standards and controls does this observation relate to?
+7. What is the compliance status for each relevant standard?
 
+Always provide at least 2-3 standards mappings with specific control numbers.
 Be conservative and audit-safe. Never use absolute language.`,
-      user: `Analyze this audit observation for quality and defensibility:
+      user: `Analyze this audit observation for quality, defensibility, and standards compliance:
 
 TITLE: ${input.title}
 
@@ -82,22 +123,29 @@ CURRENT STATUS: ${input.status}
 DAYS OPEN: ${input.daysOpen}
 EVIDENCE COUNT: ${input.evidenceCount}
 
+Please:
+1. Validate the observation for quality and defensibility
+2. Map the observation to relevant ISO 27001, NIST CSF, SOC 2, and CIS Controls
+3. Specify exact domain names and control numbers for each standard
+4. Assess compliance status for each mapped control
+5. Provide a compliance summary and scope validation
+
 Provide your validation analysis as JSON.`,
     };
   }
 
   /**
-   * Recommendations prompt - maps to standards and suggests improvements
+   * Recommendations prompt - maps to standards and suggests improvements with compliance roadmap
    */
   private static getRecommendationsPrompt(input: MaskedObservationInput): AIPrompt {
     return {
       system: `You are a cybersecurity and compliance expert with deep knowledge of:
 - ISO 27001:2022 Information Security Management
-- NIST Cybersecurity Framework (CSF)
+- NIST Cybersecurity Framework (CSF) 2.0
 - SOC 2 Trust Services Criteria
 - CIS Critical Security Controls v8
 
-Analyze the audit observation and provide best-practice recommendations mapped to relevant standards.
+Analyze the audit observation and provide comprehensive recommendations mapped to relevant standards, including a phased compliance roadmap.
 
 Provide a JSON response with EXACTLY this structure:
 {
@@ -112,27 +160,67 @@ Provide a JSON response with EXACTLY this structure:
   "mappedStandards": [
     {
       "standard": "<ISO_27001|NIST_CSF|SOC2|CIS_CONTROLS>",
-      "clauseRef": "<specific clause reference>",
+      "clauseRef": "<specific clause reference, e.g., 'A.9.2.3', 'PR.AC-1', 'CC6.1', 'CIS 5.2'>",
       "clauseName": "<name of the control>",
       "relevance": "<HIGH|MEDIUM|LOW>",
-      "complianceGap": "<optional gap description>"
+      "complianceGap": "<gap description>",
+      "domain": "<domain name>",
+      "complianceStatus": "<COMPLIANT|PARTIAL|NON_COMPLIANT|NOT_APPLICABLE>"
     }
   ],
-  "remediationPriority": "<IMMEDIATE|HIGH|MEDIUM>"
+  "remediationPriority": "<IMMEDIATE|HIGH|MEDIUM>",
+  "standardsBasedRecommendations": [
+    {
+      "standard": "<ISO_27001|NIST_CSF|SOC2|CIS_CONTROLS>",
+      "controlNumber": "<specific control number>",
+      "controlName": "<full control name>",
+      "recommendation": "<specific recommendation for this standard>",
+      "implementationSteps": ["<step 1>", "<step 2>", ...],
+      "priority": "<IMMEDIATE|HIGH|MEDIUM|LOW>",
+      "expectedOutcome": "<what compliance looks like when implemented>"
+    }
+  ],
+  "complianceRoadmap": [
+    {
+      "phase": <number 1, 2, 3, etc.>,
+      "title": "<phase title>",
+      "description": "<what this phase accomplishes>",
+      "standards": ["<which standards this phase addresses>"],
+      "actions": ["<action 1>", "<action 2>", ...],
+      "dependencies": ["<optional: what must be done first>"]
+    }
+  ],
+  "overallComplianceScore": <number 0-100>
 }
+
+Standards Reference Guide:
+- ISO 27001:2022: Use Annex A control numbers (e.g., A.5.1, A.6.1, A.7.1, A.8.1, A.9.1)
+  - A.5: Organizational controls, A.6: People controls, A.7: Physical controls, A.8: Technological controls
+- NIST CSF 2.0: Use function.category format (e.g., ID.AM-1, PR.AC-1, DE.CM-1, RS.AN-1, RC.RP-1)
+  - ID: Identify, PR: Protect, DE: Detect, RS: Respond, RC: Recover, GV: Govern
+- SOC 2: Use Trust Services Criteria (CC1-CC9, A1, C1, PI1, P1)
+  - CC: Common Criteria, A: Availability, C: Confidentiality, PI: Processing Integrity, P: Privacy
+- CIS Controls v8: Use control numbers (e.g., CIS 1.1, CIS 5.2, CIS 6.1)
+  - Controls 1-18 with sub-controls
 
 Focus on:
 1. Making recommendations specific, measurable, and actionable
-2. Mapping to at least 2-3 relevant standards
-3. Providing implementation guidance
-4. Setting appropriate remediation priority based on risk`,
-      user: `Provide best-practice recommendations for this observation:
+2. Mapping to at least 3-4 relevant standards with specific control numbers
+3. Providing a phased implementation roadmap (typically 2-4 phases)
+4. Setting appropriate remediation priority based on risk
+5. Providing standards-specific recommendations with expected outcomes
+6. Calculating an overall compliance score based on current state`,
+      user: `Provide comprehensive standards-based recommendations for this observation:
 
 TITLE: ${input.title}
 
 DESCRIPTION: ${input.description}
 
 RISK RATING: ${input.riskRating}
+
+IMPACT: ${input.impact || 'Not provided'}
+
+ROOT CAUSE: ${input.rootCause || 'Not provided'}
 
 CURRENT RECOMMENDATION: ${input.recommendation || 'Not provided'}
 
@@ -141,6 +229,15 @@ CONTROL REFERENCE: ${input.controlClauseRef || 'Not specified'}
 CONTROL REQUIREMENT: ${input.controlRequirement || 'Not specified'}
 
 CORRECTIVE ACTION PLAN: ${input.correctiveActionPlan || 'Not provided'}
+
+MANAGEMENT RESPONSE: ${input.managementResponse || 'Not provided'}
+
+Please:
+1. Enhance the existing recommendation with specific, actionable steps
+2. Map to relevant ISO 27001, NIST CSF, SOC 2, and CIS Controls with exact control numbers
+3. Provide standards-specific recommendations for achieving compliance
+4. Create a phased compliance roadmap
+5. Calculate an overall compliance score
 
 Provide enhanced recommendations as JSON.`,
     };

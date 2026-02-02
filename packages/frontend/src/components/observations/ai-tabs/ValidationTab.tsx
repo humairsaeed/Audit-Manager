@@ -6,7 +6,8 @@ import {
   ExclamationCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
-import type { ValidationResult, DefensibilityFlag } from '@/types/ai-insights';
+import type { ValidationResult, DefensibilityFlag, ObservationStandardsMapping } from '@/types/ai-insights';
+import { ShieldCheckIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 
 interface ValidationTabProps {
   data: ValidationResult;
@@ -32,6 +33,27 @@ const severityColors = {
 const severityIconColors = {
   WARNING: 'text-yellow-500',
   CRITICAL: 'text-red-500',
+};
+
+const complianceStatusColors = {
+  COMPLIANT: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  PARTIAL: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  NON_COMPLIANT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  NOT_APPLICABLE: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+};
+
+const standardLabels: Record<string, string> = {
+  ISO_27001: 'ISO 27001:2022',
+  NIST_CSF: 'NIST CSF 2.0',
+  SOC2: 'SOC 2',
+  CIS_CONTROLS: 'CIS Controls v8',
+};
+
+const standardColors: Record<string, string> = {
+  ISO_27001: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  NIST_CSF: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  SOC2: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+  CIS_CONTROLS: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
 };
 
 export function ValidationTab({ data }: ValidationTabProps) {
@@ -162,6 +184,130 @@ export function ValidationTab({ data }: ValidationTabProps) {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Standards Compliance */}
+      {data.standardsCompliance && data.standardsCompliance.length > 0 && (
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldCheckIcon className="h-5 w-5 text-purple-500" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Standards Compliance Mapping
+            </span>
+          </div>
+          <div className="space-y-3">
+            {data.standardsCompliance.map((mapping: ObservationStandardsMapping, index: number) => (
+              <div
+                key={index}
+                className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className={clsx(
+                        'px-2 py-0.5 rounded text-xs font-medium',
+                        standardColors[mapping.standard]
+                      )}
+                    >
+                      {standardLabels[mapping.standard] || mapping.standard}
+                    </span>
+                    <span className="text-xs font-mono text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                      {mapping.controlNumber}
+                    </span>
+                  </div>
+                  <span
+                    className={clsx(
+                      'px-2 py-0.5 rounded text-xs font-medium',
+                      complianceStatusColors[mapping.complianceStatus]
+                    )}
+                  >
+                    {mapping.complianceStatus.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {mapping.controlName}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Domain: {mapping.domain}
+                  </p>
+                </div>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  {mapping.observationAlignment}
+                </p>
+                {mapping.gaps && (
+                  <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+                    <span className="font-medium">Gap:</span> {mapping.gaps}
+                  </p>
+                )}
+                {mapping.remediationGuidance && (
+                  <p className="mt-2 text-sm text-purple-600 dark:text-purple-400">
+                    <span className="font-medium">Guidance:</span> {mapping.remediationGuidance}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Scope Validation */}
+      {data.scopeValidation && (
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-3">
+            <GlobeAltIcon className="h-5 w-5 text-blue-500" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Scope Validation
+            </span>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                className={clsx(
+                  'px-2 py-0.5 rounded text-xs font-medium',
+                  data.scopeValidation.withinScope
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                )}
+              >
+                {data.scopeValidation.withinScope ? 'Within Scope' : 'Outside Scope'}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {data.scopeValidation.scopeAlignment}
+            </p>
+            {data.scopeValidation.auditObjective && (
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-medium">Audit Objective:</span> {data.scopeValidation.auditObjective}
+              </p>
+            )}
+            {data.scopeValidation.relevantDomains && data.scopeValidation.relevantDomains.length > 0 && (
+              <div className="mt-2 flex items-center gap-1 flex-wrap">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Relevant Domains:</span>
+                {data.scopeValidation.relevantDomains.map((domain, index) => (
+                  <span
+                    key={index}
+                    className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded"
+                  >
+                    {domain}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Compliance Summary */}
+      {data.complianceSummary && (
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Compliance Summary
+          </span>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+            {data.complianceSummary}
+          </p>
         </div>
       )}
 

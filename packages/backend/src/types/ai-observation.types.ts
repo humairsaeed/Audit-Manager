@@ -41,6 +41,15 @@ export interface ValidationResult {
   auditDefensibility: 'WEAK' | 'ADEQUATE' | 'STRONG';
   aiConfidence: number; // 0-1
   defensibilityFlags: DefensibilityFlag[];
+  // Standards Compliance for Observation
+  standardsCompliance: ObservationStandardsMapping[];
+  scopeValidation: {
+    withinScope: boolean;
+    scopeAlignment: string;
+    relevantDomains: string[];
+    auditObjective: string;
+  };
+  complianceSummary: string;
 }
 
 export interface DefensibilityFlag {
@@ -51,6 +60,17 @@ export interface DefensibilityFlag {
   suggestion?: string;
 }
 
+export interface ObservationStandardsMapping {
+  standard: 'ISO_27001' | 'NIST_CSF' | 'SOC2' | 'CIS_CONTROLS';
+  domain: string;
+  controlNumber: string;
+  controlName: string;
+  complianceStatus: 'COMPLIANT' | 'PARTIAL' | 'NON_COMPLIANT' | 'NOT_APPLICABLE';
+  observationAlignment: string; // How the observation relates to this control
+  gaps?: string; // What's missing for full compliance
+  remediationGuidance?: string; // Specific guidance for this standard
+}
+
 // ============================================================================
 // Recommendations Output Types
 // ============================================================================
@@ -59,6 +79,10 @@ export interface RecommendationsResult {
   enhancedRecommendations: EnhancedRecommendation[];
   mappedStandards: StandardMapping[];
   remediationPriority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM';
+  // Standards-based recommendations
+  standardsBasedRecommendations: StandardsBasedRecommendation[];
+  complianceRoadmap: ComplianceRoadmapItem[];
+  overallComplianceScore: number; // 0-100
 }
 
 export interface EnhancedRecommendation {
@@ -74,6 +98,27 @@ export interface StandardMapping {
   clauseName: string;
   relevance: 'HIGH' | 'MEDIUM' | 'LOW';
   complianceGap?: string;
+  domain?: string;
+  complianceStatus?: 'COMPLIANT' | 'PARTIAL' | 'NON_COMPLIANT' | 'NOT_APPLICABLE';
+}
+
+export interface StandardsBasedRecommendation {
+  standard: 'ISO_27001' | 'NIST_CSF' | 'SOC2' | 'CIS_CONTROLS';
+  controlNumber: string;
+  controlName: string;
+  recommendation: string;
+  implementationSteps: string[];
+  priority: 'IMMEDIATE' | 'HIGH' | 'MEDIUM' | 'LOW';
+  expectedOutcome: string;
+}
+
+export interface ComplianceRoadmapItem {
+  phase: number;
+  title: string;
+  description: string;
+  standards: string[]; // Which standards this phase addresses
+  actions: string[];
+  dependencies?: string[];
 }
 
 // ============================================================================
