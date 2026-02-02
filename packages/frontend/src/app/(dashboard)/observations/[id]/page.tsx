@@ -22,6 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { observationsApi, evidenceApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
+import { AIAssistPanel } from '@/components/observations/AIAssistPanel';
 import clsx from 'clsx';
 
 const riskColors: Record<string, string> = {
@@ -632,6 +633,9 @@ export default function ObservationDetailPage() {
               </div>
             </div>
           )}
+
+          {/* AI Assist Panel - Only visible to Auditors/Compliance roles */}
+          <AIAssistPanel observationId={observationId} />
         </div>
       </div>
 

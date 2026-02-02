@@ -71,6 +71,16 @@ const envSchema = z.object({
   // Import
   IMPORT_MAX_ROWS: z.string().transform(Number).default('10000'),
   IMPORT_CHUNK_SIZE: z.string().transform(Number).default('100'),
+
+  // OpenAI / AI Configuration
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_MODEL: z.string().default('gpt-4-turbo-preview'),
+  OPENAI_MAX_TOKENS: z.string().transform(Number).default('4000'),
+  OPENAI_TEMPERATURE: z.string().transform(Number).default('0.3'),
+  AI_CACHE_TTL_HOURS: z.string().transform(Number).default('24'),
+  AI_FALLBACK_ENABLED: z.string().transform((v) => v === 'true').default('true'),
+  AI_RATE_LIMIT_PER_USER: z.string().transform(Number).default('50'),
+  AI_RATE_LIMIT_WINDOW_HOURS: z.string().transform(Number).default('24'),
 });
 
 const parseResult = envSchema.safeParse(process.env);
@@ -153,6 +163,22 @@ export const config = {
   import: {
     maxRows: parseResult.data.IMPORT_MAX_ROWS,
     chunkSize: parseResult.data.IMPORT_CHUNK_SIZE,
+  },
+  ai: {
+    openai: {
+      apiKey: parseResult.data.OPENAI_API_KEY,
+      model: parseResult.data.OPENAI_MODEL,
+      maxTokens: parseResult.data.OPENAI_MAX_TOKENS,
+      temperature: parseResult.data.OPENAI_TEMPERATURE,
+    },
+    cache: {
+      ttlHours: parseResult.data.AI_CACHE_TTL_HOURS,
+    },
+    fallbackEnabled: parseResult.data.AI_FALLBACK_ENABLED,
+    rateLimit: {
+      perUser: parseResult.data.AI_RATE_LIMIT_PER_USER,
+      windowHours: parseResult.data.AI_RATE_LIMIT_WINDOW_HOURS,
+    },
   },
 } as const;
 

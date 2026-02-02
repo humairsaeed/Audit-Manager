@@ -112,6 +112,42 @@ enum ActionType {
   PERMISSION_CHANGE
 }
 
+// AI Observation Intelligence Enums
+enum AIInsightType {
+  VALIDATION
+  RECOMMENDATIONS
+  EVIDENCE_GUIDANCE
+  ROLE_GUIDANCE
+  EXECUTIVE_SUMMARY
+  FULL_ANALYSIS
+}
+
+enum AIInsightStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum AuditDefensibility {
+  WEAK
+  ADEQUATE
+  STRONG
+}
+
+enum RemediationPriority {
+  IMMEDIATE
+  HIGH
+  MEDIUM
+}
+
+enum EvidenceQuality {
+  WEAK
+  PARTIAL
+  STRONG
+}
+
 // ============================================================================
 // USER & AUTHENTICATION
 // ============================================================================
@@ -156,6 +192,7 @@ model User {
   auditLogs             AuditLog[]
   importJobs            ImportJob[]
   sessions              Session[]
+  aiInsightRequests     AIObservationInsight[] @relation("AIInsightRequestedBy")
 
   @@index([email])
   @@index([employeeId])
@@ -528,6 +565,7 @@ model Observation {
   reviewCycles            ReviewCycle[]
   statusHistory           ObservationStatusHistory[]
   notifications           Notification[]
+  aiInsights              AIObservationInsight[]
 
   @@unique([auditId, sequenceNumber])
   @@index([auditId])
@@ -783,4 +821,97 @@ model SystemConfig {
   updatedAt       DateTime  @updatedAt
 
   @@map("system_config")
+}
+
+// ============================================================================
+// AI OBSERVATION INTELLIGENCE
+// ============================================================================
+
+model AIObservationInsight {
+  id                    String    @id @default(uuid())
+  observationId         String
+  insightType           AIInsightType
+  requestHash           String    // Hash of input for cache lookup
+
+  // Raw response data
+  rawResponse           Json
+
+  // Parsed outputs based on insightType
+  alignmentScore        Int?
+  keyGaps               Json?     // String[]
+  riskSeverityJustification String? @db.Text
+  auditDefensibility    AuditDefensibility?
+
+  enhancedRecommendations Json?   // RecommendationItem[]
+  mappedStandards       Json?     // StandardMapping[]
+  remediationPriority   RemediationPriority?
+
+  mandatoryEvidence     Json?     // String[]
+  acceptableFormats     Json?     // String[]
+  strongEvidenceExamples Json?    // String[]
+  weakEvidenceExamples  Json?     // String[]
+  commonRejectionReasons Json?    // String[]
+
+  auditorInsights       Json?     // RoleInsight[]
+  auditeeActionGuidance Json?     // RoleInsight[]
+
+  evidenceQualityMeter  EvidenceQuality?
+  closureReadinessScore Int?
+  executiveSummary      String?   @db.Text
+  defensibilityFlags    Json?     // DefensibilityFlag[]
+
+  // Metadata
+  aiConfidence          Float?
+  modelUsed             String?
+  promptTokens          Int?
+  completionTokens      Int?
+  processingTimeMs      Int?
+
+  // Status
+  status                AIInsightStatus @default(PENDING)
+  errorMessage          String?
+
+  requestedById         String
+  createdAt             DateTime  @default(now())
+  expiresAt             DateTime?
+
+  // Relations
+  observation           Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  requestedBy           User       @relation("AIInsightRequestedBy", fields: [requestedById], references: [id])
+
+  @@unique([observationId, insightType, requestHash])
+  @@index([observationId])
+  @@index([insightType])
+  @@index([status])
+  @@index([requestHash])
+  @@map("ai_observation_insights")
+}
+
+model AIRequestLog {
+  id                String    @id @default(uuid())
+  observationId     String?
+  insightType       AIInsightType
+  userId            String
+  userEmail         String
+
+  // Request details (PII masked)
+  maskedInput       Json
+  inputHash         String
+
+  // Response details
+  responseStatus    String    // success, error, cached
+  responseTimeMs    Int?
+  tokensUsed        Int?
+
+  // Cache info
+  cacheHit          Boolean   @default(false)
+
+  ipAddress         String?
+  userAgent         String?
+  timestamp         DateTime  @default(now())
+
+  @@index([observationId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("ai_request_logs")
 }

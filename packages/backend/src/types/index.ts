@@ -449,3 +449,8 @@ export const ACTIONS = {
 export type Action = typeof ACTIONS[keyof typeof ACTIONS];
 
 // ActionType is exported from Prisma - use import { ActionType } from '@prisma/client'
+
+// ============================================================================
+// AI Observation Intelligence Types (re-export)
+// ============================================================================
+export * from './ai-observation.types.js';

@@ -23,6 +23,7 @@ import entityRoutes from './routes/entity.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import reportRoutes from './routes/report.routes.js';
+import aiObservationRoutes from './routes/ai-observation.routes.js';
 
 const app = express();
 
@@ -82,6 +83,7 @@ app.use(`${apiPrefix}/entities`, entityRoutes);
 app.use(`${apiPrefix}/notifications`, notificationRoutes);
 app.use(`${apiPrefix}/settings`, settingsRoutes);
 app.use(`${apiPrefix}/reports`, reportRoutes);
+app.use(`${apiPrefix}/ai`, aiObservationRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

@@ -635,4 +635,38 @@ export const reportsApi = {
   },
 };
 
+// AI Insights API
+export const aiInsightsApi = {
+  getInsights: async (
+    observationId: string,
+    insightTypes: string[],
+    options?: { forceRefresh?: boolean; userRole?: 'AUDITOR' | 'AUDITEE' }
+  ) => {
+    const response = await api.post<ApiResponse<any>>(
+      `/ai/observations/${observationId}/insights`,
+      {
+        insightTypes,
+        forceRefresh: options?.forceRefresh || false,
+        userRole: options?.userRole,
+      }
+    );
+    return response.data;
+  },
+
+  getHistory: async (observationId: string, limit?: number) => {
+    const response = await api.get<ApiResponse<{ history: any[] }>>(
+      `/ai/observations/${observationId}/insights/history`,
+      { params: { limit } }
+    );
+    return response.data;
+  },
+
+  getInsight: async (observationId: string, insightId: string) => {
+    const response = await api.get<ApiResponse<{ insight: any }>>(
+      `/ai/observations/${observationId}/insights/${insightId}`
+    );
+    return response.data;
+  },
+};
+
 export default api;
