@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Dialog, Transition } from '@headlessui/react';
@@ -83,29 +83,53 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
     return hasAnyRole(...item.roles);
   });
 
+  const adminItems = ['Users', 'Roles', 'Entities', 'Settings'];
+  const primaryNavigation = filteredNavigation.filter(
+    (item) => item.name !== 'divider' && !adminItems.includes(item.name)
+  );
+  const adminNavigation = filteredNavigation.filter((item) =>
+    adminItems.includes(item.name)
+  );
+
   const SidebarContent = ({ isCollapsed = false }: { isCollapsed?: boolean }) => (
     <div className="flex flex-col h-full bg-gray-900">
       {/* Logo */}
       <div className={clsx(
-        'flex items-center h-16 bg-gray-900',
-        isCollapsed ? 'justify-center px-2' : 'px-4'
+        'flex items-center h-16 bg-gray-900 border-b border-gray-800',
+        isCollapsed ? 'justify-between px-2' : 'justify-between px-4'
       )}>
-        <ShieldCheckIcon className="w-8 h-8 text-primary-500 flex-shrink-0" />
+        <div className={clsx('flex items-center', isCollapsed && 'justify-center')}>
+          <ShieldCheckIcon className="w-8 h-8 text-primary-500 flex-shrink-0" />
+          {!isCollapsed && (
+            <span className="ml-2 text-xl font-bold text-white">ERES AMS</span>
+          )}
+        </div>
         {!isCollapsed && (
-          <span className="ml-2 text-xl font-bold text-white">AuditMS</span>
+          <button
+            onClick={onToggleCollapse}
+            className="hidden lg:inline-flex p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+            title="Collapse sidebar"
+          >
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+        )}
+        {isCollapsed && (
+          <button
+            onClick={onToggleCollapse}
+            className="hidden lg:inline-flex p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+            title="Expand sidebar"
+          >
+            <ChevronRightIcon className="w-4 h-4" />
+          </button>
         )}
       </div>
 
-      {/* Navigation */}
+      {/* Main Navigation */}
       <nav className={clsx(
         'flex-1 py-4 space-y-1 overflow-y-auto',
         isCollapsed ? 'px-2' : 'px-2'
       )}>
-        {filteredNavigation.map((item, index) => {
-          if (item.name === 'divider') {
-            return <div key={`divider-${index}`} className="my-4 border-t border-gray-700" />;
-          }
-
+        {primaryNavigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
 
@@ -130,23 +154,34 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         })}
       </nav>
 
-      {/* Collapse Toggle Button - Desktop only */}
-      <div className={clsx(
-        'hidden lg:flex border-t border-gray-700',
-        isCollapsed ? 'justify-center p-2' : 'justify-end p-2'
-      )}>
-        <button
-          onClick={onToggleCollapse}
-          className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? (
-            <ChevronRightIcon className="w-5 h-5" />
-          ) : (
-            <ChevronLeftIcon className="w-5 h-5" />
-          )}
-        </button>
-      </div>
+      {/* Admin Navigation - Fixed near bottom above user info */}
+      {adminNavigation.length > 0 && (
+        <div className="border-t border-gray-700 pt-3 pb-2 px-2 space-y-1">
+          {adminNavigation.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={onClose}
+                title={isCollapsed ? item.name : undefined}
+                className={clsx(
+                  'flex items-center py-2 text-sm font-medium rounded-lg transition-colors',
+                  isCollapsed ? 'justify-center px-2' : 'px-3',
+                  isActive
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                )}
+              >
+                {Icon && <Icon className={clsx('w-5 h-5 flex-shrink-0', !isCollapsed && 'mr-3')} />}
+                {!isCollapsed && <span className="truncate">{item.name}</span>}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {/* User Info */}
       <div className={clsx(
