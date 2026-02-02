@@ -393,6 +393,9 @@ export default function ObservationDetailPage() {
             </div>
           )}
 
+          {/* AI Assist Panel - Only visible to Auditors/Compliance roles */}
+          <AIAssistPanel observationId={observationId} />
+
           {/* Evidence Section */}
           <div className="card p-6">
             <div className="flex items-center justify-between mb-4">
@@ -633,9 +636,6 @@ export default function ObservationDetailPage() {
               </div>
             </div>
           )}
-
-          {/* AI Assist Panel - Only visible to Auditors/Compliance roles */}
-          <AIAssistPanel observationId={observationId} />
         </div>
       </div>
 
