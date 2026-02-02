@@ -57,6 +57,13 @@ export class AIObservationService {
   }
 
   /**
+   * Check if AI service is available (API key configured)
+   */
+  private static isAIServiceAvailable(): boolean {
+    return !!config.ai.openai.apiKey;
+  }
+
+  /**
    * Main entry point for getting AI insights
    */
   static async getInsights(
@@ -70,6 +77,12 @@ export class AIObservationService {
     // Check RBAC - only allowed roles can access
     if (!this.canAccessAIInsights(userRoles)) {
       throw AppError.forbidden('AI insights are only available to Auditor and Compliance roles');
+    }
+
+    // Check if AI service is available - if not, return fallbacks immediately
+    if (!this.isAIServiceAvailable() && config.ai.fallbackEnabled) {
+      logger.warn('OpenAI API key not configured, returning fallback responses');
+      return this.getFallbackInsightsResponse(request, startTime);
     }
 
     // Check rate limit
@@ -225,6 +238,38 @@ export class AIObservationService {
         insights.executiveSummary = fullResult.executiveSummary;
         break;
     }
+  }
+
+  /**
+   * Get fallback insights response when AI service is not available
+   */
+  private static async getFallbackInsightsResponse(
+    request: AIInsightRequest,
+    startTime: number
+  ): Promise<AIInsightResponse> {
+    // Get observation for context
+    const observation = await this.getObservationForAnalysis(request.observationId);
+    const rawInput = this.prepareObservationInput(observation);
+    const maskedInput = this.maskPII(rawInput);
+
+    const insights: AIInsightResponse['insights'] = {};
+
+    for (const insightType of request.insightTypes) {
+      const fallback = this.getStaticFallback(insightType, maskedInput);
+      this.assignInsight(insights, insightType, fallback);
+    }
+
+    return {
+      observationId: request.observationId,
+      insights,
+      metadata: {
+        fromCache: false,
+        generatedAt: new Date(),
+        expiresAt: new Date(Date.now() + config.ai.cache.ttlHours * 60 * 60 * 1000),
+        processingTimeMs: Date.now() - startTime,
+      },
+      disclaimer: AI_DISCLAIMER + ' (AI service not configured - using fallback guidance)',
+    };
   }
 
   /**
@@ -533,12 +578,23 @@ export class AIObservationService {
       ],
       riskSeverityJustification: `Risk rating of ${riskLevel} should be validated against business impact.`,
       defensibilityFlags: [],
+      standardsCompliance: [],
+      scopeValidation: {
+        withinScope: true,
+        scopeAlignment: 'AI service unavailable. Manual scope validation required.',
+        relevantDomains: [],
+        auditObjective: 'Please validate audit objective manually.',
+      },
+      complianceSummary: 'AI service temporarily unavailable. Please perform manual compliance assessment against ISO 27001, NIST CSF, SOC 2, and CIS Controls.',
     };
 
     const staticRecommendations: Partial<RecommendationsResult> = {
       remediationPriority: riskLevel === 'CRITICAL' ? 'IMMEDIATE' : riskLevel === 'HIGH' ? 'HIGH' : 'MEDIUM',
       enhancedRecommendations: [],
       mappedStandards: [],
+      standardsBasedRecommendations: [],
+      complianceRoadmap: [],
+      overallComplianceScore: 50,
     };
 
     const staticEvidenceGuidance: Partial<EvidenceGuidanceResult> = {
