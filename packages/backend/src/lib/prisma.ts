@@ -1,92 +1,76 @@
 import { PrismaClient } from '@prisma/client';
 import { config } from '../config/index.js';
 
-const modelsWithSoftDelete = ['User', 'Audit', 'Observation', 'Evidence', 'Comment', 'AuditDocument'];
-
 const globalForPrisma = globalThis as unknown as {
-  prisma: ReturnType<typeof createPrismaClient> | undefined;
+  prisma: PrismaClient | undefined;
 };
 
-function createPrismaClient() {
-  const basePrisma = new PrismaClient({
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
     log: config.app.isDevelopment
       ? ['query', 'info', 'warn', 'error']
       : ['error'],
   });
 
-  // Prisma 7 uses $extends instead of $use for middleware
-  return basePrisma.$extends({
-    query: {
-      $allModels: {
-        async delete({ model, args, query }) {
-          if (modelsWithSoftDelete.includes(model)) {
-            // Soft delete - convert delete to update
-            return (basePrisma as any)[model].update({
-              ...args,
-              data: { deletedAt: new Date() },
-            });
-          }
-          return query(args);
-        },
-        async deleteMany({ model, args, query }) {
-          if (modelsWithSoftDelete.includes(model)) {
-            // Soft delete - convert deleteMany to updateMany
-            return (basePrisma as any)[model].updateMany({
-              ...args,
-              data: { ...((args as any).data || {}), deletedAt: new Date() },
-            });
-          }
-          return query(args);
-        },
-        async findUnique({ model, args, query }) {
-          if (modelsWithSoftDelete.includes(model)) {
-            // Filter out soft deleted records
-            return (basePrisma as any)[model].findFirst({
-              ...args,
-              where: {
-                ...(args.where || {}),
-                deletedAt: null,
-              },
-            });
-          }
-          return query(args);
-        },
-        async findFirst({ model, args, query }) {
-          if (modelsWithSoftDelete.includes(model)) {
-            return query({
-              ...args,
-              where: {
-                ...(args.where || {}),
-                deletedAt: null,
-              },
-            });
-          }
-          return query(args);
-        },
-        async findMany({ model, args, query }) {
-          if (modelsWithSoftDelete.includes(model)) {
-            const where = args.where || {};
-            if ((where as any).deletedAt === undefined) {
-              return query({
-                ...args,
-                where: {
-                  ...where,
-                  deletedAt: null,
-                },
-              });
-            }
-          }
-          return query(args);
-        },
-      },
-    },
-  });
-}
-
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
-
 if (!config.app.isProduction) {
   globalForPrisma.prisma = prisma;
 }
+
+// Middleware for soft deletes
+prisma.$use(async (params, next) => {
+  // Soft delete - convert delete to update
+  if (params.action === 'delete') {
+    const modelsWithSoftDelete = ['User', 'Audit', 'Observation', 'Evidence', 'Comment', 'AuditDocument'];
+
+    if (modelsWithSoftDelete.includes(params.model || '')) {
+      params.action = 'update';
+      params.args['data'] = { deletedAt: new Date() };
+    }
+  }
+
+  // Soft delete - convert deleteMany to updateMany
+  if (params.action === 'deleteMany') {
+    const modelsWithSoftDelete = ['User', 'Audit', 'Observation', 'Evidence', 'Comment', 'AuditDocument'];
+
+    if (modelsWithSoftDelete.includes(params.model || '')) {
+      params.action = 'updateMany';
+      if (params.args.data !== undefined) {
+        params.args.data['deletedAt'] = new Date();
+      } else {
+        params.args['data'] = { deletedAt: new Date() };
+      }
+    }
+  }
+
+  // Filter out soft deleted records for find operations
+  if (params.action === 'findUnique' || params.action === 'findFirst') {
+    const modelsWithSoftDelete = ['User', 'Audit', 'Observation', 'Evidence', 'Comment', 'AuditDocument'];
+
+    if (modelsWithSoftDelete.includes(params.model || '')) {
+      params.action = 'findFirst';
+      params.args.where = {
+        ...params.args.where,
+        deletedAt: null,
+      };
+    }
+  }
+
+  if (params.action === 'findMany') {
+    const modelsWithSoftDelete = ['User', 'Audit', 'Observation', 'Evidence', 'Comment', 'AuditDocument'];
+
+    if (modelsWithSoftDelete.includes(params.model || '')) {
+      if (params.args.where) {
+        if (params.args.where.deletedAt === undefined) {
+          params.args.where['deletedAt'] = null;
+        }
+      } else {
+        params.args['where'] = { deletedAt: null };
+      }
+    }
+  }
+
+  return next(params);
+});
 
 export default prisma;
