@@ -79,8 +79,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-https://10.100.209.221:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://10.100.209.221:3000}
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-audit_management}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -102,10 +102,11 @@ services:
       SMTP_HOST: ${SMTP_HOST:-smtp.office365.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-services@eres.ae}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-3r3$1234567}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_SECURE: ${SMTP_SECURE:-false}       # false = STARTTLS
       SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-true}
-      SMTP_FROM: ${SMTP_FROM:-ERES Audit Manager <noreply@eres.ae>}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-ERES Audit Manager}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-services@eres.ae}
       TEAMS_WEBHOOK_URL: ${TEAMS_WEBHOOK_URL:-}
     ports:
       - "3001:3001"
