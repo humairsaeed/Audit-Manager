@@ -33,7 +33,7 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
       {/* Evidence Quality Meter */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Current Evidence Quality
           </span>
           <span
@@ -46,7 +46,7 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
             {data.evidenceQualityMeter}
           </span>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+        <p className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
           {data.qualityExplanation}
         </p>
       </div>
@@ -54,7 +54,7 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
       {/* Mandatory Evidence */}
       {data.mandatoryEvidence && data.mandatoryEvidence.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
             <DocumentIcon className="h-4 w-4 text-purple-500" />
             Required Evidence
           </span>
@@ -62,7 +62,7 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
             {data.mandatoryEvidence.map((item: string, index: number) => (
               <li
                 key={index}
-                className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 bg-purple-50 dark:bg-purple-900/20 p-2 rounded-lg"
+                className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400 bg-purple-50 dark:bg-purple-900/20 p-2 rounded-lg"
               >
                 <span className="text-purple-500 font-bold">•</span>
                 <span>{item}</span>
@@ -75,14 +75,14 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
       {/* Acceptable Formats */}
       {data.acceptableFormats && data.acceptableFormats.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Acceptable Formats
           </span>
           <div className="mt-2 flex flex-wrap gap-2">
             {data.acceptableFormats.map((format: string, index: number) => (
               <span
                 key={index}
-                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium"
+                className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded text-xs font-medium"
               >
                 {format}
               </span>
@@ -94,7 +94,7 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
       {/* Strong Evidence Examples */}
       {data.strongEvidenceExamples && data.strongEvidenceExamples.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
             <CheckCircleIcon className="h-4 w-4 text-green-500" />
             Strong Evidence Examples
           </span>
@@ -115,7 +115,7 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
       {/* Weak Evidence Examples */}
       {data.weakEvidenceExamples && data.weakEvidenceExamples.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
             <XCircleIcon className="h-4 w-4 text-red-500" />
             Avoid These Evidence Types
           </span>
@@ -136,7 +136,7 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
       {/* Common Rejection Reasons */}
       {data.commonRejectionReasons && data.commonRejectionReasons.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Common Rejection Reasons
           </span>
           <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
@@ -157,3 +157,4 @@ export function EvidenceGuidanceTab({ data }: EvidenceGuidanceTabProps) {
     </div>
   );
 }
+

@@ -26,11 +26,11 @@ const typeColors: Record<string, string> = {
   IT: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   COMPLIANCE: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400',
   OPERATIONAL: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-  OTHER: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  OTHER: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
 };
 
 const statusColors: Record<string, string> = {
-  PLANNED: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  PLANNED: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
   IN_PROGRESS: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   UNDER_REVIEW: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   CLOSED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -104,8 +104,8 @@ export default function AuditsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Audits</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Audits</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Manage audit engagements across your organization
           </p>
         </div>
@@ -123,7 +123,7 @@ export default function AuditsPage() {
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search audits..."
@@ -154,7 +154,7 @@ export default function AuditsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="label">Type</label>
               <select
@@ -224,7 +224,7 @@ export default function AuditsPage() {
             </div>
 
             <div className="lg:col-span-4 flex justify-end">
-              <button onClick={clearFilters} className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+              <button onClick={clearFilters} className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
                 Clear all filters
               </button>
             </div>
@@ -236,11 +236,11 @@ export default function AuditsPage() {
       {isLoading ? (
         <div className="card p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading audits...</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Loading audits...</p>
         </div>
       ) : audits.length === 0 ? (
         <div className="card p-8 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No audits found</p>
+          <p className="text-slate-500 dark:text-slate-400">No audits found</p>
           {canCreate && (
             <Link href="/audits/new" className="btn btn-primary mt-4">
               Create your first audit
@@ -265,19 +265,19 @@ export default function AuditsPage() {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2 line-clamp-2">
                   {audit.name}
                 </h3>
 
                 {audit.description && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">
                     {audit.description}
                   </p>
                 )}
 
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <CalendarIcon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                     <span>
                       {audit.periodStart ? new Date(audit.periodStart).toLocaleDateString() : 'N/A'} -{' '}
                       {audit.periodEnd ? new Date(audit.periodEnd).toLocaleDateString() : 'N/A'}
@@ -286,7 +286,7 @@ export default function AuditsPage() {
 
                   {audit.leadAuditor && (
                     <div className="flex items-center gap-2">
-                      <UserGroupIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                      <UserGroupIcon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                       <span>
                         {audit.leadAuditor.displayName ||
                           `${audit.leadAuditor.firstName} ${audit.leadAuditor.lastName}`}
@@ -296,24 +296,24 @@ export default function AuditsPage() {
                 </div>
 
                 {/* Stats */}
-                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
                   <div className="text-center">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {audit.totalObservations ?? audit._count?.observations ?? 0}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Observations</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Observations</p>
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-semibold text-green-600 dark:text-green-400">
                       {audit.closedObservations || 0}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Closed</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Closed</p>
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-semibold text-red-600 dark:text-red-400">
                       {audit.overdueObservations || 0}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Overdue</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Overdue</p>
                   </div>
                 </div>
               </Link>
@@ -323,7 +323,7 @@ export default function AuditsPage() {
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                 {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
               </p>
@@ -335,7 +335,7 @@ export default function AuditsPage() {
                 >
                   <ChevronLeftIcon className="h-5 w-5" />
                 </button>
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-slate-700 dark:text-slate-300">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
                 <button
@@ -353,3 +353,4 @@ export default function AuditsPage() {
     </div>
   );
 }
+

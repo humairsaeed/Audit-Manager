@@ -163,8 +163,8 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Profile Settings</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Manage your account settings and preferences
         </p>
       </div>
@@ -183,10 +183,10 @@ export default function ProfilePage() {
             )}
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               {user?.displayName || `${user?.firstName} ${user?.lastName}`}
             </h2>
-            <p className="text-gray-500 dark:text-gray-400">{user?.email}</p>
+            <p className="text-slate-500 dark:text-slate-400">{user?.email}</p>
             <div className="mt-3 flex items-center gap-2">
               <label className="btn btn-secondary btn-sm cursor-pointer">
                 Upload Photo
@@ -231,7 +231,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+      <div className="border-b border-slate-200 dark:border-slate-700 mb-6">
         <nav className="-mb-px flex gap-8">
           <button
             onClick={() => setActiveTab('profile')}
@@ -239,7 +239,7 @@ export default function ProfilePage() {
               'py-4 px-1 border-b-2 font-medium text-sm',
               activeTab === 'profile'
                 ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:hover:border-slate-600'
             )}
           >
             <UserCircleIcon className="h-5 w-5 inline-block mr-2" />
@@ -251,7 +251,7 @@ export default function ProfilePage() {
               'py-4 px-1 border-b-2 font-medium text-sm',
               activeTab === 'security'
                 ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:hover:border-slate-600'
             )}
           >
             <KeyIcon className="h-5 w-5 inline-block mr-2" />
@@ -263,7 +263,7 @@ export default function ProfilePage() {
       {/* Profile Tab */}
       {activeTab === 'profile' && (
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
             Personal Information
           </h3>
           <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
@@ -341,13 +341,13 @@ export default function ProfilePage() {
           </form>
 
           {/* Read-only info */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">Account Information</h4>
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-4">Account Information</h4>
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
-                <EnvelopeIcon className="h-5 w-5 text-gray-400" />
-                <span className="text-gray-500 dark:text-gray-400">Email:</span>
-                <span className="text-gray-900 dark:text-white">{user?.email}</span>
+                <EnvelopeIcon className="h-5 w-5 text-slate-400" />
+                <span className="text-slate-500 dark:text-slate-400">Email:</span>
+                <span className="text-slate-900 dark:text-white">{user?.email}</span>
               </div>
             </div>
           </div>
@@ -357,7 +357,7 @@ export default function ProfilePage() {
       {/* Security Tab */}
       {activeTab === 'security' && (
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
             Change Password
           </h3>
           <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4 max-w-md">
@@ -385,7 +385,7 @@ export default function ProfilePage() {
               {passwordErrors.newPassword && (
                 <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword.message}</p>
               )}
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Password must be at least 8 characters long
               </p>
             </div>
@@ -418,3 +418,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

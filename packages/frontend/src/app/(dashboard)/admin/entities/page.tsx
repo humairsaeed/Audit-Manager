@@ -179,13 +179,13 @@ export default function EntitiesPage() {
 
     return (
       <>
-        <tr key={entity.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+        <tr key={entity.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
           <td className="px-6 py-4">
             <div className="flex items-center gap-2" style={{ paddingLeft: `${level * 24}px` }}>
               {hasChildren ? (
                 <button
                   onClick={() => toggleExpand(entity.id)}
-                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                  className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                 >
                   <ChevronRightIcon
                     className={clsx('h-4 w-4 transition-transform', isExpanded && 'rotate-90')}
@@ -194,41 +194,41 @@ export default function EntitiesPage() {
               ) : (
                 <div className="w-6" />
               )}
-              <BuildingOfficeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              <BuildingOfficeIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
               <div>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{entity.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{entity.code}</p>
+                <p className="font-medium text-slate-900 dark:text-slate-100">{entity.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{entity.code}</p>
               </div>
             </div>
           </td>
-          <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
+          <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-xs truncate">
             {entity.description || '-'}
           </td>
           <td className="px-6 py-4">
             <span
               className={clsx(
                 'badge',
-                entity.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                entity.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300'
               )}
             >
               {entity.isActive ? 'Active' : 'Inactive'}
             </span>
           </td>
-          <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+          <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
             {entity._count?.audits || 0} audits, {entity._count?.observations || 0} observations
           </td>
           <td className="px-6 py-4">
             <div className="flex items-center justify-end gap-2">
               <button
                 onClick={() => handleEdit(entity)}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 title="Edit"
               >
                 <PencilIcon className="h-5 w-5" />
               </button>
               <button
                 onClick={() => handleDelete(entity)}
-                className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
                 title="Delete"
               >
                 <TrashIcon className="h-5 w-5" />
@@ -250,8 +250,8 @@ export default function EntitiesPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Entity Management</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Entity Management</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Manage organizational entities and their hierarchy
           </p>
         </div>
@@ -271,7 +271,7 @@ export default function EntitiesPage() {
       {/* Search */}
       <div className="card p-4">
         <div className="relative max-w-md">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input
             type="text"
             placeholder="Search entities..."
@@ -290,30 +290,30 @@ export default function EntitiesPage() {
           </div>
         ) : filteredEntities.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No entities found</p>
+            <p className="text-slate-500 dark:text-slate-400">No entities found</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-800">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                   Entity
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                   Description
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                   Usage
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {filteredEntities.map((entity) => renderEntityRow(entity))}
             </tbody>
           </table>
@@ -325,8 +325,8 @@ export default function EntitiesPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowModal(false)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
                 {editingEntity ? 'Edit Entity' : 'Add Entity'}
               </h3>
 
@@ -390,7 +390,7 @@ export default function EntitiesPage() {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                     className="h-4 w-4 text-primary-600 rounded"
                   />
-                  <label htmlFor="isActive" className="text-sm text-gray-700 dark:text-gray-300">
+                  <label htmlFor="isActive" className="text-sm text-slate-700 dark:text-slate-300">
                     Active
                   </label>
                 </div>
@@ -427,3 +427,4 @@ export default function EntitiesPage() {
     </div>
   );
 }
+

@@ -135,19 +135,19 @@ export default function EditAuditPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href={`/audits/${auditId}`} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <Link href={`/audits/${auditId}`} className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Audit</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{audit?.name}</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Audit</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{audit?.name}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="label">Audit Name *</label>
@@ -206,7 +206,7 @@ export default function EditAuditPage() {
 
         {/* Scope & Objectives */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Scope & Objectives</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Scope & Objectives</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Scope</label>
@@ -232,7 +232,7 @@ export default function EditAuditPage() {
 
         {/* Audit Period */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Audit Period</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Audit Period</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Period Start *</label>
@@ -280,7 +280,7 @@ export default function EditAuditPage() {
 
         {/* Team Assignment */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Team Assignment</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Team Assignment</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Lead Auditor</label>
@@ -318,7 +318,7 @@ export default function EditAuditPage() {
 
         {/* Reporting */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reporting</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Reporting</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Risk Assessment</label>
@@ -359,3 +359,4 @@ export default function EditAuditPage() {
     </div>
   );
 }
+

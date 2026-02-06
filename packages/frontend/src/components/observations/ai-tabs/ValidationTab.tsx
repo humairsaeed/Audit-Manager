@@ -39,7 +39,7 @@ const complianceStatusColors = {
   COMPLIANT: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   PARTIAL: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   NON_COMPLIANT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  NOT_APPLICABLE: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+  NOT_APPLICABLE: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
 };
 
 const standardLabels: Record<string, string> = {
@@ -64,14 +64,14 @@ export function ValidationTab({ data }: ValidationTabProps) {
       {/* Alignment Score */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Alignment Score
           </span>
-          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+          <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
             {data.alignmentScore}/100
           </span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
           <div
             className={clsx('h-2.5 rounded-full transition-all duration-500', {
               'bg-red-500': data.alignmentScore < 40,
@@ -81,14 +81,14 @@ export function ValidationTab({ data }: ValidationTabProps) {
             style={{ width: `${data.alignmentScore}%` }}
           />
         </div>
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Measures alignment between description, risk, and recommendation
         </p>
       </div>
 
       {/* Audit Defensibility */}
       <div>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
           Audit Defensibility
         </span>
         <div className="mt-2">
@@ -102,17 +102,17 @@ export function ValidationTab({ data }: ValidationTabProps) {
             {data.auditDefensibility}
           </span>
         </div>
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           How well this observation would withstand external scrutiny
         </p>
       </div>
 
       {/* Risk Severity Justification */}
       <div>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
           Risk Rating Analysis
         </span>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
           {data.riskSeverityJustification}
         </p>
       </div>
@@ -120,14 +120,14 @@ export function ValidationTab({ data }: ValidationTabProps) {
       {/* Key Gaps */}
       {data.keyGaps && data.keyGaps.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Key Gaps Identified
           </span>
           <ul className="mt-2 space-y-2">
             {data.keyGaps.map((gap, index) => (
               <li
                 key={index}
-                className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400"
+                className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400"
               >
                 <span className="text-yellow-500 mt-0.5 flex-shrink-0">•</span>
                 <span>{gap}</span>
@@ -140,7 +140,7 @@ export function ValidationTab({ data }: ValidationTabProps) {
       {/* Defensibility Flags */}
       {data.defensibilityFlags && data.defensibilityFlags.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Issues to Address
           </span>
           <div className="mt-2 space-y-2">
@@ -163,14 +163,14 @@ export function ValidationTab({ data }: ValidationTabProps) {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded">
                           {flag.type.replace(/_/g, ' ')}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
                           in {flag.field}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                         {flag.message}
                       </p>
                       {flag.suggestion && (
@@ -189,10 +189,10 @@ export function ValidationTab({ data }: ValidationTabProps) {
 
       {/* Standards Compliance */}
       {data.standardsCompliance && data.standardsCompliance.length > 0 && (
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheckIcon className="h-5 w-5 text-purple-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Standards Compliance Mapping
             </span>
           </div>
@@ -200,7 +200,7 @@ export function ValidationTab({ data }: ValidationTabProps) {
             {data.standardsCompliance.map((mapping: ObservationStandardsMapping, index: number) => (
               <div
                 key={index}
-                className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700"
+                className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700"
               >
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -212,7 +212,7 @@ export function ValidationTab({ data }: ValidationTabProps) {
                     >
                       {standardLabels[mapping.standard] || mapping.standard}
                     </span>
-                    <span className="text-xs font-mono text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                    <span className="text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded">
                       {mapping.controlNumber}
                     </span>
                   </div>
@@ -226,14 +226,14 @@ export function ValidationTab({ data }: ValidationTabProps) {
                   </span>
                 </div>
                 <div className="mt-2">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {mapping.controlName}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Domain: {mapping.domain}
                   </p>
                 </div>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                   {mapping.observationAlignment}
                 </p>
                 {mapping.gaps && (
@@ -254,14 +254,14 @@ export function ValidationTab({ data }: ValidationTabProps) {
 
       {/* Scope Validation */}
       {data.scopeValidation && (
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-3">
             <GlobeAltIcon className="h-5 w-5 text-blue-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Scope Validation
             </span>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-2 mb-2">
               <span
                 className={clsx(
@@ -274,17 +274,17 @@ export function ValidationTab({ data }: ValidationTabProps) {
                 {data.scopeValidation.withinScope ? 'Within Scope' : 'Outside Scope'}
               </span>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               {data.scopeValidation.scopeAlignment}
             </p>
             {data.scopeValidation.auditObjective && (
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                 <span className="font-medium">Audit Objective:</span> {data.scopeValidation.auditObjective}
               </p>
             )}
             {data.scopeValidation.relevantDomains && data.scopeValidation.relevantDomains.length > 0 && (
               <div className="mt-2 flex items-center gap-1 flex-wrap">
-                <span className="text-xs text-gray-500 dark:text-gray-400">Relevant Domains:</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">Relevant Domains:</span>
                 {data.scopeValidation.relevantDomains.map((domain, index) => (
                   <span
                     key={index}
@@ -301,22 +301,22 @@ export function ValidationTab({ data }: ValidationTabProps) {
 
       {/* Compliance Summary */}
       {data.complianceSummary && (
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Compliance Summary
           </span>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
             {data.complianceSummary}
           </p>
         </div>
       )}
 
       {/* AI Confidence */}
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
           <span>AI Confidence</span>
           <div className="flex items-center gap-2">
-            <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+            <div className="w-20 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
               <div
                 className="h-1.5 rounded-full bg-purple-500"
                 style={{ width: `${Math.round(data.aiConfidence * 100)}%` }}
@@ -329,3 +329,4 @@ export function ValidationTab({ data }: ValidationTabProps) {
     </div>
   );
 }
+

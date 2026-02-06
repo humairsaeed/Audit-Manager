@@ -69,8 +69,8 @@ const typeConfig: Record<string, { icon: any; color: string; bgColor: string }> 
   },
   STATUS_CHANGED: {
     icon: BellIcon,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
+    color: 'text-slate-600',
+    bgColor: 'bg-slate-100',
   },
   COMMENT_ADDED: {
     icon: DocumentTextIcon,
@@ -157,8 +157,8 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
+          <p className="mt-1 text-sm text-slate-500">
             {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
@@ -182,7 +182,7 @@ export default function NotificationsPage() {
             'px-4 py-2 text-sm font-medium rounded-lg',
             filter === 'all'
               ? 'bg-primary-100 text-primary-700'
-              : 'text-gray-500 hover:bg-gray-100'
+              : 'text-slate-500 hover:bg-slate-100'
           )}
         >
           All
@@ -193,7 +193,7 @@ export default function NotificationsPage() {
             'px-4 py-2 text-sm font-medium rounded-lg',
             filter === 'unread'
               ? 'bg-primary-100 text-primary-700'
-              : 'text-gray-500 hover:bg-gray-100'
+              : 'text-slate-500 hover:bg-slate-100'
           )}
         >
           Unread
@@ -207,13 +207,13 @@ export default function NotificationsPage() {
         </div>
       ) : notifications.length === 0 ? (
         <div className="card p-8 text-center">
-          <BellIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">
+          <BellIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-500">
             {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
           </p>
         </div>
       ) : (
-        <div className="card divide-y divide-gray-100">
+        <div className="card divide-y divide-slate-100">
           {notifications.map((notification: Notification) => {
             const config = typeConfig[notification.type] || typeConfig.STATUS_CHANGED;
             const Icon = config.icon;
@@ -225,7 +225,7 @@ export default function NotificationsPage() {
                 className={clsx(
                   'p-4 flex gap-4 cursor-pointer transition-colors',
                   notification.isRead ? 'bg-white' : 'bg-blue-50',
-                  'hover:bg-gray-50'
+                  'hover:bg-slate-50'
                 )}
               >
                 <div className={clsx('p-2 rounded-lg flex-shrink-0', config.bgColor)}>
@@ -235,15 +235,15 @@ export default function NotificationsPage() {
                   <div className="flex items-start justify-between gap-2">
                     <p className={clsx(
                       'text-sm',
-                      notification.isRead ? 'text-gray-900' : 'text-gray-900 font-medium'
+                      notification.isRead ? 'text-slate-900' : 'text-slate-900 font-medium'
                     )}>
                       {notification.title}
                     </p>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                    <span className="text-xs text-slate-500 whitespace-nowrap">
                       {formatDate(notification.createdAt)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                  <p className="text-sm text-slate-600 mt-1 line-clamp-2">
                     {notification.message}
                   </p>
                   {!notification.isRead && (
@@ -260,3 +260,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+

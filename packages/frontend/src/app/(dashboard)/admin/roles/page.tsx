@@ -185,8 +185,8 @@ export default function RolesPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Role Management</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Role Management</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Manage roles and their permissions
           </p>
         </div>
@@ -224,22 +224,22 @@ export default function RolesPage() {
                     )} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">{role.displayName}</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{role.name}</p>
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{role.displayName}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{role.name}</p>
                   </div>
                 </div>
                 {!role.isSystemRole && (
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleEdit(role)}
-                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                       title="Edit"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(role)}
-                      className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                      className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
                       title="Delete"
                     >
                       <TrashIcon className="h-4 w-4" />
@@ -249,34 +249,34 @@ export default function RolesPage() {
               </div>
 
               {role.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{role.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{role.description}</p>
               )}
 
               <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                   <UsersIcon className="h-4 w-4" />
                   <span>{role.userCount} users</span>
                 </div>
                 <span className={clsx(
                   'badge',
-                  role.isSystemRole ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  role.isSystemRole ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300'
                 )}>
                   {role.isSystemRole ? 'System' : 'Custom'}
                 </span>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
                   {role.permissions.length} permissions
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {role.permissions.slice(0, 5).map((perm) => (
-                    <span key={perm.id} className="badge bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 text-xs">
+                    <span key={perm.id} className="badge bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 text-xs">
                       {perm.resource}:{perm.action}
                     </span>
                   ))}
                   {role.permissions.length > 5 && (
-                    <span className="badge bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 text-xs">
+                    <span className="badge bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 text-xs">
                       +{role.permissions.length - 5} more
                     </span>
                   )}
@@ -292,8 +292,8 @@ export default function RolesPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowModal(false)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
                 {editingRole ? 'Edit Role' : 'Create Role'}
               </h3>
 
@@ -310,7 +310,7 @@ export default function RolesPage() {
                       placeholder="e.g., custom_auditor"
                       required
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Lowercase, no spaces</p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Lowercase, no spaces</p>
                   </div>
                   <div>
                     <label className="label">Display Name *</label>
@@ -346,15 +346,15 @@ export default function RolesPage() {
                     min={0}
                     max={100}
                   />
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Higher level = more authority</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Higher level = more authority</p>
                 </div>
 
                 <div>
                   <label className="label">Permissions</label>
-                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto">
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-lg max-h-60 overflow-y-auto">
                     {Object.entries(groupedPermissions).map(([resource, perms]) => (
-                      <div key={resource} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-                        <div className="bg-gray-50 dark:bg-gray-700 px-3 py-2 font-medium text-sm text-gray-700 dark:text-gray-300 capitalize">
+                      <div key={resource} className="border-b border-slate-200 dark:border-slate-700 last:border-b-0">
+                        <div className="bg-slate-50 dark:bg-slate-700 px-3 py-2 font-medium text-sm text-slate-700 dark:text-slate-300 capitalize">
                           {resource.replace(/_/g, ' ')}
                         </div>
                         <div className="p-3 space-y-2">
@@ -366,11 +366,11 @@ export default function RolesPage() {
                                 onChange={() => handlePermissionToggle(perm.id)}
                                 className="h-4 w-4 text-primary-600 rounded"
                               />
-                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                              <span className="text-sm text-slate-700 dark:text-slate-300">
                                 {perm.action} ({perm.scope})
                               </span>
                               {perm.description && (
-                                <span className="text-xs text-gray-400">- {perm.description}</span>
+                                <span className="text-xs text-slate-400">- {perm.description}</span>
                               )}
                             </label>
                           ))}
@@ -412,3 +412,4 @@ export default function RolesPage() {
     </div>
   );
 }
+

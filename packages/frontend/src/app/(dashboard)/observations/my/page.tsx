@@ -21,7 +21,7 @@ const riskColors: Record<string, string> = {
   HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
   MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
   LOW: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  INFORMATIONAL: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  INFORMATIONAL: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
 };
 
 const statusColors: Record<string, string> = {
@@ -175,8 +175,8 @@ export default function MyObservationsPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Observations</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">My Observations</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Observations assigned to you or pending your review
         </p>
       </div>
@@ -195,8 +195,8 @@ export default function MyObservationsPage() {
               <ClockIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{ownedCount}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Assigned to Me</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{ownedCount}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Assigned to Me</p>
             </div>
           </div>
         </button>
@@ -213,8 +213,8 @@ export default function MyObservationsPage() {
               <CheckCircleIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{reviewingCount}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Pending My Review</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{reviewingCount}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Pending My Review</p>
             </div>
           </div>
         </button>
@@ -231,8 +231,8 @@ export default function MyObservationsPage() {
               <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{overdueCount}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Overdue</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{overdueCount}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Overdue</p>
             </div>
           </div>
         </button>
@@ -240,7 +240,7 @@ export default function MyObservationsPage() {
 
       {/* Tab Content Title */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <h2 className="text-lg font-medium text-slate-900 dark:text-slate-100">
           {activeTab === 'owned' && 'Observations Assigned to Me'}
           {activeTab === 'reviewing' && 'Observations Pending My Review'}
           {activeTab === 'overdue' && 'Overdue Observations'}
@@ -258,7 +258,7 @@ export default function MyObservationsPage() {
             className="flex-1"
           >
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search observation..."
@@ -287,7 +287,7 @@ export default function MyObservationsPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="label">Audit</label>
               <select
@@ -384,7 +384,7 @@ export default function MyObservationsPage() {
                   setSearch('');
                   setPage(1);
                 }}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
               >
                 Clear all filters
               </button>
@@ -398,11 +398,11 @@ export default function MyObservationsPage() {
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading observations...</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Loading observations...</p>
           </div>
         ) : filteredObservations.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-slate-500 dark:text-slate-400">
               {activeTab === 'owned' && 'No observations assigned to you'}
               {activeTab === 'reviewing' && 'No observations pending your review'}
               {activeTab === 'overdue' && 'No overdue observations'}
@@ -411,30 +411,30 @@ export default function MyObservationsPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead className="bg-slate-50 dark:bg-slate-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Observation
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Audit
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Risk
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Due Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Days Remaining
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                   {filteredObservations.map((obs: any) => {
                     const targetDate = new Date(obs.targetDate);
                     const today = new Date();
@@ -442,17 +442,17 @@ export default function MyObservationsPage() {
                     const isOverdue = daysRemaining < 0 && obs.status !== 'CLOSED';
 
                     return (
-                      <tr key={obs.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <tr key={obs.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
                         <td className="px-6 py-4">
                           <Link href={`/observations/${obs.id}`} className="block">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-primary-600">
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 hover:text-primary-600">
                               {obs.title}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{obs.globalSequence}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{obs.globalSequence}</p>
                           </Link>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900 dark:text-gray-100">{obs.audit?.name}</p>
+                          <p className="text-sm text-slate-900 dark:text-slate-100">{obs.audit?.name}</p>
                         </td>
                         <td className="px-6 py-4">
                           <span className={clsx('badge', riskColors[obs.riskRating])}>
@@ -465,7 +465,7 @@ export default function MyObservationsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <p className={clsx('text-sm', isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-900 dark:text-gray-100')}>
+                          <p className={clsx('text-sm', isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-slate-900 dark:text-slate-100')}>
                             {targetDate.toLocaleDateString()}
                           </p>
                         </td>
@@ -480,7 +480,7 @@ export default function MyObservationsPage() {
                             <span className={clsx('text-sm', {
                               'text-red-600 dark:text-red-400 font-medium': daysRemaining <= 3,
                               'text-orange-600 dark:text-orange-400': daysRemaining <= 7,
-                              'text-gray-600 dark:text-gray-400': daysRemaining > 7,
+                              'text-slate-600 dark:text-slate-400': daysRemaining > 7,
                             })}>
                               {daysRemaining} days
                             </span>
@@ -495,8 +495,8 @@ export default function MyObservationsPage() {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
                 </p>
@@ -508,7 +508,7 @@ export default function MyObservationsPage() {
                   >
                     <ChevronLeftIcon className="h-5 w-5" />
                   </button>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
                     Page {pagination.page} of {pagination.totalPages}
                   </span>
                   <button
@@ -527,3 +527,4 @@ export default function MyObservationsPage() {
     </div>
   );
 }
+

@@ -19,7 +19,7 @@ const priorityColors = {
 const relevanceColors = {
   HIGH: 'text-green-600 dark:text-green-400',
   MEDIUM: 'text-yellow-600 dark:text-yellow-400',
-  LOW: 'text-gray-500 dark:text-gray-400',
+  LOW: 'text-slate-500 dark:text-slate-400',
 };
 
 const standardLabels: Record<string, string> = {
@@ -40,7 +40,7 @@ const complianceStatusColors = {
   COMPLIANT: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   PARTIAL: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   NON_COMPLIANT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  NOT_APPLICABLE: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+  NOT_APPLICABLE: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
 };
 
 const standardsPriorityColors: Record<string, string> = {
@@ -58,7 +58,7 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
     <div className="space-y-5">
       {/* Remediation Priority */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
           Remediation Priority
         </span>
         <span
@@ -77,15 +77,15 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <ChartBarIcon className="h-5 w-5 text-purple-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Overall Compliance Score
               </span>
             </div>
-            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
               {data.overallComplianceScore}/100
             </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
             <div
               className={clsx('h-2.5 rounded-full transition-all duration-500', {
                 'bg-red-500': data.overallComplianceScore < 40,
@@ -95,7 +95,7 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
               style={{ width: `${data.overallComplianceScore}%` }}
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Estimated compliance level across all relevant standards
           </p>
         </div>
@@ -104,36 +104,36 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
       {/* Enhanced Recommendations */}
       {data.enhancedRecommendations && data.enhancedRecommendations.length > 0 && (
         <div>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Enhanced Recommendations
           </span>
           <div className="mt-2 space-y-2">
             {data.enhancedRecommendations.map((rec: EnhancedRecommendation, index: number) => (
               <div
                 key={index}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden"
               >
                 <button
                   onClick={() => setExpandedRec(expandedRec === index ? null : index)}
-                  className="w-full p-3 flex items-center justify-between bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full p-3 flex items-center justify-between bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 text-left">
+                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100 text-left">
                     Recommendation {index + 1}
                   </span>
                   {expandedRec === index ? (
-                    <ChevronUpIcon className="h-4 w-4 text-gray-500" />
+                    <ChevronUpIcon className="h-4 w-4 text-slate-500" />
                   ) : (
-                    <ChevronDownIcon className="h-4 w-4 text-gray-500" />
+                    <ChevronDownIcon className="h-4 w-4 text-slate-500" />
                   )}
                 </button>
                 {expandedRec === index && (
-                  <div className="p-3 space-y-3 bg-white dark:bg-gray-800/50">
+                  <div className="p-3 space-y-3 bg-white dark:bg-slate-800/50">
                     {rec.original && (
                       <div>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                           Original
                         </span>
-                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 italic">
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 italic">
                           {rec.original || 'Not provided'}
                         </p>
                       </div>
@@ -142,24 +142,24 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                       <span className="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">
                         Enhanced
                       </span>
-                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100 font-medium">
+                      <p className="mt-1 text-sm text-slate-900 dark:text-slate-100 font-medium">
                         {rec.enhanced}
                       </p>
                     </div>
                     <div>
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                         Rationale
                       </span>
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                         {rec.rationale}
                       </p>
                     </div>
                     {rec.implementationSteps && rec.implementationSteps.length > 0 && (
                       <div>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                           Implementation Steps
                         </span>
-                        <ol className="mt-1 list-decimal list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                        <ol className="mt-1 list-decimal list-inside text-sm text-slate-600 dark:text-slate-400 space-y-1">
                           {rec.implementationSteps.map((step: string, stepIndex: number) => (
                             <li key={stepIndex} className="pl-1">{step}</li>
                           ))}
@@ -179,7 +179,7 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheckIcon className="h-5 w-5 text-purple-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Mapped Standards
             </span>
           </div>
@@ -187,7 +187,7 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
             {data.mappedStandards.map((std: StandardMapping, index: number) => (
               <div
                 key={index}
-                className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
               >
                 <div className="flex items-start justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -199,7 +199,7 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                     >
                       {standardLabels[std.standard] || std.standard}
                     </span>
-                    <span className="font-mono text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                    <span className="font-mono text-xs bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded">
                       {std.clauseRef}
                     </span>
                   </div>
@@ -221,11 +221,11 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                     )}
                   </div>
                 </div>
-                <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <p className="mt-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                   {std.clauseName}
                 </p>
                 {std.domain && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Domain: {std.domain}
                   </p>
                 )}
@@ -242,10 +242,10 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
 
       {/* Standards-Based Recommendations */}
       {data.standardsBasedRecommendations && data.standardsBasedRecommendations.length > 0 && (
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheckIcon className="h-5 w-5 text-blue-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Standards-Based Recommendations
             </span>
           </div>
@@ -253,11 +253,11 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
             {data.standardsBasedRecommendations.map((rec: StandardsBasedRecommendation, index: number) => (
               <div
                 key={index}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden"
               >
                 <button
                   onClick={() => setExpandedStdRec(expandedStdRec === index ? null : index)}
-                  className="w-full p-3 flex items-center justify-between bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full p-3 flex items-center justify-between bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
@@ -268,7 +268,7 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                     >
                       {standardLabels[rec.standard] || rec.standard}
                     </span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       {rec.controlNumber}
                     </span>
                   </div>
@@ -282,19 +282,19 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                       {rec.priority}
                     </span>
                     {expandedStdRec === index ? (
-                      <ChevronUpIcon className="h-4 w-4 text-gray-500" />
+                      <ChevronUpIcon className="h-4 w-4 text-slate-500" />
                     ) : (
-                      <ChevronDownIcon className="h-4 w-4 text-gray-500" />
+                      <ChevronDownIcon className="h-4 w-4 text-slate-500" />
                     )}
                   </div>
                 </button>
                 {expandedStdRec === index && (
-                  <div className="p-3 space-y-3 bg-white dark:bg-gray-800/50">
+                  <div className="p-3 space-y-3 bg-white dark:bg-slate-800/50">
                     <div>
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                         Control
                       </span>
-                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300 font-medium">
+                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 font-medium">
                         {rec.controlName}
                       </p>
                     </div>
@@ -302,16 +302,16 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                       <span className="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">
                         Recommendation
                       </span>
-                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                      <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">
                         {rec.recommendation}
                       </p>
                     </div>
                     {rec.implementationSteps && rec.implementationSteps.length > 0 && (
                       <div>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                           Implementation Steps
                         </span>
-                        <ol className="mt-1 list-decimal list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                        <ol className="mt-1 list-decimal list-inside text-sm text-slate-600 dark:text-slate-400 space-y-1">
                           {rec.implementationSteps.map((step: string, stepIndex: number) => (
                             <li key={stepIndex} className="pl-1">{step}</li>
                           ))}
@@ -322,7 +322,7 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                       <span className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">
                         Expected Outcome
                       </span>
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                         {rec.expectedOutcome}
                       </p>
                     </div>
@@ -336,10 +336,10 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
 
       {/* Compliance Roadmap */}
       {data.complianceRoadmap && data.complianceRoadmap.length > 0 && (
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-3">
             <MapIcon className="h-5 w-5 text-green-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Compliance Roadmap
             </span>
           </div>
@@ -351,22 +351,22 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
               >
                 {/* Timeline connector */}
                 {index < data.complianceRoadmap.length - 1 && (
-                  <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
+                  <div className="absolute left-3 top-6 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
                 )}
                 {/* Phase number */}
                 <div className="absolute left-0 top-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 flex items-center justify-center text-xs font-bold">
                   {phase.phase}
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100">
                     {phase.title}
                   </h4>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {phase.description}
                   </p>
                   {phase.standards && phase.standards.length > 0 && (
                     <div className="mt-2 flex items-center gap-1 flex-wrap">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Standards:</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Standards:</span>
                       {phase.standards.map((std, stdIndex) => (
                         <span
                           key={stdIndex}
@@ -379,10 +379,10 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
                   )}
                   {phase.actions && phase.actions.length > 0 && (
                     <div className="mt-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Actions:</span>
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Actions:</span>
                       <ul className="mt-1 space-y-0.5">
                         {phase.actions.map((action, actionIndex) => (
-                          <li key={actionIndex} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1">
+                          <li key={actionIndex} className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-1">
                             <span className="text-purple-500 mt-0.5">•</span>
                             <span>{action}</span>
                           </li>
@@ -405,10 +405,11 @@ export function RecommendationsTab({ data }: RecommendationsTabProps) {
       {/* Empty State */}
       {(!data.enhancedRecommendations || data.enhancedRecommendations.length === 0) &&
        (!data.mappedStandards || data.mappedStandards.length === 0) && (
-        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-6 text-slate-500 dark:text-slate-400">
           <p>No recommendations available.</p>
         </div>
       )}
     </div>
   );
 }
+

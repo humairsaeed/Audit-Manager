@@ -20,7 +20,7 @@ const riskColors: Record<string, string> = {
   HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
   MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
   LOW: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  INFORMATIONAL: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  INFORMATIONAL: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
 };
 
 const statusColors: Record<string, string> = {
@@ -126,8 +126,8 @@ export default function ObservationsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Observations</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Observations</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Manage and track audit observations across your organization
           </p>
         </div>
@@ -145,7 +145,7 @@ export default function ObservationsPage() {
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search observations..."
@@ -176,7 +176,7 @@ export default function ObservationsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="label">Status</label>
               <select
@@ -244,7 +244,7 @@ export default function ObservationsPage() {
             </div>
 
             <div className="lg:col-span-4 flex justify-end">
-              <button onClick={clearFilters} className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+              <button onClick={clearFilters} className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
                 Clear all filters
               </button>
             </div>
@@ -257,11 +257,11 @@ export default function ObservationsPage() {
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading observations...</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Loading observations...</p>
           </div>
         ) : observations.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No observations found</p>
+            <p className="text-slate-500 dark:text-slate-400">No observations found</p>
             {canCreate && (
               <Link href="/observations/new" className="btn btn-primary mt-4">
                 Create your first observation
@@ -271,46 +271,46 @@ export default function ObservationsPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead className="bg-slate-50 dark:bg-slate-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Observation
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Audit / Entity
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Risk
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Owner
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Due Date
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                   {observations.map((obs: any) => {
                     const isOverdue = new Date(obs.targetDate) < new Date() && obs.status !== 'CLOSED';
 
                     return (
-                      <tr key={obs.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <tr key={obs.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
                         <td className="px-6 py-4">
                           <Link href={`/observations/${obs.id}`} className="block">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-primary-600">
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 hover:text-primary-600">
                               {obs.title}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{obs.globalSequence}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{obs.globalSequence}</p>
                           </Link>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900 dark:text-gray-100">{obs.audit?.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{obs.entity?.name || '-'}</p>
+                          <p className="text-sm text-slate-900 dark:text-slate-100">{obs.audit?.name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{obs.entity?.name || '-'}</p>
                         </td>
                         <td className="px-6 py-4">
                           <span className={clsx('badge', riskColors[obs.riskRating])}>
@@ -324,15 +324,15 @@ export default function ObservationsPage() {
                         </td>
                         <td className="px-6 py-4">
                           {obs.owner ? (
-                            <p className="text-sm text-gray-900 dark:text-gray-100">
+                            <p className="text-sm text-slate-900 dark:text-slate-100">
                               {obs.owner.displayName || `${obs.owner.firstName} ${obs.owner.lastName}`}
                             </p>
                           ) : (
-                            <span className="text-sm text-gray-400 dark:text-gray-500">Unassigned</span>
+                            <span className="text-sm text-slate-400 dark:text-slate-500">Unassigned</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <p className={clsx('text-sm', isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-900 dark:text-gray-100')}>
+                          <p className={clsx('text-sm', isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-slate-900 dark:text-slate-100')}>
                             {new Date(obs.targetDate).toLocaleDateString()}
                           </p>
                           {isOverdue && <p className="text-xs text-red-500 dark:text-red-400">Overdue</p>}
@@ -346,8 +346,8 @@ export default function ObservationsPage() {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
                 </p>
@@ -359,7 +359,7 @@ export default function ObservationsPage() {
                   >
                     <ChevronLeftIcon className="h-5 w-5" />
                   </button>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
                     Page {pagination.page} of {pagination.totalPages}
                   </span>
                   <button
@@ -378,3 +378,4 @@ export default function ObservationsPage() {
     </div>
   );
 }
+

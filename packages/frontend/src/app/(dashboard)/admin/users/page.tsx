@@ -33,7 +33,7 @@ interface User {
 
 const statusColors: Record<string, string> = {
   ACTIVE: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  INACTIVE: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  INACTIVE: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
   LOCKED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
 };
@@ -280,8 +280,8 @@ export default function UsersPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">User Management</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Manage system users and their roles
           </p>
         </div>
@@ -301,7 +301,7 @@ export default function UsersPage() {
       {/* Search */}
       <div className="card p-4">
         <div className="relative max-w-md">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input
             type="text"
             placeholder="Search users..."
@@ -323,40 +323,40 @@ export default function UsersPage() {
           </div>
         ) : users.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No users found</p>
+            <p className="text-slate-500 dark:text-slate-400">No users found</p>
           </div>
         ) : (
           <>
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-800">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+              <thead className="bg-slate-50 dark:bg-slate-800">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     Roles
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     Last Login
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                 {users.map((user: User) => (
-                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {user.avatarUrl ? (
                           <img
                             src={user.avatarUrl}
                             alt={user.displayName || `${user.firstName} ${user.lastName}`}
-                            className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                            className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700"
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
@@ -367,17 +367,17 @@ export default function UsersPage() {
                           </div>
                         )}
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">
+                          <p className="font-medium text-slate-900 dark:text-slate-100">
                             {user.displayName || `${user.firstName} ${user.lastName}`}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {user.roles.map((role: any) => (
-                          <span key={role.role?.id || role.id} className="badge bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs">
+                          <span key={role.role?.id || role.id} className="badge bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-xs">
                             {role.role?.displayName || role.displayName}
                           </span>
                         ))}
@@ -388,7 +388,7 @@ export default function UsersPage() {
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                       {user.lastLoginAt
                         ? new Date(user.lastLoginAt).toLocaleDateString()
                         : 'Never'}
@@ -397,14 +397,14 @@ export default function UsersPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleResetPassword(user)}
-                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                           title="Reset Password"
                         >
                           <KeyIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(user)}
-                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                           title={user.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
                         >
                           {user.status === 'ACTIVE' ? (
@@ -415,14 +415,14 @@ export default function UsersPage() {
                         </button>
                         <button
                           onClick={() => handleEdit(user)}
-                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                           title="Edit"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(user)}
-                          className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                          className="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
                           title="Delete"
                         >
                           <TrashIcon className="h-5 w-5" />
@@ -436,8 +436,8 @@ export default function UsersPage() {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
                 </p>
@@ -468,8 +468,8 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowModal(false)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
                 {editingUser ? 'Edit User' : 'Add User'}
               </h3>
 
@@ -533,7 +533,7 @@ export default function UsersPage() {
                         minLength={12}
                         required
                       />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         Must be at least 12 characters with uppercase, lowercase, numbers, and special characters
                       </p>
                     </div>
@@ -545,7 +545,7 @@ export default function UsersPage() {
                         onChange={(e) => setFormData({ ...formData, sendInvite: e.target.checked })}
                         className="h-4 w-4 text-primary-600 rounded"
                       />
-                      <label htmlFor="sendInvite" className="text-sm text-gray-700 dark:text-gray-300">
+                      <label htmlFor="sendInvite" className="text-sm text-slate-700 dark:text-slate-300">
                         Send welcome email with credentials
                       </label>
                     </div>
@@ -554,7 +554,7 @@ export default function UsersPage() {
 
                 <div>
                   <label className="label">Roles *</label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-lg">
                     {roles?.map((role: any) => (
                       <label key={role.id} className="flex items-center gap-2">
                         <input
@@ -563,7 +563,7 @@ export default function UsersPage() {
                           onChange={() => handleRoleToggle(role.id)}
                           className="h-4 w-4 text-primary-600 rounded"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{role.displayName}</span>
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{role.displayName}</span>
                       </label>
                     ))}
                   </div>
@@ -607,17 +607,17 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setResetUser(null)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
                 Reset Password
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                 Choose how to reset the password for <span className="font-medium">{resetUser.email}</span>.
               </p>
 
               <form onSubmit={handleResetSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                     <input
                       type="radio"
                       name="resetMode"
@@ -631,7 +631,7 @@ export default function UsersPage() {
                     />
                     Send reset email link
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                     <input
                       type="radio"
                       name="resetMode"
@@ -660,7 +660,7 @@ export default function UsersPage() {
                       className="input"
                       placeholder="Enter a strong temporary password"
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       Must be at least 12 characters with uppercase, lowercase, numbers, and special characters.
                     </p>
                     {resetErrors.length > 0 && (
@@ -697,3 +697,4 @@ export default function UsersPage() {
     </div>
   );
 }
+

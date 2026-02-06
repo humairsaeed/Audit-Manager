@@ -142,7 +142,7 @@ export default function EditObservationPage() {
   if (!observation) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Observation not found</h3>
+        <h3 className="text-lg font-medium text-slate-900 dark:text-white">Observation not found</h3>
         <Link href="/observations" className="btn btn-primary mt-4">
           Back to Observations
         </Link>
@@ -154,19 +154,19 @@ export default function EditObservationPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href={`/observations/${observationId}`} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <Link href={`/observations/${observationId}`} className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Observation</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{observation.globalSequence}</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Observation</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{observation.globalSequence}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="label">Audit</label>
@@ -174,7 +174,7 @@ export default function EditObservationPage() {
                 type="text"
                 value={observation.audit?.name || ''}
                 disabled
-                className="input bg-gray-50 dark:bg-gray-700"
+                className="input bg-slate-50 dark:bg-slate-700"
               />
             </div>
 
@@ -230,7 +230,7 @@ export default function EditObservationPage() {
 
         {/* Risk & Classification */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Risk & Classification</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Risk & Classification</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="label">Risk Rating *</label>
@@ -247,7 +247,7 @@ export default function EditObservationPage() {
 
         {/* Root Cause & Recommendation */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Analysis & Recommendations</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Analysis & Recommendations</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Risk</label>
@@ -283,7 +283,7 @@ export default function EditObservationPage() {
 
         {/* Management Response */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Management Response</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Management Response</h2>
           <div className="space-y-4">
             <div>
               <label className="label">Management Response</label>
@@ -309,7 +309,7 @@ export default function EditObservationPage() {
 
         {/* Assignment */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Assignment & Timeline</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Assignment & Timeline</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="label">Owner</label>
@@ -366,3 +366,4 @@ export default function EditObservationPage() {
     </div>
   );
 }
+

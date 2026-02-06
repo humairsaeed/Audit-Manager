@@ -116,16 +116,16 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
     <div className={clsx('card overflow-hidden', className)}>
       {/* Header */}
       <div
-        className="p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
+        className="p-4 border-b border-slate-200 dark:border-slate-700 cursor-pointer flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">
           <SparklesIcon className="h-5 w-5 text-purple-500" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             AI Assist
           </h3>
           {metadata?.fromCache && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+            <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
               cached
             </span>
           )}
@@ -137,7 +137,7 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
               refreshMutation.mutate();
             }}
             disabled={refreshMutation.isPending || isLoading}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-50"
             title="Refresh insights"
           >
             <ArrowPathIcon
@@ -147,9 +147,9 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
             />
           </button>
           {isExpanded ? (
-            <ChevronUpIcon className="h-5 w-5 text-gray-400" />
+            <ChevronUpIcon className="h-5 w-5 text-slate-400" />
           ) : (
-            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+            <ChevronDownIcon className="h-5 w-5 text-slate-400" />
           )}
         </div>
       </div>
@@ -167,7 +167,7 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
+          <div className="flex border-b border-slate-200 dark:border-slate-700">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -176,7 +176,7 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
                   'flex-1 px-3 py-3 text-sm font-medium flex items-center justify-center gap-1.5 transition-colors',
                   activeTab === tab.id
                     ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                 )}
               >
                 <tab.icon className="h-4 w-4" />
@@ -190,14 +190,14 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-                <span className="ml-3 text-gray-500 dark:text-gray-400">
+                <span className="ml-3 text-slate-500 dark:text-slate-400">
                   Analyzing observation...
                 </span>
               </div>
             ) : error ? (
               <div className="text-center py-8">
                 <ExclamationTriangleIcon className="mx-auto h-8 w-8 text-red-500" />
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                   Failed to load AI insights. Please try again.
                 </p>
                 <button
@@ -219,7 +219,7 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
                   <EvidenceGuidanceTab data={insights.evidenceGuidance as EvidenceGuidanceResult} />
                 )}
                 {!insights && !isLoading && (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                     <p>No insights available. Click refresh to generate.</p>
                   </div>
                 )}
@@ -229,7 +229,7 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
 
           {/* Footer with metadata */}
           {metadata && (
-            <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50">
+            <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50">
               Generated: {new Date(metadata.generatedAt).toLocaleString()} |
               Processing: {metadata.processingTimeMs}ms
             </div>
@@ -239,3 +239,4 @@ export function AIAssistPanel({ observationId, className }: AIAssistPanelProps) 
     </div>
   );
 }
+

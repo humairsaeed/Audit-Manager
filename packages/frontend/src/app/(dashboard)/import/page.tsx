@@ -276,8 +276,8 @@ export default function ImportPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Import Observations</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Import Observations</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Import observations from Excel or CSV files with intelligent column mapping
         </p>
       </div>
@@ -292,16 +292,16 @@ export default function ImportPage() {
                   'w-10 h-10 rounded-full flex items-center justify-center font-medium',
                   step === s || ['mapping', 'preview', 'complete'].indexOf(step) > ['upload', 'mapping', 'preview', 'complete'].indexOf(s)
                     ? 'bg-primary-600 text-white'
-                    : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                    : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
                 )}
               >
                 {index + 1}
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100 hidden sm:block">
+              <span className="ml-2 text-sm font-medium text-slate-900 dark:text-slate-100 hidden sm:block">
                 {s.charAt(0).toUpperCase() + s.slice(1)}
               </span>
               {index < 3 && (
-                <div className="hidden sm:block w-16 h-0.5 mx-4 bg-gray-200 dark:bg-gray-700" />
+                <div className="hidden sm:block w-16 h-0.5 mx-4 bg-slate-200 dark:bg-slate-700" />
               )}
             </div>
           ))}
@@ -332,14 +332,14 @@ export default function ImportPage() {
             onDragOver={(e) => e.preventDefault()}
             className={clsx(
               'border-2 border-dashed rounded-lg p-12 text-center transition-colors',
-              file ? 'border-primary-300 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-700' : 'border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500'
+              file ? 'border-primary-300 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-700' : 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500'
             )}
           >
             {file ? (
               <div>
                 <CheckCircleIcon className="mx-auto h-12 w-12 text-primary-600 dark:text-primary-400" />
-                <p className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-4 text-lg font-medium text-slate-900 dark:text-slate-100">{file.name}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   {(file.size / 1024).toFixed(1)} KB
                 </p>
                 <button
@@ -351,7 +351,7 @@ export default function ImportPage() {
               </div>
             ) : (
               <div>
-                <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                <CloudArrowUpIcon className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500" />
                 <div className="mt-4">
                   <label className="cursor-pointer">
                     <span className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
@@ -364,9 +364,9 @@ export default function ImportPage() {
                       className="hidden"
                     />
                   </label>
-                  <span className="text-gray-500 dark:text-gray-400"> or drag and drop</span>
+                  <span className="text-slate-500 dark:text-slate-400"> or drag and drop</span>
                 </div>
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   Excel (.xlsx) or CSV files up to 10MB
                 </p>
               </div>
@@ -399,34 +399,34 @@ export default function ImportPage() {
       {step === 'mapping' && (
         <div className="card p-6">
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Map Columns</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Map Columns</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Match your file columns to observation fields. We've suggested mappings based on column names.
             </p>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-800">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+              <thead className="bg-slate-50 dark:bg-slate-800">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     Source Column
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     Maps To
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
                     Sample Data
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                 {columnMappings.map((mapping, index) => (
                   <tr key={index}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <TableCellsIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                        <span className="font-medium text-gray-900 dark:text-gray-100">{mapping.sourceColumn}</span>
+                        <TableCellsIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                        <span className="font-medium text-slate-900 dark:text-slate-100">{mapping.sourceColumn}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -445,7 +445,7 @@ export default function ImportPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
                       <div className="max-w-xs truncate">
                         {mapping.sampleData.slice(0, 2).join(', ')}
                       </div>
@@ -486,34 +486,34 @@ export default function ImportPage() {
       {step === 'preview' && (
         <div className="card p-6">
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Preview Import</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Preview Import</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Review the data before importing. Showing first 10 rows.
             </p>
           </div>
 
           <div className="overflow-x-auto mb-6">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">#</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Title</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Risk</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Risk Rating</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Target Date</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">#</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Title</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Risk</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Risk Rating</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Target Date</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {previewData.slice(0, 10).map((row, index) => (
                   <tr key={index}>
-                    <td className="px-3 py-2 text-gray-500 dark:text-gray-400">{index + 1}</td>
-                    <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100 max-w-xs truncate">
+                    <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{index + 1}</td>
+                    <td className="px-3 py-2 font-medium text-slate-900 dark:text-slate-100 max-w-xs truncate">
                       {row.title}
                     </td>
-                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 max-w-xs truncate">{row.impact || '-'}</td>
-                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{row.riskRating || 'MEDIUM'}</td>
-                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{row.targetDate || 'Auto-calculated'}</td>
+                    <td className="px-3 py-2 text-slate-700 dark:text-slate-300 max-w-xs truncate">{row.impact || '-'}</td>
+                    <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{row.riskRating || 'MEDIUM'}</td>
+                    <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{row.targetDate || 'Auto-calculated'}</td>
                     <td className="px-3 py-2">
                       {row.isValid !== false ? (
                         <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
@@ -533,8 +533,8 @@ export default function ImportPage() {
             </table>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 mb-6">
+            <p className="text-sm text-slate-700 dark:text-slate-300">
               <strong>{validationResult?.totalRows ?? previewData.length}</strong> total rows found.{' '}
               <strong className="text-green-600 dark:text-green-400">
                 {validationResult?.validRows ?? previewData.filter((r) => r.isValid !== false).length}
@@ -568,8 +568,8 @@ export default function ImportPage() {
       {step === 'importing' && (
         <div className="card p-12 text-center">
           <ArrowPathIcon className="mx-auto h-12 w-12 text-primary-600 dark:text-primary-400 animate-spin" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Importing Observations</h2>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Please wait while we import your data...</p>
+          <h2 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Importing Observations</h2>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Please wait while we import your data...</p>
         </div>
       )}
 
@@ -582,7 +582,7 @@ export default function ImportPage() {
             ) : (
               <ExclamationTriangleIcon className="mx-auto h-16 w-16 text-yellow-500 dark:text-yellow-400" />
             )}
-            <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">Import Complete</h2>
+            <h2 className="mt-4 text-xl font-semibold text-slate-900 dark:text-slate-100">Import Complete</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
@@ -598,7 +598,7 @@ export default function ImportPage() {
 
           {importResult.errors && importResult.errors.length > 0 && (
             <div className="mb-8">
-              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Errors</h3>
+              <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-3">Errors</h3>
               <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-4 max-h-48 overflow-y-auto">
                 {importResult.errors.map((err, index) => (
                   <p key={index} className="text-sm text-red-700 dark:text-red-300">
@@ -622,3 +622,4 @@ export default function ImportPage() {
     </div>
   );
 }
+

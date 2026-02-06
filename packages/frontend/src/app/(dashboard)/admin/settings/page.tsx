@@ -155,8 +155,8 @@ export default function SettingsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">System Settings</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">System Settings</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Configure application-wide settings and preferences
           </p>
         </div>
@@ -185,7 +185,7 @@ export default function SettingsPage() {
                     'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors',
                     activeSection === section.id
                       ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
-                      : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700'
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700'
                   )}
                 >
                   <Icon className="h-5 w-5" />
@@ -201,7 +201,7 @@ export default function SettingsPage() {
           {/* General Settings */}
           {activeSection === 'general' && (
             <div className="card p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">General Settings</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">General Settings</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -263,8 +263,8 @@ export default function SettingsPage() {
           {/* SLA Settings */}
           {activeSection === 'sla' && (
             <div className="card p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">SLA Configuration</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">SLA Configuration</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Set default remediation timeframes (in days) for each risk rating
               </p>
 
@@ -288,15 +288,15 @@ export default function SettingsPage() {
           {/* Notification Settings */}
           {activeSection === 'notifications' && (
             <div className="card p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notification Settings</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Notification Settings</h2>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <EnvelopeIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+                    <EnvelopeIcon className="h-6 w-6 text-slate-400 dark:text-slate-500" />
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">Email Notifications</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Send notifications via email</p>
+                      <p className="font-medium text-slate-900 dark:text-slate-100">Email Notifications</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Send notifications via email</p>
                     </div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -308,18 +308,18 @@ export default function SettingsPage() {
                       }
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <svg className="h-6 w-6 text-gray-400 dark:text-gray-500" viewBox="0 0 24 24" fill="currentColor">
+                    <svg className="h-6 w-6 text-slate-400 dark:text-slate-500" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                     </svg>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">Microsoft Teams</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Send notifications to Teams channels</p>
+                      <p className="font-medium text-slate-900 dark:text-slate-100">Microsoft Teams</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Send notifications to Teams channels</p>
                     </div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -331,7 +331,7 @@ export default function SettingsPage() {
                       }
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                   </label>
                 </div>
 
@@ -356,11 +356,11 @@ export default function SettingsPage() {
           {/* Security Settings */}
           {activeSection === 'security' && (
             <div className="card p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Security Settings</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Security Settings</h2>
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Password Requirements</h3>
+                  <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-4">Password Requirements</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="label">Minimum Length</label>
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                         }
                         className="h-4 w-4 text-primary-600 rounded"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Require uppercase letters</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">Require uppercase letters</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <input
@@ -398,7 +398,7 @@ export default function SettingsPage() {
                         }
                         className="h-4 w-4 text-primary-600 rounded"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Require numbers</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">Require numbers</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <input
@@ -409,13 +409,13 @@ export default function SettingsPage() {
                         }
                         className="h-4 w-4 text-primary-600 rounded"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Require special characters</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">Require special characters</span>
                     </label>
                   </div>
                 </div>
 
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Session & Login</h3>
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+                  <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-4">Session & Login</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="label">Session Timeout (minutes)</label>
@@ -451,7 +451,7 @@ export default function SettingsPage() {
           {/* Audit Settings */}
           {activeSection === 'audit' && (
             <div className="card p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Audit Settings</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Audit Settings</h2>
 
               <div className="space-y-4">
                 <div>
@@ -479,7 +479,7 @@ export default function SettingsPage() {
                     onChange={(e) => handleChange('audit', 'requireApproval', e.target.checked)}
                     className="h-4 w-4 text-primary-600 rounded"
                   />
-                  <label htmlFor="requireApproval" className="text-sm text-gray-700 dark:text-gray-300">
+                  <label htmlFor="requireApproval" className="text-sm text-slate-700 dark:text-slate-300">
                     Require manager approval for observation closure
                   </label>
                 </div>
@@ -497,7 +497,7 @@ export default function SettingsPage() {
                     }
                     className="input max-w-xs"
                   />
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Automatically close observations this many days after their target date
                   </p>
                 </div>
@@ -509,3 +509,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

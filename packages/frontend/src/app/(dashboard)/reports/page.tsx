@@ -194,8 +194,8 @@ export default function ReportsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Reports & Analytics</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Reports & Analytics</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Generate insights and export compliance reports
           </p>
         </div>
@@ -215,14 +215,14 @@ export default function ReportsPage() {
       <div className="card p-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-gray-400" />
+            <CalendarIcon className="h-5 w-5 text-slate-400" />
             <input
               type="date"
               value={dateRange.start}
               onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
               className="input"
             />
-            <span className="text-gray-500 dark:text-gray-400">to</span>
+            <span className="text-slate-500 dark:text-slate-400">to</span>
             <input
               type="date"
               value={dateRange.end}
@@ -267,20 +267,20 @@ export default function ReportsPage() {
               'px-4 py-3 rounded-lg text-left min-w-[180px] transition-colors',
               activeReport === report.id
                 ? 'bg-primary-600 border-2 border-primary-700 dark:bg-primary-700 dark:border-primary-500'
-                : 'bg-white border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
+                : 'bg-white border border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700'
             )}
           >
             <p className={clsx(
               'font-medium',
               activeReport === report.id
                 ? 'text-white'
-                : 'text-gray-900 dark:text-gray-100'
+                : 'text-slate-900 dark:text-slate-100'
             )}>{report.label}</p>
             <p className={clsx(
               'text-xs',
               activeReport === report.id
                 ? 'text-primary-100'
-                : 'text-gray-500 dark:text-gray-400'
+                : 'text-slate-500 dark:text-slate-400'
             )}>{report.description}</p>
           </button>
         ))}
@@ -299,23 +299,23 @@ export default function ReportsPage() {
               <div className="space-y-8">
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
-                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{summaryData?.totalObservations || 0}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Observations</p>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{summaryData?.totalObservations || 0}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Total Observations</p>
                   </div>
                   <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-lg text-center">
                     <p className="text-3xl font-bold text-green-600 dark:text-green-400">{summaryData?.closedObservations || 0}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Closed</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Closed</p>
                   </div>
                   <div className="p-4 bg-red-50 dark:bg-red-900/30 rounded-lg text-center">
                     <p className="text-3xl font-bold text-red-600 dark:text-red-400">{summaryData?.overdueObservations || 0}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Overdue</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Overdue</p>
                   </div>
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-center">
                     <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                       {summaryData?.closureRate ? `${summaryData.closureRate.toFixed(1)}%` : '0%'}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Closure Rate</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Closure Rate</p>
                   </div>
                 </div>
 
@@ -323,7 +323,7 @@ export default function ReportsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Risk Distribution */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Risk Distribution</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Risk Distribution</h3>
                     <div className="space-y-3">
                       {Object.entries(summaryData?.byRisk || {}).map(([risk, count]) => {
                         const total = Object.values(summaryData?.byRisk || {}).reduce((a: number, b: any) => a + b, 0) as number;
@@ -331,10 +331,10 @@ export default function ReportsPage() {
                         return (
                           <div key={risk}>
                             <div className="flex justify-between text-sm mb-1">
-                              <span className="font-medium text-gray-700 dark:text-gray-300">{risk}</span>
-                              <span className="text-gray-500 dark:text-gray-400">{count as number} ({percentage.toFixed(1)}%)</span>
+                              <span className="font-medium text-slate-700 dark:text-slate-300">{risk}</span>
+                              <span className="text-slate-500 dark:text-slate-400">{count as number} ({percentage.toFixed(1)}%)</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
                               <div
                                 className="h-3 rounded-full transition-all"
                                 style={{
@@ -351,7 +351,7 @@ export default function ReportsPage() {
 
                   {/* Status Distribution */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Status Distribution</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Status Distribution</h3>
                     <div className="space-y-3">
                       {Object.entries(summaryData?.byStatus || {}).map(([status, count]) => {
                         const total = Object.values(summaryData?.byStatus || {}).reduce((a: number, b: any) => a + b, 0) as number;
@@ -359,10 +359,10 @@ export default function ReportsPage() {
                         return (
                           <div key={status}>
                             <div className="flex justify-between text-sm mb-1">
-                              <span className="font-medium text-gray-700 dark:text-gray-300">{status.replace(/_/g, ' ')}</span>
-                              <span className="text-gray-500 dark:text-gray-400">{count as number} ({percentage.toFixed(1)}%)</span>
+                              <span className="font-medium text-slate-700 dark:text-slate-300">{status.replace(/_/g, ' ')}</span>
+                              <span className="text-slate-500 dark:text-slate-400">{count as number} ({percentage.toFixed(1)}%)</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
                               <div
                                 className="h-3 rounded-full transition-all"
                                 style={{
@@ -381,23 +381,23 @@ export default function ReportsPage() {
                 {/* By Entity */}
                 {summaryData?.byEntity && Object.keys(summaryData.byEntity).length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Observations by Entity</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Observations by Entity</h3>
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
+                      <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                        <thead className="bg-slate-50 dark:bg-slate-800">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Entity</th>
-                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
-                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Open</th>
-                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Closed</th>
-                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Overdue</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Entity</th>
+                            <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Total</th>
+                            <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Open</th>
+                            <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Closed</th>
+                            <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Overdue</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                           {Object.entries(summaryData.byEntity).map(([entity, data]: [string, any]) => (
                             <tr key={entity}>
-                              <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{entity}</td>
-                              <td className="px-4 py-3 text-center text-gray-900 dark:text-gray-100">{data.total}</td>
+                              <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{entity}</td>
+                              <td className="px-4 py-3 text-center text-slate-900 dark:text-slate-100">{data.total}</td>
                               <td className="px-4 py-3 text-center text-blue-600 dark:text-blue-400">{data.open}</td>
                               <td className="px-4 py-3 text-center text-green-600 dark:text-green-400">{data.closed}</td>
                               <td className="px-4 py-3 text-center text-red-600 dark:text-red-400">{data.overdue}</td>
@@ -422,7 +422,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Monthly Trends</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Monthly Trends</h3>
 
                 {/* Simple bar chart representation */}
                 <div className="overflow-x-auto">
@@ -444,7 +444,7 @@ export default function ReportsPage() {
                               title={`Closed: ${month.closed}`}
                             />
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{month.month}</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">{month.month}</span>
                         </div>
                       );
                     })}
@@ -452,11 +452,11 @@ export default function ReportsPage() {
                   <div className="flex gap-4 justify-center mt-4">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 bg-blue-500 rounded" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Created</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Created</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 bg-green-500 rounded" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Closed</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Closed</span>
                     </div>
                   </div>
                 </div>
@@ -476,9 +476,9 @@ export default function ReportsPage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {complianceData?.entities?.map((entity: any) => (
-                    <div key={entity.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div key={entity.id} className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{entity.name}</h4>
+                        <h4 className="font-medium text-slate-900 dark:text-slate-100">{entity.name}</h4>
                         <span className={clsx(
                           'badge',
                           entity.complianceRate >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
@@ -488,7 +488,7 @@ export default function ReportsPage() {
                           {entity.complianceRate?.toFixed(1)}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-2">
                         <div
                           className={clsx(
                             'h-2 rounded-full',
@@ -499,7 +499,7 @@ export default function ReportsPage() {
                           style={{ width: `${entity.complianceRate}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                         <span>{entity.closedCount} closed</span>
                         <span>{entity.openCount} open</span>
                       </div>
@@ -521,26 +521,26 @@ export default function ReportsPage() {
             ) : (
               <div className="space-y-6">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
+                  <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                    <thead className="bg-slate-50 dark:bg-slate-800">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Age Bucket</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Critical</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">High</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Medium</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Low</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Age Bucket</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Critical</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">High</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Medium</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Low</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Total</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                       {agingData?.buckets?.map((bucket: any) => (
                         <tr key={bucket.range}>
-                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{bucket.range}</td>
+                          <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{bucket.range}</td>
                           <td className="px-4 py-3 text-center text-red-600 dark:text-red-400">{bucket.critical || 0}</td>
                           <td className="px-4 py-3 text-center text-orange-600 dark:text-orange-400">{bucket.high || 0}</td>
                           <td className="px-4 py-3 text-center text-yellow-600 dark:text-yellow-400">{bucket.medium || 0}</td>
                           <td className="px-4 py-3 text-center text-green-600 dark:text-green-400">{bucket.low || 0}</td>
-                          <td className="px-4 py-3 text-center font-medium text-gray-900 dark:text-gray-100">{bucket.total || 0}</td>
+                          <td className="px-4 py-3 text-center font-medium text-slate-900 dark:text-slate-100">{bucket.total || 0}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -554,3 +554,4 @@ export default function ReportsPage() {
     </div>
   );
 }
+

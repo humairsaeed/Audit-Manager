@@ -33,7 +33,7 @@ const riskColors: Record<string, string> = {
   HIGH: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700',
   MEDIUM: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700',
   LOW: 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700',
-  INFORMATIONAL: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600',
+  INFORMATIONAL: 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600',
 };
 
 const statusColors: Record<string, string> = {
@@ -333,8 +333,8 @@ export default function ObservationDetailPage() {
     return (
       <div className="text-center py-12">
         <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500 dark:text-red-400" />
-        <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">Observation not found</h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">The observation you're looking for doesn't exist.</p>
+        <h3 className="mt-2 text-lg font-medium text-slate-900 dark:text-slate-100">Observation not found</h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">The observation you're looking for doesn't exist.</p>
         <Link href="/observations" className="btn btn-primary mt-4">
           Back to Observations
         </Link>
@@ -366,12 +366,12 @@ export default function ObservationDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <Link href="/observations" className="mt-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <Link href="/observations" className="mt-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{observation.title}</h1>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{observation.title}</h1>
               <span className={clsx('badge', statusColors[observation.status])}>
                 {observation.status.replace(/_/g, ' ')}
               </span>
@@ -381,7 +381,7 @@ export default function ObservationDetailPage() {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               {observation.globalSequence}
               {observation.externalReference && ` • ${observation.externalReference}`}
             </p>
@@ -413,8 +413,8 @@ export default function ObservationDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
           <div className="card p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Description</h2>
-            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.description}</p>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Description</h2>
+            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{observation.description}</p>
           </div>
 
           {/* Analysis & Recommendations */}
@@ -422,20 +422,20 @@ export default function ObservationDetailPage() {
             <div className="card p-6">
               {observation.impact && (
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Risk</h2>
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.impact}</p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Risk</h2>
+                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{observation.impact}</p>
                 </div>
               )}
               {observation.recommendation && (
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Recommendation</h2>
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.recommendation}</p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Recommendation</h2>
+                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{observation.recommendation}</p>
                 </div>
               )}
               {observation.rootCause && (
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Root Cause</h2>
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.rootCause}</p>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Root Cause</h2>
+                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{observation.rootCause}</p>
                 </div>
               )}
             </div>
@@ -444,16 +444,16 @@ export default function ObservationDetailPage() {
           {/* Management Response */}
           {observation.managementResponse && (
             <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Management Response</h2>
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.managementResponse}</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Management Response</h2>
+              <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{observation.managementResponse}</p>
             </div>
           )}
 
           {/* Action Plan */}
           {observation.correctiveActionPlan && (
             <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Action Plan</h2>
-              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{observation.correctiveActionPlan}</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Action Plan</h2>
+              <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{observation.correctiveActionPlan}</p>
             </div>
           )}
 
@@ -463,7 +463,7 @@ export default function ObservationDetailPage() {
           {/* Evidence Section */}
           <div className="card p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 <PaperClipIcon className="inline h-5 w-5 mr-2" />
                 Evidence
               </h2>
@@ -478,13 +478,13 @@ export default function ObservationDetailPage() {
             {evidenceList && evidenceList.length > 0 ? (
               <div className="space-y-3">
                 {evidenceList.map((evidence: any) => (
-                  <div key={evidence.id} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div key={evidence.id} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <PaperClipIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                        <PaperClipIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{evidence.fileName}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{evidence.fileName}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
                             {evidence.description} - v{evidence.version} - {new Date(evidence.uploadedAt || evidence.createdAt).toLocaleDateString()}
                           </p>
                         </div>
@@ -523,13 +523,13 @@ export default function ObservationDetailPage() {
 
                     {/* AI Review Section */}
                     {canUseAI && (
-                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
                         {evidence.aiReview ? (
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <SparklesIcon className="h-4 w-4 text-purple-500" />
-                                <span className="text-xs text-gray-600 dark:text-gray-400">AI Assessment:</span>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">AI Assessment:</span>
                                 <span className={clsx('badge text-xs', {
                                   'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': evidence.aiReview.overallAssessment === 'SUFFICIENT',
                                   'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': evidence.aiReview.overallAssessment === 'PARTIAL',
@@ -537,7 +537,7 @@ export default function ObservationDetailPage() {
                                 })}>
                                   {evidence.aiReview.overallAssessment}
                                 </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
                                   ({evidence.aiReview.relevanceScore}% relevant)
                                 </span>
                               </div>
@@ -551,14 +551,14 @@ export default function ObservationDetailPage() {
                             {/* Standards Compliance Summary */}
                             {evidence.aiReview.standardsCompliance && evidence.aiReview.standardsCompliance.length > 0 && (
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">Standards:</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">Standards:</span>
                                 {evidence.aiReview.standardsCompliance.slice(0, 3).map((mapping: any, idx: number) => {
                                   const labels: Record<string, string> = { ISO_27001: 'ISO', NIST_CSF: 'NIST', SOC2: 'SOC2', CIS_CONTROLS: 'CIS' };
                                   const colors: Record<string, string> = {
                                     COMPLIANT: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
                                     PARTIAL: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
                                     NON_COMPLIANT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                    NOT_APPLICABLE: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+                                    NOT_APPLICABLE: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
                                   };
                                   return (
                                     <span key={idx} className={clsx('px-1.5 py-0.5 rounded text-xs font-medium', colors[mapping.complianceStatus])}>
@@ -567,7 +567,7 @@ export default function ObservationDetailPage() {
                                   );
                                 })}
                                 {evidence.aiReview.standardsCompliance.length > 3 && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className="text-xs text-slate-500 dark:text-slate-400">
                                     +{evidence.aiReview.standardsCompliance.length - 3} more
                                   </span>
                                 )}
@@ -576,8 +576,8 @@ export default function ObservationDetailPage() {
                           </div>
                         ) : (
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              <SparklesIcon className="h-4 w-4 inline mr-1 text-gray-400" />
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              <SparklesIcon className="h-4 w-4 inline mr-1 text-slate-400" />
                               No AI review yet
                             </span>
                             <button
@@ -602,14 +602,14 @@ export default function ObservationDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">No evidence uploaded yet</p>
+              <p className="text-slate-500 dark:text-slate-400 text-center py-4">No evidence uploaded yet</p>
             )}
           </div>
 
           {/* Comments Section */}
           <div className="card p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 <ChatBubbleLeftRightIcon className="inline h-5 w-5 mr-2" />
                 Comments
               </h2>
@@ -621,21 +621,21 @@ export default function ObservationDetailPage() {
             {observation.comments && observation.comments.length > 0 ? (
               <div className="space-y-4">
                 {observation.comments.map((comment: any) => (
-                  <div key={comment.id} className="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+                  <div key={comment.id} className="border-l-2 border-slate-200 dark:border-slate-700 pl-4">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         {comment.user?.displayName || `${comment.user?.firstName} ${comment.user?.lastName}`}
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         {new Date(comment.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">{comment.content}</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">No comments yet</p>
+              <p className="text-slate-500 dark:text-slate-400 text-center py-4">No comments yet</p>
             )}
           </div>
         </div>
@@ -644,14 +644,14 @@ export default function ObservationDetailPage() {
         <div className="space-y-6">
           {/* Risk Rating Card */}
           <div className={clsx('card p-6 border-2', riskColors[observation.riskRating])}>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Risk Rating</h3>
+            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Risk Rating</h3>
             <p className="text-2xl font-bold">{observation.riskRating}</p>
           </div>
 
           {/* Status Actions */}
           {(filteredTransitions.length > 0 || (canFollowUp && (observation.ownerId || observation.reviewerId))) && (
             <div className="card p-6">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Actions</h3>
+              <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Actions</h3>
               <div className="space-y-2">
                 {filteredTransitions.map((transition) => (
                   <button
@@ -681,25 +681,25 @@ export default function ObservationDetailPage() {
 
           {/* Details Card */}
           <div className="card p-6">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Details</h3>
+            <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-4">Details</h3>
             <dl className="space-y-4">
               <div>
-                <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <dt className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                   <ClockIcon className="h-4 w-4" />
                   Due Date
                 </dt>
-                <dd className={clsx('text-sm font-medium', isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100')}>
+                <dd className={clsx('text-sm font-medium', isOverdue ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100')}>
                   {new Date(observation.targetDate).toLocaleDateString()}
                   {isOverdue && ' (Overdue)'}
                 </dd>
               </div>
 
               <div>
-                <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <dt className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                   <UserIcon className="h-4 w-4" />
                   Owner
                 </dt>
-                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">
                   {observation.owner?.displayName || observation.owner?.firstName
                     ? `${observation.owner.firstName} ${observation.owner.lastName}`
                     : 'Unassigned'}
@@ -708,11 +708,11 @@ export default function ObservationDetailPage() {
 
               {observation.reviewer && (
                 <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                     <CheckCircleIcon className="h-4 w-4" />
                     Reviewer
                   </dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">
                     {observation.reviewer.displayName ||
                       `${observation.reviewer.firstName} ${observation.reviewer.lastName}`}
                   </dd>
@@ -720,8 +720,8 @@ export default function ObservationDetailPage() {
               )}
 
               <div>
-                <dt className="text-sm text-gray-500 dark:text-gray-400">Audit</dt>
-                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                <dt className="text-sm text-slate-500 dark:text-slate-400">Audit</dt>
+                <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">
                   <Link href={`/audits/${observation.auditId}`} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                     {observation.audit?.name}
                   </Link>
@@ -730,31 +730,31 @@ export default function ObservationDetailPage() {
 
               {observation.entity && (
                 <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Entity</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{observation.entity.name}</dd>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Entity</dt>
+                  <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{observation.entity.name}</dd>
                 </div>
               )}
 
               {observation.department && (
                 <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Department</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{observation.department}</dd>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Department</dt>
+                  <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{observation.department}</dd>
                 </div>
               )}
 
               {observation.category && (
                 <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Category</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{observation.category}</dd>
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">Category</dt>
+                  <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{observation.category}</dd>
                 </div>
               )}
 
               <div>
-                <dt className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <dt className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4" />
                   Created
                 </dt>
-                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">
                   {new Date(observation.createdAt).toLocaleDateString()}
                 </dd>
               </div>
@@ -764,22 +764,22 @@ export default function ObservationDetailPage() {
           {/* History */}
           {observation.statusHistory && observation.statusHistory.length > 0 && (
             <div className="card p-6">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Status History</h3>
+              <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-4">Status History</h3>
               <div className="space-y-3">
                 {observation.statusHistory.slice(0, 5).map((history: any, index: number) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <div className="w-2 h-2 mt-2 rounded-full bg-gray-400 dark:bg-gray-500" />
+                      <div className="w-2 h-2 mt-2 rounded-full bg-slate-400 dark:bg-slate-500" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-900 dark:text-gray-100">
+                      <p className="text-sm text-slate-900 dark:text-slate-100">
                         {history.fromStatus} → {history.toStatus}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {new Date(history.changedAt).toLocaleString()}
                       </p>
                       {history.changedByName && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           by {history.changedByName}
                         </p>
                       )}
@@ -797,8 +797,8 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowUploadModal(false)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Upload Evidence</h3>
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Upload Evidence</h3>
               <div className="space-y-4">
                 <div>
                   <label className="label">File</label>
@@ -841,8 +841,8 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowCommentModal(false)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Add Comment</h3>
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Add Comment</h3>
               <div className="space-y-4">
                 <div>
                   <textarea
@@ -875,11 +875,11 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowFollowUpModal(false)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
                 Send Follow-up
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                 This will notify the observation owner and reviewer.
               </p>
               <div className="mb-4">
@@ -912,9 +912,9 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setPreviewEvidence(null)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full p-6">
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-4xl w-full p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   {previewEvidence.fileName || 'Evidence Preview'}
                 </h3>
                 <button onClick={() => setPreviewEvidence(null)} className="btn btn-secondary btn-sm">
@@ -933,10 +933,10 @@ export default function ObservationDetailPage() {
                 <iframe
                   src={previewEvidence.url}
                   title={previewEvidence.fileName || 'Evidence'}
-                  className="w-full h-[70vh] border rounded dark:border-gray-700"
+                  className="w-full h-[70vh] border rounded dark:border-slate-700"
                 />
               ) : (
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-slate-600 dark:text-slate-400">
                   Preview not available for this file type.
                   <div className="mt-3 flex items-center justify-center gap-2">
                     <button
@@ -964,11 +964,11 @@ export default function ObservationDetailPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setAiReviewModal(null)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <SparklesIcon className="h-5 w-5 text-purple-500" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                     AI Evidence Review
                   </h3>
                 </div>
@@ -977,14 +977,14 @@ export default function ObservationDetailPage() {
                 </button>
               </div>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Review for: <span className="font-medium text-gray-700 dark:text-gray-300">{aiReviewModal.fileName}</span>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                Review for: <span className="font-medium text-slate-700 dark:text-slate-300">{aiReviewModal.fileName}</span>
               </p>
 
               {/* Overall Assessment */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Assessment</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Overall Assessment</span>
                   <span className={clsx('badge', {
                     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': aiReviewModal.review.overallAssessment === 'SUFFICIENT',
                     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': aiReviewModal.review.overallAssessment === 'PARTIAL',
@@ -993,7 +993,7 @@ export default function ObservationDetailPage() {
                     {aiReviewModal.review.overallAssessment}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                <p className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-700 p-3 rounded-lg">
                   {aiReviewModal.review.summary}
                 </p>
               </div>
@@ -1001,9 +1001,9 @@ export default function ObservationDetailPage() {
               {/* Scores */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Relevance Score</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Relevance Score</span>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="flex-1 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div
                         className={clsx('h-2 rounded-full', {
                           'bg-green-500': aiReviewModal.review.relevanceScore >= 70,
@@ -1013,13 +1013,13 @@ export default function ObservationDetailPage() {
                         style={{ width: `${aiReviewModal.review.relevanceScore}%` }}
                       />
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{aiReviewModal.review.relevanceScore}%</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{aiReviewModal.review.relevanceScore}%</span>
                   </div>
                 </div>
                 <div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Sufficiency Score</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Sufficiency Score</span>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="flex-1 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div
                         className={clsx('h-2 rounded-full', {
                           'bg-green-500': aiReviewModal.review.sufficiencyScore >= 70,
@@ -1029,7 +1029,7 @@ export default function ObservationDetailPage() {
                         style={{ width: `${aiReviewModal.review.sufficiencyScore}%` }}
                       />
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{aiReviewModal.review.sufficiencyScore}%</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{aiReviewModal.review.sufficiencyScore}%</span>
                   </div>
                 </div>
               </div>
@@ -1068,7 +1068,7 @@ export default function ObservationDetailPage() {
                   <span className="text-sm font-medium text-green-700 dark:text-green-400">Strengths</span>
                   <ul className="mt-2 space-y-1">
                     {aiReviewModal.review.strengths.map((strength: string, index: number) => (
-                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                      <li key={index} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
                         <CheckCircleIcon className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                         <span>{strength}</span>
                       </li>
@@ -1083,7 +1083,7 @@ export default function ObservationDetailPage() {
                   <span className="text-sm font-medium text-red-700 dark:text-red-400">Weaknesses</span>
                   <ul className="mt-2 space-y-1">
                     {aiReviewModal.review.weaknesses.map((weakness: string, index: number) => (
-                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                      <li key={index} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
                         <XCircleIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
                         <span>{weakness}</span>
                       </li>
@@ -1098,7 +1098,7 @@ export default function ObservationDetailPage() {
                   <span className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Missing Elements</span>
                   <ul className="mt-2 space-y-1">
                     {aiReviewModal.review.missingElements.map((element: string, index: number) => (
-                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                      <li key={index} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
                         <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                         <span>{element}</span>
                       </li>
@@ -1113,7 +1113,7 @@ export default function ObservationDetailPage() {
                   <span className="text-sm font-medium text-purple-700 dark:text-purple-400">AI Recommendations</span>
                   <ul className="mt-2 space-y-1">
                     {aiReviewModal.review.recommendations.map((rec: string, index: number) => (
-                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                      <li key={index} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
                         <SparklesIcon className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
                         <span>{rec}</span>
                       </li>
@@ -1128,7 +1128,7 @@ export default function ObservationDetailPage() {
                   <span className="text-sm font-medium text-blue-700 dark:text-blue-400">Suggested Next Steps</span>
                   <ol className="mt-2 space-y-1 list-decimal list-inside">
                     {aiReviewModal.review.suggestedNextSteps.map((step: string, index: number) => (
-                      <li key={index} className="text-sm text-gray-600 dark:text-gray-400">
+                      <li key={index} className="text-sm text-slate-600 dark:text-slate-400">
                         {step}
                       </li>
                     ))}
@@ -1145,12 +1145,12 @@ export default function ObservationDetailPage() {
                       {aiReviewModal.review.scopeValidation.withinScope ? 'Within Scope' : 'Review Required'}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
                     {aiReviewModal.review.scopeValidation.scopeAlignment}
                   </p>
                   {aiReviewModal.review.scopeValidation.relevantDomains && aiReviewModal.review.scopeValidation.relevantDomains.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Relevant Domains:</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Relevant Domains:</span>
                       {aiReviewModal.review.scopeValidation.relevantDomains.map((domain: string, index: number) => (
                         <span key={index} className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-800/50 text-indigo-700 dark:text-indigo-300 rounded text-xs">
                           {domain}
@@ -1164,7 +1164,7 @@ export default function ObservationDetailPage() {
               {/* Standards Compliance */}
               {aiReviewModal.review.standardsCompliance && aiReviewModal.review.standardsCompliance.length > 0 && (
                 <div className="mb-6">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Standards Compliance Mapping</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Standards Compliance Mapping</span>
                   <div className="space-y-3">
                     {aiReviewModal.review.standardsCompliance.map((mapping: any, index: number) => {
                       const standardLabels: Record<string, string> = {
@@ -1177,16 +1177,16 @@ export default function ObservationDetailPage() {
                         COMPLIANT: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
                         PARTIAL: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
                         NON_COMPLIANT: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-                        NOT_APPLICABLE: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+                        NOT_APPLICABLE: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
                       };
                       return (
-                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <div key={index} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded text-xs font-medium">
                                 {standardLabels[mapping.standard] || mapping.standard}
                               </span>
-                              <span className="text-sm font-mono text-gray-700 dark:text-gray-300">
+                              <span className="text-sm font-mono text-slate-700 dark:text-slate-300">
                                 {mapping.controlNumber}
                               </span>
                             </div>
@@ -1194,13 +1194,13 @@ export default function ObservationDetailPage() {
                               {mapping.complianceStatus.replace(/_/g, ' ')}
                             </span>
                           </div>
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-1">
                             {mapping.controlName}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
                             <span className="font-medium">Domain:</span> {mapping.domain}
                           </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
                             {mapping.evidenceAlignment}
                           </p>
                           {mapping.gaps && (
@@ -1217,17 +1217,17 @@ export default function ObservationDetailPage() {
 
               {/* Compliance Summary */}
               {aiReviewModal.review.complianceSummary && (
-                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Compliance Summary</span>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Compliance Summary</span>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {aiReviewModal.review.complianceSummary}
                   </p>
                 </div>
               )}
 
               {/* Disclaimer */}
-              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   AI Confidence: {Math.round(aiReviewModal.review.aiConfidence * 100)}% • This is an AI-generated assessment and should be reviewed by a qualified auditor.
                 </p>
               </div>
@@ -1238,3 +1238,4 @@ export default function ObservationDetailPage() {
     </div>
   );
 }
+

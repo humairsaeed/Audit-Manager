@@ -234,7 +234,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-gray-900/80" />
+            <div className="fixed inset-0 bg-slate-950/80" />
           </Transition.Child>
 
           <div className="fixed inset-0 flex">

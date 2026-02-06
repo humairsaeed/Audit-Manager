@@ -19,7 +19,7 @@ const riskColors: Record<string, string> = {
   HIGH: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
   MEDIUM: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
   LOW: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  INFORMATIONAL: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600',
+  INFORMATIONAL: 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600',
 };
 
 const statusColors: Record<string, string> = {
@@ -69,10 +69,10 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-6">
-        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+            <div key={i} className="h-32 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
           ))}
         </div>
       </div>
@@ -85,17 +85,17 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
           Welcome back, {user?.firstName}!
         </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Here's what's happening with your observations today.
         </p>
       </div>
 
       {/* My Observations Stats */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">My Observations</h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">My Observations</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Assigned"
@@ -131,7 +131,7 @@ export default function DashboardPage() {
       {/* Management Dashboard (for managers) */}
       {isManager && managementDashboard && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Organization Overview</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Organization Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title="Total Observations"
@@ -162,21 +162,21 @@ export default function DashboardPage() {
           {/* Risk Distribution */}
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="card p-6">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">By Risk Rating</h3>
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">By Risk Rating</h3>
               <div className="space-y-3">
                 {Object.entries(managementDashboard.byRiskRating || {}).map(([rating, count]) => (
                   <div key={rating} className="flex items-center justify-between">
                     <div className="flex items-center">
                       <span className={clsx('badge', riskColors[rating])}>{rating}</span>
                     </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{count as number}</span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{count as number}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="card p-6">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">By Status</h3>
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">By Status</h3>
               <div className="space-y-3">
                 {Object.entries(managementDashboard.byStatus || {})
                   .filter(([_, count]) => (count as number) > 0)
@@ -187,7 +187,7 @@ export default function DashboardPage() {
                           {status.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{count as number}</span>
+                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{count as number}</span>
                     </div>
                   ))}
               </div>
@@ -200,23 +200,23 @@ export default function DashboardPage() {
       {dueSoonData && dueSoonData.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Due This Week</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Due This Week</h2>
             <Link href="/observations/my" className="text-sm text-primary-600 hover:text-primary-700">
               View all →
             </Link>
           </div>
           <div className="card overflow-hidden">
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            <ul className="divide-y divide-slate-200 dark:divide-slate-700">
               {dueSoonData.slice(0, 5).map((obs: any) => (
                 <li key={obs.id}>
                   <Link
                     href={`/observations/${obs.id}`}
-                    className="block hover:bg-gray-50 dark:hover:bg-gray-700/50 px-6 py-4"
+                    className="block hover:bg-slate-50 dark:hover:bg-slate-700/50 px-6 py-4"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{obs.title}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{obs.title}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
                           {obs.audit?.name} • {obs.entity?.name}
                         </p>
                       </div>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                         <span className={clsx('badge', riskColors[obs.riskRating])}>
                           {obs.riskRating}
                         </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
                           Due: {new Date(obs.targetDate).toLocaleDateString()}
                         </span>
                       </div>
@@ -240,20 +240,20 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       {userDashboard?.recentActivity && userDashboard.recentActivity.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recent Activity</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Recent Activity</h2>
           <div className="card overflow-hidden">
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            <ul className="divide-y divide-slate-200 dark:divide-slate-700">
               {userDashboard.recentActivity.slice(0, 10).map((activity: any) => (
                 <li key={activity.id} className="px-6 py-4">
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                        <ClipboardDocumentListIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                        <ClipboardDocumentListIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 dark:text-gray-100">{activity.description}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-slate-900 dark:text-slate-100">{activity.description}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {new Date(activity.timestamp).toLocaleString()}
                         {activity.userName ? ` • by ${activity.userName}` : ''}
                       </p>
@@ -285,7 +285,7 @@ function StatCard({ title, value, icon: Icon, color, href, trend }: StatCardProp
     red: 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400',
     amber: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
     purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-    gray: 'bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+    gray: 'bg-slate-50 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
   };
 
   const Card = href ? Link : 'div';
@@ -320,9 +320,10 @@ function StatCard({ title, value, icon: Icon, color, href, trend }: StatCardProp
         )}
       </div>
       <div className="mt-4">
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-        <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+        <p className="mt-1 text-3xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
       </div>
     </Card>
   );
 }
+
