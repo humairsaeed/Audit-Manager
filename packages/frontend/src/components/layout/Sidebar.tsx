@@ -101,10 +101,9 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         <Link href="/dashboard" className="flex items-center">
           {isCollapsed ? (
             <img
-              src="/logo-eres-white.svg"
+              src="/logo-eres-icon-white.svg"
               alt="ERES"
-              className="h-8 w-auto"
-              style={{ maxWidth: '40px', objectFit: 'contain', objectPosition: 'left' }}
+              className="h-9 w-9"
             />
           ) : (
             <img
