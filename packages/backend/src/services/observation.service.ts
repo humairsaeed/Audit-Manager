@@ -3,11 +3,14 @@ import { addDays, differenceInDays, isAfter, isBefore } from 'date-fns';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { AuditLogService, createAuditLog } from '../middleware/audit-log.middleware.js';
+import { NotificationService } from './notification.service.js';
 import {
   CreateObservationDTO,
   UpdateObservationDTO,
   PaginationParams,
   PaginatedResponse,
+  NotificationType,
+  NotificationChannel,
 } from '../types/index.js';
 
 type ObservationWithRelations = Prisma.ObservationGetPayload<{
@@ -406,6 +409,27 @@ export class ObservationService {
       include: observationInclude,
     });
 
+    const updatedByUser = await prisma.user.findUnique({
+      where: { id: updatedById },
+      select: { displayName: true, firstName: true, lastName: true, email: true },
+    });
+    const updatedByName =
+      updatedByUser?.displayName ||
+      `${updatedByUser?.firstName || ''} ${updatedByUser?.lastName || ''}`.trim() ||
+      updatedByUser?.email ||
+      'System';
+
+    await this.sendObservationNotification(updated, {
+      type: 'OBSERVATION_UPDATED',
+      channels: ['EMAIL', 'IN_APP'],
+      data: {
+        observationTitle: updated.title,
+        auditName: updated.audit?.name || 'N/A',
+        updatedBy: updatedByName,
+        url: `${process.env.FRONTEND_URL}/observations/${updated.id}`,
+      },
+    });
+
     return updated;
   }
 
@@ -469,6 +493,25 @@ export class ObservationService {
       ipAddress || null
     );
 
+    const changedByName =
+      user?.displayName ||
+      `${user?.firstName || ''} ${user?.lastName || ''}`.trim() ||
+      user?.email ||
+      'System';
+
+    await this.sendObservationNotification(updated, {
+      type: 'STATUS_CHANGED',
+      channels: ['EMAIL', 'IN_APP'],
+      data: {
+        observationTitle: updated.title,
+        auditName: updated.audit?.name || 'N/A',
+        previousStatus: observation.status,
+        newStatus,
+        changedBy: changedByName,
+        url: `${process.env.FRONTEND_URL}/observations/${updated.id}`,
+      },
+    });
+
     return updated;
   }
 
@@ -510,6 +553,21 @@ export class ObservationService {
       ipAddress || null
     );
 
+    await this.sendObservationNotification(updated, {
+      type: 'OBSERVATION_ASSIGNED',
+      channels: ['EMAIL', 'IN_APP'],
+      data: {
+        observationTitle: updated.title,
+        auditName: updated.audit?.name || 'N/A',
+        riskRating: updated.riskRating,
+        targetDate: updated.targetDate
+          ? updated.targetDate.toISOString().split('T')[0]
+          : 'N/A',
+        description: updated.description || '',
+        url: `${process.env.FRONTEND_URL}/observations/${updated.id}`,
+      },
+    });
+
     return updated;
   }
 
@@ -533,11 +591,28 @@ export class ObservationService {
       throw AppError.badRequest('Invalid reviewer ID');
     }
 
-    return prisma.observation.update({
+    const updated = await prisma.observation.update({
       where: { id },
       data: { reviewerId },
       include: observationInclude,
     });
+
+    await this.sendObservationNotification(updated, {
+      type: 'OBSERVATION_ASSIGNED',
+      channels: ['EMAIL', 'IN_APP'],
+      data: {
+        observationTitle: updated.title,
+        auditName: updated.audit?.name || 'N/A',
+        riskRating: updated.riskRating,
+        targetDate: updated.targetDate
+          ? updated.targetDate.toISOString().split('T')[0]
+          : 'N/A',
+        description: updated.description || '',
+        url: `${process.env.FRONTEND_URL}/observations/${updated.id}`,
+      },
+    });
+
+    return updated;
   }
 
   /**
@@ -759,6 +834,37 @@ export class ObservationService {
       throw AppError.badRequest(
         `Invalid status transition from ${currentStatus} to ${newStatus}`
       );
+    }
+  }
+
+  private static async sendObservationNotification(
+    observation: ObservationWithRelations,
+    payload: {
+      type: NotificationType;
+      channels: NotificationChannel[];
+      data: Record<string, unknown>;
+    }
+  ): Promise<void> {
+    const recipients = Array.from(
+      new Set(
+        [observation.owner?.id, observation.reviewer?.id].filter(
+          (id): id is string => Boolean(id)
+        )
+      )
+    );
+
+    if (recipients.length === 0) {
+      return;
+    }
+
+    for (const userId of recipients) {
+      await NotificationService.sendNotification({
+        type: payload.type,
+        userId,
+        observationId: observation.id,
+        channels: payload.channels,
+        data: payload.data,
+      });
     }
   }
 }

@@ -125,6 +125,37 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, {
       }],
     }),
   },
+  OBSERVATION_UPDATED: {
+    subject: 'Observation Updated: {observationTitle}',
+    emailBody: (data) => `
+      <h2>Observation Updated</h2>
+      <p>An observation has been updated.</p>
+      <p><strong>Observation:</strong> ${data.observationTitle}</p>
+      <p><strong>Audit:</strong> ${data.auditName}</p>
+      <p><strong>Updated By:</strong> ${data.updatedBy}</p>
+      <p><a href="${data.url}">View Observation</a></p>
+    `,
+    teamsMessage: (data) => ({
+      '@type': 'MessageCard',
+      '@context': 'http://schema.org/extensions',
+      themeColor: '607D8B',
+      summary: `Observation Updated: ${data.observationTitle}`,
+      sections: [{
+        activityTitle: 'Observation Updated',
+        facts: [
+          { name: 'Observation', value: String(data.observationTitle) },
+          { name: 'Audit', value: String(data.auditName) },
+          { name: 'Updated By', value: String(data.updatedBy) },
+        ],
+        markdown: true,
+      }],
+      potentialAction: [{
+        '@type': 'OpenUri',
+        name: 'View Observation',
+        targets: [{ os: 'default', uri: String(data.url) }],
+      }],
+    }),
+  },
 
   DUE_DATE_REMINDER: {
     subject: 'Reminder: Observation Due Soon - {title}',
