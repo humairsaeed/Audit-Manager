@@ -35,7 +35,7 @@ const statusColors: Record<string, string> = {
 export default function ReportsPage() {
   const router = useRouter();
   const { hasAnyRole } = useAuthStore();
-  const canAccessReports = hasAnyRole(ROLES.OBSERVATION_OWNER, ROLES.REVIEWER, ROLES.AUDITOR);
+  const canAccessReports = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.EXECUTIVE);
 
   useEffect(() => {
     if (!canAccessReports) {
