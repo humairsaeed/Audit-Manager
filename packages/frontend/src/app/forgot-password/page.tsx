@@ -8,11 +8,9 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { authApi } from '@/lib/api';
 import {
-  ShieldCheckIcon,
   ArrowLeftIcon,
   LockClosedIcon,
   EnvelopeIcon,
-  CheckCircleIcon,
   ExclamationTriangleIcon,
   FingerPrintIcon,
   ServerStackIcon,
@@ -82,17 +80,9 @@ export default function ForgotPasswordPage() {
               <img
                 src="/logo-eres-white.svg"
                 alt="ERES EMIRATES REAL ESTATE SOLUTIONS"
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 ring-1 ring-slate-800 shadow-lg">
-                  <ShieldCheckIcon className="h-5 w-5 text-primary-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold tracking-wide text-white">ERES AMS</p>
-                  <p className="text-xs text-slate-400">Audit & Compliance Platform</p>
-                </div>
-              </div>
+              <p className="mt-2 text-sm text-slate-400">Audit & Compliance Platform</p>
             </div>
 
             {/* Main headline */}

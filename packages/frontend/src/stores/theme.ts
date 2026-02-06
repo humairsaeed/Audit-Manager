@@ -35,7 +35,7 @@ export const colorPresets: ColorPreset[] = [
       400: '#60a5fa',
       500: '#3b82f6',
       600: '#0f172a',
-      700: '#111827',
+      700: '#1d2e54',
       800: '#1e40af',
       900: '#1e3a8a',
       950: '#172554',
@@ -221,5 +221,6 @@ export const useThemeStore = create<ThemeState>()(
 export const getColorPreset = (value: string): ColorPreset => {
   return colorPresets.find((p) => p.value === value) || colorPresets[0];
 };
+
 
 
