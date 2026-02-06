@@ -831,7 +831,7 @@ export default function ObservationDetailPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400">No activity logs yet.</p>
               )}
             </div>
-          )
+          )}
         </div>
       </div>
 
