@@ -14,7 +14,7 @@
     --color-primary-400: #60a5fa;
     --color-primary-500: #3b82f6;
     --color-primary-600: #0f172a;
-    --color-primary-700: #1d4ed8;
+    --color-primary-700: #111827;
     --color-primary-800: #1e40af;
     --color-primary-900: #1e3a8a;
     --color-primary-950: #172554;
@@ -142,4 +142,5 @@
     @apply bg-slate-400 dark:bg-slate-500;
   }
 }
+
 

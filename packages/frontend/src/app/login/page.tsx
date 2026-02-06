@@ -123,18 +123,25 @@ export default function LoginPage() {
 
           <div className="relative z-10">
             {/* Logo and brand */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 ring-1 ring-slate-800 shadow-lg">
-                <ShieldCheckIcon className="h-6 w-6 text-primary-400" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold tracking-wide text-white">ERES AMS</p>
-                <p className="text-xs text-slate-400">Audit & Compliance Platform</p>
+            <div>
+              <img
+                src="/logo-eres-white.svg"
+                alt="ERES EMIRATES REAL ESTATE SOLUTIONS"
+                className="h-12 w-auto"
+              />
+              <div className="mt-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 ring-1 ring-slate-800 shadow-lg">
+                  <ShieldCheckIcon className="h-5 w-5 text-primary-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold tracking-wide text-white">ERES AMS</p>
+                  <p className="text-xs text-slate-400">Audit & Compliance Platform</p>
+                </div>
               </div>
             </div>
 
             {/* Main headline */}
-            <div className="mt-12 space-y-4">
+            <div className="mt-10 space-y-4">
               <h1 className="text-3xl font-semibold leading-tight text-white lg:text-4xl">
                 Secure access for regulated audit teams
               </h1>
