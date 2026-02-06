@@ -85,17 +85,17 @@ export default function ResetPasswordClient() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <ShieldCheckIcon className="w-10 h-10 text-primary-600" />
+          <div className="mx-auto w-14 h-14 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-800">
+            <ShieldCheckIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
           </div>
-          <h1 className="mt-4 text-3xl font-bold text-white">Reset Password</h1>
-          <p className="mt-2 text-primary-200">Set a new password for your account</p>
+          <h1 className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">Reset Password</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Set a new password for your account</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="card p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label htmlFor="password" className="label">
@@ -112,7 +112,7 @@ export default function ResetPasswordClient() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -131,9 +131,9 @@ export default function ResetPasswordClient() {
                     {req.met ? (
                       <CheckCircleIcon className="h-4 w-4 text-green-500" />
                     ) : (
-                      <XCircleIcon className="h-4 w-4 text-gray-300" />
+                      <XCircleIcon className="h-4 w-4 text-slate-300" />
                     )}
-                    <span className={req.met ? 'text-green-600' : 'text-gray-500'}>
+                    <span className={req.met ? 'text-green-600' : 'text-slate-500'}>
                       {req.label}
                     </span>
                   </div>
@@ -156,7 +156,7 @@ export default function ResetPasswordClient() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
                 >
                   {showConfirmPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />

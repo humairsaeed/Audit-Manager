@@ -139,14 +139,14 @@ export default function DashboardLayout({
   // Show loading while hydrating or checking auth
   if (!isHydrated || isLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -160,10 +160,10 @@ export default function DashboardLayout({
         sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
       )}>
         {/* Top header */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <button
             type="button"
-            className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-200 lg:hidden"
+            className="-m-2.5 p-2.5 text-slate-700 dark:text-slate-200 lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -171,7 +171,7 @@ export default function DashboardLayout({
           </button>
 
           {/* Separator */}
-          <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 lg:hidden" aria-hidden="true" />
+          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 lg:hidden" aria-hidden="true" />
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             {/* Page title area */}
@@ -186,7 +186,7 @@ export default function DashboardLayout({
               {/* Notifications */}
               <button
                 type="button"
-                className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300 relative"
+                className="-m-2.5 p-2.5 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 relative"
                 onClick={() => router.push('/notifications')}
               >
                 <span className="sr-only">View notifications</span>
@@ -201,7 +201,7 @@ export default function DashboardLayout({
               </button>
 
               {/* Separator */}
-              <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:lg:bg-gray-700" aria-hidden="true" />
+              <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-slate-200 dark:lg:bg-slate-800" aria-hidden="true" />
 
               {/* Profile dropdown */}
               <Menu as="div" className="relative">
@@ -218,7 +218,7 @@ export default function DashboardLayout({
                     )}
                   </div>
                   <span className="hidden lg:flex lg:items-center">
-                    <span className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100" aria-hidden="true">
+                    <span className="ml-4 text-sm font-semibold leading-6 text-slate-900 dark:text-slate-100" aria-hidden="true">
                       {user?.displayName || `${user?.firstName} ${user?.lastName}`}
                     </span>
                   </span>
@@ -232,13 +232,13 @@ export default function DashboardLayout({
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <Menu.Items className="absolute right-0 z-10 mt-2.5 w-56 origin-top-right rounded-md bg-white dark:bg-gray-800 py-2 shadow-lg ring-1 ring-gray-900/5 dark:ring-gray-700 focus:outline-none">
-                    <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <Menu.Items className="absolute right-0 z-10 mt-2.5 w-56 origin-top-right rounded-md bg-white dark:bg-slate-900 py-2 shadow-lg ring-1 ring-gray-900/5 dark:ring-slate-800 focus:outline-none">
+                    <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         {user?.displayName || `${user?.firstName} ${user?.lastName}`}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                         {user?.roles?.map((r) => r.displayName).join(', ')}
                       </p>
                     </div>
@@ -247,10 +247,10 @@ export default function DashboardLayout({
                         <a
                           href="/profile"
                           className={`${
-                            active ? 'bg-gray-50 dark:bg-gray-700' : ''
-                          } flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                            active ? 'bg-slate-50 dark:bg-slate-800' : ''
+                          } flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-200`}
                         >
-                          <UserCircleIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                          <UserCircleIcon className="mr-3 h-5 w-5 text-slate-400 dark:text-slate-500" />
                           Profile Settings
                         </a>
                       )}
@@ -260,10 +260,10 @@ export default function DashboardLayout({
                         <button
                           onClick={handleLogout}
                           className={`${
-                            active ? 'bg-gray-50 dark:bg-gray-700' : ''
-                          } flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                            active ? 'bg-slate-50 dark:bg-slate-800' : ''
+                          } flex w-full items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-200`}
                         >
-                          <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                          <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5 text-slate-400 dark:text-slate-500" />
                           Sign out
                         </button>
                       )}

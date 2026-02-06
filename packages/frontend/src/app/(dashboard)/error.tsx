@@ -30,8 +30,8 @@ export default function Error({
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="max-w-md text-center">
-        <h2 className="text-xl font-semibold text-gray-900">Something went wrong</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Something went wrong</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
           An unexpected error occurred. You can try again or go back.
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">

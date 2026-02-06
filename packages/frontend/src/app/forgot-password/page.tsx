@@ -44,27 +44,27 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <ShieldCheckIcon className="w-10 h-10 text-primary-600" />
+          <div className="mx-auto w-14 h-14 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-800">
+            <ShieldCheckIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
           </div>
-          <h1 className="mt-4 text-3xl font-bold text-white">Audit Management</h1>
-          <p className="mt-2 text-primary-200">Password Recovery</p>
+          <h1 className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">Audit Management</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Password Recovery</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="card p-8">
           <div className="flex items-center gap-2 mb-6">
-            <Link href="/login" className="text-gray-400 hover:text-gray-600">
+            <Link href="/login" className="text-slate-400 hover:text-slate-600">
               <ArrowLeftIcon className="h-5 w-5" />
             </Link>
-            <h2 className="text-2xl font-semibold text-gray-900">Forgot password</h2>
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Forgot password</h2>
           </div>
 
           {submitted ? (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
                 If an account with that email exists, you will receive a password reset link.
               </p>
               <Link href="/login" className="btn btn-primary w-full">
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-primary-200">
+        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
           Secure access to your organization's audit and compliance data
         </p>
       </div>

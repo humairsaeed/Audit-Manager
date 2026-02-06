@@ -58,20 +58,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg">
-            <ShieldCheckIcon className="w-10 h-10 text-primary-600 dark:text-primary-400" />
+          <div className="mx-auto w-14 h-14 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-800">
+            <ShieldCheckIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
           </div>
-          <h1 className="mt-4 text-3xl font-bold text-white">Audit Management</h1>
-          <p className="mt-2 text-primary-200">Enterprise Compliance System</p>
+          <h1 className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">Audit Management</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Enterprise Compliance System</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Sign in to your account</h2>
+        <div className="card p-8">
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6">Sign in to your account</h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
@@ -107,7 +107,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -127,9 +127,9 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 dark:border-slate-600 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700 dark:text-slate-300">
                   Remember me
                 </label>
               </div>
@@ -160,7 +160,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-sm text-primary-200">
+        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
           Secure access to your organization's audit and compliance data
         </p>
       </div>
