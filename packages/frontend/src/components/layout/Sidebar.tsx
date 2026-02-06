@@ -103,7 +103,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
             <img
               src="/logo-eres-icon-white.svg"
               alt="ERES"
-              className="h-9 w-9"
+              className="h-7 w-7"
             />
           ) : (
             <img
