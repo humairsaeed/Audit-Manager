@@ -17,7 +17,7 @@ const config: Config = {
           300: 'var(--color-primary-300, #93c5fd)',
           400: 'var(--color-primary-400, #60a5fa)',
           500: 'var(--color-primary-500, #3b82f6)',
-          600: 'var(--color-primary-600, #2563eb)',
+          600: 'var(--color-primary-600, #0f172a)',
           700: 'var(--color-primary-700, #1d4ed8)',
           800: 'var(--color-primary-800, #1e40af)',
           900: 'var(--color-primary-900, #1e3a8a)',
@@ -49,3 +49,4 @@ const config: Config = {
 };
 
 export default config;
+
