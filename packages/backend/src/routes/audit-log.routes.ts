@@ -64,7 +64,7 @@ router.get(
               firstName: true,
               lastName: true,
               email: true,
-              avatarUrl: true,
+              avatar: true,
             },
           },
         },
