@@ -19,6 +19,7 @@ import {
   PaperClipIcon,
   ChatBubbleLeftRightIcon,
   ArrowPathIcon,
+  PaperAirplaneIcon,
 } from '@heroicons/react/24/outline';
 import { observationsApi, evidenceApi, aiInsightsApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
@@ -74,10 +75,13 @@ export default function ObservationDetailPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [aiReviewModal, setAiReviewModal] = useState<{ evidenceId: string; review: EvidenceReviewResult; fileName: string } | null>(null);
   const [reviewingEvidenceId, setReviewingEvidenceId] = useState<string | null>(null);
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [followUpMessage, setFollowUpMessage] = useState('');
 
   const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
   const canReview = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.COMPLIANCE_MANAGER);
   const canDelete = hasAnyRole(ROLES.SYSTEM_ADMIN);
+  const canFollowUp = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
 
   // Fetch observation details
   const { data: observation, isLoading, error } = useQuery({
@@ -163,6 +167,20 @@ export default function ObservationDetailPage() {
     },
   });
 
+  const followUpMutation = useMutation({
+    mutationFn: async (message: string) => {
+      return observationsApi.followUp(observationId, message);
+    },
+    onSuccess: () => {
+      setShowFollowUpModal(false);
+      setFollowUpMessage('');
+      toast.success('Follow-up sent successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to send follow-up');
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       return observationsApi.delete(observationId);
@@ -238,6 +256,14 @@ export default function ObservationDetailPage() {
       return;
     }
     commentMutation.mutate(comment);
+  };
+
+  const handleSendFollowUp = () => {
+    if (!followUpMessage.trim()) {
+      toast.error('Please enter a follow-up message');
+      return;
+    }
+    followUpMutation.mutate(followUpMessage.trim());
   };
 
   const getEvidenceUrl = async (evidenceId: string) => {
@@ -623,7 +649,7 @@ export default function ObservationDetailPage() {
           </div>
 
           {/* Status Actions */}
-          {filteredTransitions.length > 0 && (
+          {(filteredTransitions.length > 0 || (canFollowUp && (observation.ownerId || observation.reviewerId))) && (
             <div className="card p-6">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Actions</h3>
               <div className="space-y-2">
@@ -640,6 +666,15 @@ export default function ObservationDetailPage() {
                     {transition.label}
                   </button>
                 ))}
+                {canFollowUp && (observation.ownerId || observation.reviewerId) && (
+                  <button
+                    onClick={() => setShowFollowUpModal(true)}
+                    className="btn btn-secondary w-full"
+                  >
+                    <PaperAirplaneIcon className="h-4 w-4 mr-2" />
+                    Send Follow-up
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -830,6 +865,43 @@ export default function ObservationDetailPage() {
                     {commentMutation.isPending ? 'Adding...' : 'Add Comment'}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showFollowUpModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowFollowUpModal(false)} />
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                Send Follow-up
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                This will notify the observation owner and reviewer.
+              </p>
+              <div className="mb-4">
+                <label className="label">Message *</label>
+                <textarea
+                  value={followUpMessage}
+                  onChange={(e) => setFollowUpMessage(e.target.value)}
+                  className="input min-h-[120px]"
+                  placeholder="Enter follow-up instructions or request..."
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowFollowUpModal(false)} className="btn btn-secondary">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendFollowUp}
+                  disabled={followUpMutation.isPending}
+                  className="btn btn-primary"
+                >
+                  {followUpMutation.isPending ? 'Sending...' : 'Send'}
+                </button>
               </div>
             </div>
           </div>

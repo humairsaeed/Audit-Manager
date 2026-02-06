@@ -320,6 +320,7 @@ export interface ReportFilters {
 
 export type NotificationType =
   | 'PASSWORD_RESET'
+  | 'FOLLOW_UP'
   | 'OBSERVATION_ASSIGNED'
   | 'DUE_DATE_REMINDER'
   | 'OVERDUE_ALERT'

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ObservationService } from '../services/observation.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission, requireRole } from '../middleware/rbac.middleware.js';
-import { asyncHandler } from '../middleware/error.middleware.js';
+import { asyncHandler, AppError } from '../middleware/error.middleware.js';
 import { prisma } from '../lib/prisma.js';
 import { NotificationService } from '../services/notification.service.js';
 import { AuthenticatedRequest, ApiResponse, RESOURCES, ACTIONS, CreateObservationDTO, SYSTEM_ROLES } from '../types/index.js';
@@ -59,6 +59,10 @@ const updateObservationSchema = z.object({
   targetDate: z.string().transform((s) => new Date(s)).optional(),
   extensionReason: z.string().optional(),
   tags: z.array(z.string()).optional(),
+});
+
+const followUpSchema = z.object({
+  message: z.string().min(1, 'Message is required'),
 });
 
 const updateStatusSchema = z.object({
@@ -408,6 +412,69 @@ router.post(
       success: true,
       data: { observation },
       message: 'Reviewer assigned successfully',
+    };
+
+    res.json(response);
+  })
+);
+
+/**
+ * @route POST /api/v1/observations/:id/follow-up
+ * @desc Send follow-up email to assignee(s)
+ * @access Admin/Auditor
+ */
+router.post(
+  '/:id/follow-up',
+  requireRole(SYSTEM_ROLES.SYSTEM_ADMIN, SYSTEM_ROLES.AUDIT_ADMIN, SYSTEM_ROLES.AUDITOR),
+  asyncHandler(async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    const { id } = req.params;
+    const { message } = followUpSchema.parse(req.body);
+
+    const observation = await prisma.observation.findUnique({
+      where: { id },
+      include: {
+        owner: true,
+        reviewer: true,
+        audit: { select: { name: true } },
+      },
+    });
+
+    if (!observation) {
+      throw AppError.notFound('Observation');
+    }
+
+    const recipients = [observation.owner, observation.reviewer].filter(Boolean) as Array<{
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      displayName: string | null;
+    }>;
+
+    if (recipients.length === 0) {
+      throw AppError.badRequest('No assignees found for this observation');
+    }
+
+    for (const recipient of recipients) {
+      await NotificationService.sendNotification({
+        type: 'FOLLOW_UP',
+        userId: recipient.id,
+        observationId: observation.id,
+        channels: ['EMAIL', 'IN_APP'],
+        data: {
+          observationTitle: observation.title,
+          auditName: observation.audit?.name || 'Unassigned',
+          requestedBy: authReq.user.email,
+          message,
+          url: `${process.env.FRONTEND_URL}/observations/${observation.id}`,
+        },
+      });
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'Follow-up sent successfully',
     };
 
     res.json(response);

@@ -58,6 +58,38 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, {
       }],
     }),
   },
+  FOLLOW_UP: {
+    subject: 'Follow-up Required: {title}',
+    emailBody: (data) => `
+      <h2>Follow-up Requested</h2>
+      <p>A follow-up has been requested for the following observation:</p>
+      <p><strong>Observation:</strong> ${data.observationTitle}</p>
+      <p><strong>Audit:</strong> ${data.auditName}</p>
+      <p><strong>Requested By:</strong> ${data.requestedBy}</p>
+      ${data.message ? `<p><strong>Message:</strong></p><p style="padding: 10px; background: #F5F5F5;">${data.message}</p>` : ''}
+      <p><a href="${data.url}">View Observation</a></p>
+    `,
+    teamsMessage: (data) => ({
+      '@type': 'MessageCard',
+      '@context': 'http://schema.org/extensions',
+      themeColor: 'F59E0B',
+      summary: `Follow-up Required: ${data.observationTitle}`,
+      sections: [{
+        activityTitle: 'Follow-up Requested',
+        activitySubtitle: `By ${data.requestedBy}`,
+        facts: [
+          { name: 'Observation', value: String(data.observationTitle) },
+          { name: 'Audit', value: String(data.auditName) },
+        ],
+        markdown: true,
+      }],
+      potentialAction: [{
+        '@type': 'OpenUri',
+        name: 'View Observation',
+        targets: [{ os: 'default', uri: String(data.url) }],
+      }],
+    }),
+  },
   OBSERVATION_ASSIGNED: {
     subject: 'New Observation Assigned: {title}',
     emailBody: (data) => `

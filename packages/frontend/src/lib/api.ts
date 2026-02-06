@@ -216,6 +216,11 @@ export const observationsApi = {
     return response.data;
   },
 
+  followUp: async (id: string, message: string) => {
+    const response = await api.post<ApiResponse>(`/observations/${id}/follow-up`, { message });
+    return response.data;
+  },
+
   assignOwner: async (id: string, ownerId: string) => {
     const response = await api.post<ApiResponse<{ observation: any }>>(`/observations/${id}/assign-owner`, {
       ownerId,
