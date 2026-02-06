@@ -50,6 +50,40 @@ export default function DashboardPage() {
     ROLES.EXECUTIVE
   );
   const [range, setRange] = useState<RangeKey>('week');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+
+  const rangeFilters = useMemo(() => {
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+
+    if (range === 'today') {
+      return { dateFrom: startOfDay.toISOString(), dateTo: endOfDay.toISOString() };
+    }
+
+    if (range === 'week') {
+      const weekFromNow = new Date(startOfDay);
+      weekFromNow.setDate(weekFromNow.getDate() + 7);
+      return { dateFrom: startOfDay.toISOString(), dateTo: weekFromNow.toISOString() };
+    }
+
+    if (range === 'month') {
+      const monthFromNow = new Date(startOfDay);
+      monthFromNow.setDate(monthFromNow.getDate() + 30);
+      return { dateFrom: startOfDay.toISOString(), dateTo: monthFromNow.toISOString() };
+    }
+
+    if (range === 'custom' && customFrom && customTo) {
+      const from = new Date(customFrom);
+      const to = new Date(customTo);
+      if (!isNaN(from.getTime()) && !isNaN(to.getTime())) {
+        return { dateFrom: from.toISOString(), dateTo: to.toISOString() };
+      }
+    }
+
+    return {} as { dateFrom?: string; dateTo?: string };
+  }, [range, customFrom, customTo]);
 
   const { data: userDashboard, isLoading: userLoading } = useQuery({
     queryKey: ['user-dashboard'],
@@ -60,19 +94,48 @@ export default function DashboardPage() {
   });
 
   const { data: managementDashboard, isLoading: mgmtLoading } = useQuery({
-    queryKey: ['management-dashboard'],
+    queryKey: ['management-dashboard', rangeFilters],
     queryFn: async () => {
-      const response = await dashboardApi.getManagementDashboard();
+      const response = await dashboardApi.getManagementDashboard(rangeFilters);
       return response.data?.dashboard;
     },
     enabled: isManager,
   });
 
+  const dueSoonDays = useMemo(() => {
+    if (range === 'today') return 1;
+    if (range === 'week') return 7;
+    if (range === 'month') return 30;
+    if (range === 'custom' && customFrom && customTo) {
+      const from = new Date(customFrom);
+      const to = new Date(customTo);
+      const diffMs = to.getTime() - from.getTime();
+      if (!isNaN(diffMs) && diffMs >= 0) {
+        return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+      }
+    }
+    return 7;
+  }, [range, customFrom, customTo]);
+
   const { data: dueSoonData } = useQuery({
-    queryKey: ['observations-due-soon'],
+    queryKey: ['observations-due-soon', dueSoonDays],
     queryFn: async () => {
-      const response = await observationsApi.dueSoon(7);
+      const response = await observationsApi.dueSoon(dueSoonDays);
       return response.data?.observations || [];
+    },
+  });
+
+  const { data: recentlyClosedData } = useQuery({
+    queryKey: ['recently-closed', rangeFilters],
+    queryFn: async () => {
+      const response = await observationsApi.list({
+        status: 'CLOSED',
+        sortBy: 'closedAt',
+        sortOrder: 'desc',
+        limit: 5,
+        ...rangeFilters,
+      });
+      return response.data?.data || [];
     },
   });
 
@@ -117,7 +180,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10">
       {/* Header */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
             Welcome back, {user?.firstName}
@@ -126,9 +189,16 @@ export default function DashboardPage() {
             {roleLabel} dashboard. Review priorities and act on items due soon.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <RangeSelector value={range} onChange={setRange} />
-          <div className="flex items-center gap-2">
+        <div className="flex w-full flex-col items-start gap-3 lg:ml-auto lg:w-auto lg:items-end">
+          <RangeSelector
+            value={range}
+            onChange={setRange}
+            customFrom={customFrom}
+            customTo={customTo}
+            onCustomFromChange={setCustomFrom}
+            onCustomToChange={setCustomTo}
+          />
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Link href="/observations/new" className="btn btn-primary">
               <PlusIcon className="h-4 w-4 mr-2" />
               Create Observation
@@ -159,7 +229,7 @@ export default function DashboardPage() {
 
       {/* Organization Overview */}
       {isManager && (
-        <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-4">
           <div className="card p-6 xl:col-span-2">
             <SectionHeader title="Compliance Health" subtitle="Organization snapshot" />
             <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -173,7 +243,7 @@ export default function DashboardPage() {
               <ProgressRow label="Closed ratio" value={totalObservations ? (closedObservations / totalObservations) * 100 : 0} />
             </div>
           </div>
-          <div className="card p-6">
+          <div className="card p-6 xl:col-span-2">
             <SectionHeader title="Risk Exposure" subtitle="High impact focus" />
             <div className="mt-6 space-y-3">
               {riskOrder.map((rating) => (
@@ -190,7 +260,7 @@ export default function DashboardPage() {
       )}
 
       {/* Risk & Priority Insights */}
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-4">
         <div className="card p-6">
           <SectionHeader title="Observations by Status" subtitle="Workflow distribution" />
           <div className="mt-6 space-y-3">
@@ -213,14 +283,16 @@ export default function DashboardPage() {
         <div className="card p-6">
           <SectionHeader title="Aging Buckets" subtitle="Days since open" />
           <div className="mt-6 space-y-3">
-            <AgingRow label="0-7 days" value={(managementDashboard as any)?.aging?.['0_7'] || 0} />
-            <AgingRow label="8-15 days" value={(managementDashboard as any)?.aging?.['8_15'] || 0} />
-            <AgingRow label="16-30 days" value={(managementDashboard as any)?.aging?.['16_30'] || 0} />
-            <AgingRow label="30+ days" value={(managementDashboard as any)?.aging?.['30_plus'] || 0} />
+            {(managementDashboard?.agingAnalysis || []).map((bucket: any) => (
+              <AgingRow key={bucket.label} label={bucket.label} value={bucket.count} />
+            ))}
+            {(!managementDashboard?.agingAnalysis || managementDashboard.agingAnalysis.length === 0) && (
+              <EmptyState message="Aging data not available." />
+            )}
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-6 xl:col-span-2">
           <SectionHeader title="Top High-Risk Observations" subtitle="Priority list" />
           <div className="mt-6 space-y-4">
             {topHighRisk.length === 0 && <EmptyState message="No high-risk items due soon." />}
@@ -251,23 +323,27 @@ export default function DashboardPage() {
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-4">
         <ActionList
           title="Immediate Action"
-          items={dueSoonData?.filter((obs: any) => obs.isOverdue) || []}
+          items={dueSoonData?.filter((obs: any) => new Date(obs.targetDate) < new Date()) || []}
           emptyMessage="No critical items right now."
+          className="xl:col-span-1"
         />
         <ActionList
           title="Upcoming Due"
           items={dueSoonData?.slice(0, 5) || []}
           emptyMessage="No upcoming due items."
+          className="xl:col-span-2"
         />
         <ActionList
           title="Waiting on Others"
           items={(userDashboard?.waitingOnOthers || []).slice(0, 5)}
           emptyMessage="No items waiting on others."
+          className="xl:col-span-1"
         />
         <ActionList
           title="Recently Closed"
-          items={(userDashboard?.recentlyClosed || []).slice(0, 5)}
+          items={recentlyClosedData || []}
           emptyMessage="No recently closed items."
+          className="xl:col-span-2"
         />
       </section>
 
@@ -295,7 +371,21 @@ export default function DashboardPage() {
   );
 }
 
-function RangeSelector({ value, onChange }: { value: RangeKey; onChange: (value: RangeKey) => void }) {
+function RangeSelector({
+  value,
+  onChange,
+  customFrom,
+  customTo,
+  onCustomFromChange,
+  onCustomToChange,
+}: {
+  value: RangeKey;
+  onChange: (value: RangeKey) => void;
+  customFrom: string;
+  customTo: string;
+  onCustomFromChange: (value: string) => void;
+  onCustomToChange: (value: string) => void;
+}) {
   const ranges: { key: RangeKey; label: string }[] = [
     { key: 'today', label: 'Today' },
     { key: 'week', label: 'This Week' },
@@ -303,21 +393,40 @@ function RangeSelector({ value, onChange }: { value: RangeKey; onChange: (value:
     { key: 'custom', label: 'Custom' },
   ];
   return (
-    <div className="flex items-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-1 py-1">
-      {ranges.map((range) => (
-        <button
-          key={range.key}
-          onClick={() => onChange(range.key)}
-          className={clsx(
-            'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
-            value === range.key
-              ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-          )}
-        >
-          {range.label}
-        </button>
-      ))}
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex items-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-1 py-1">
+        {ranges.map((range) => (
+          <button
+            key={range.key}
+            onClick={() => onChange(range.key)}
+            className={clsx(
+              'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+              value === range.key
+                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            )}
+          >
+            {range.label}
+          </button>
+        ))}
+      </div>
+      {value === 'custom' && (
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={customFrom}
+            onChange={(e) => onCustomFromChange(e.target.value)}
+            className="input !py-1.5 !text-xs w-36"
+          />
+          <span className="text-xs text-slate-400">to</span>
+          <input
+            type="date"
+            value={customTo}
+            onChange={(e) => onCustomToChange(e.target.value)}
+            className="input !py-1.5 !text-xs w-36"
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -418,13 +527,15 @@ function ActionList({
   title,
   items,
   emptyMessage,
+  className,
 }: {
   title: string;
   items: any[];
   emptyMessage: string;
+  className?: string;
 }) {
   return (
-    <div className="card p-6">
+    <div className={clsx('card p-6', className)}>
       <SectionHeader title={title} subtitle="Next steps" />
       <div className="mt-4 space-y-3">
         {items.length === 0 && <EmptyState message={emptyMessage} />}

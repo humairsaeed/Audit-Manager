@@ -102,10 +102,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col lg:flex-row">
-        {/* Left panel - Enhanced with trust indicators */}
-        <div className="relative flex w-full flex-col justify-between bg-slate-950 px-8 py-10 text-slate-100 lg:w-1/2 lg:rounded-l-3xl overflow-hidden">
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left panel - Full height dark background */}
+      <div className="relative w-full lg:w-1/2 bg-slate-950">
+        <div className="relative flex min-h-screen flex-col justify-between px-8 py-10 text-slate-100 lg:px-12 xl:px-16 overflow-hidden">
           {/* Subtle background pattern */}
           <div className="absolute inset-0 opacity-[0.03]">
             <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
@@ -212,9 +212,11 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Right panel - Form */}
-        <div className="flex w-full flex-col justify-between px-6 py-10 lg:w-1/2 lg:px-16">
+      {/* Right panel - Form */}
+      <div className="w-full lg:w-1/2 bg-slate-50 dark:bg-slate-950">
+        <div className="flex min-h-screen flex-col justify-between px-6 py-10 lg:px-12 xl:px-16">
           <div className="flex flex-1 items-center justify-center">
             <div className="w-full max-w-md">
               {/* Header */}
