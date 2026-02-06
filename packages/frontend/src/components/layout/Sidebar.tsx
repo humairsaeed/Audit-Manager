@@ -130,12 +130,9 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
                   : 'text-slate-300 hover:bg-slate-900/60 hover:text-white'
               )}
             >
-              {isActive && (
+              {isActive && !isCollapsed && (
                 <span
-                  className={clsx(
-                    'absolute left-0 top-2 h-6 w-1 rounded-full bg-primary-400',
-                    isCollapsed && 'left-1/2 -translate-x-1/2'
-                  )}
+                  className="absolute left-0 top-2 h-6 w-1 rounded-full bg-primary-400"
                   aria-hidden="true"
                 />
               )}
@@ -176,12 +173,9 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
                     : 'text-slate-300 hover:bg-slate-900/60 hover:text-white'
                 )}
               >
-                {isActive && (
+                {isActive && !isCollapsed && (
                   <span
-                    className={clsx(
-                      'absolute left-0 top-2 h-6 w-1 rounded-full bg-primary-400',
-                      isCollapsed && 'left-1/2 -translate-x-1/2'
-                    )}
+                    className="absolute left-0 top-2 h-6 w-1 rounded-full bg-primary-400"
                     aria-hidden="true"
                   />
                 )}
