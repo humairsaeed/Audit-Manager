@@ -21,7 +21,7 @@ import {
   ArrowPathIcon,
   PaperAirplaneIcon,
 } from '@heroicons/react/24/outline';
-import { observationsApi, evidenceApi, aiInsightsApi } from '@/lib/api';
+import { observationsApi, evidenceApi, aiInsightsApi, auditLogsApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
 import { AIAssistPanel } from '@/components/observations/AIAssistPanel';
 import { SparklesIcon } from '@heroicons/react/24/outline';
@@ -81,6 +81,7 @@ export default function ObservationDetailPage() {
   const canEdit = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
   const canReview = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.COMPLIANCE_MANAGER);
   const canDelete = hasAnyRole(ROLES.SYSTEM_ADMIN);
+  const canViewActivityLogs = hasAnyRole(ROLES.SYSTEM_ADMIN);
   const canFollowUp = hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN, ROLES.AUDITOR);
 
   // Fetch observation details
@@ -104,6 +105,20 @@ export default function ObservationDetailPage() {
       return data?.evidence || data?.data || [];
     },
     enabled: !!observationId && observationId !== 'undefined',
+  });
+
+  // Fetch observation activity logs (admin only)
+  const { data: activityLogs } = useQuery({
+    queryKey: ['observation-activity-logs', observationId],
+    queryFn: async () => {
+      const response = await auditLogsApi.list({
+        resource: 'observations',
+        resourceId: observationId,
+        limit: 50,
+      });
+      return response.data?.data || [];
+    },
+    enabled: !!observationId && observationId !== 'undefined' && canViewActivityLogs,
   });
 
   // Status transition mutation
@@ -765,12 +780,12 @@ export default function ObservationDetailPage() {
           {observation.statusHistory && observation.statusHistory.length > 0 && (
             <div className="card p-6">
               <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-4">Status History</h3>
-              <div className="space-y-3">
-                {observation.statusHistory.slice(0, 5).map((history: any, index: number) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-2 h-2 mt-2 rounded-full bg-slate-400 dark:bg-slate-500" />
-                    </div>
+                <div className="space-y-3">
+                  {observation.statusHistory.slice(0, 5).map((history: any, index: number) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-2 h-2 mt-2 rounded-full bg-slate-400 dark:bg-slate-500" />
+                      </div>
                     <div>
                       <p className="text-sm text-slate-900 dark:text-slate-100">
                         {history.fromStatus} → {history.toStatus}
@@ -785,8 +800,34 @@ export default function ObservationDetailPage() {
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+
+                  {canViewActivityLogs && activityLogs?.length > 0 && (
+                    <div className="pt-3 mt-3 border-t border-slate-200 dark:border-slate-800">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                        Activity Logs
+                      </p>
+                      <div className="space-y-3">
+                        {activityLogs.slice(0, 8).map((log: any) => (
+                          <div key={log.id} className="flex items-start gap-3">
+                            <div className="flex-shrink-0">
+                              <div className="w-2 h-2 mt-2 rounded-full bg-slate-300 dark:bg-slate-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-900 dark:text-slate-100">{log.description}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {new Date(log.timestamp).toLocaleString()}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                by {log.user?.firstName || log.userEmail || 'System'} {log.user?.lastName || ''}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
             </div>
           )}
         </div>
