@@ -24,6 +24,7 @@ router.get(
     const search = (req.query.search as string) || '';
     const action = req.query.action as string | undefined;
     const resource = req.query.resource as string | undefined;
+    const resourceId = req.query.resourceId as string | undefined;
     const userId = req.query.userId as string | undefined;
     const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
     const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
@@ -32,6 +33,7 @@ router.get(
 
     if (action) where.action = action;
     if (resource) where.resource = resource;
+    if (resourceId) where.resourceId = resourceId;
     if (userId) where.userId = userId;
 
     if (dateFrom || dateTo) {

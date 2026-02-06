@@ -112,7 +112,6 @@ export default function ObservationDetailPage() {
     queryKey: ['observation-activity-logs', observationId],
     queryFn: async () => {
       const response = await auditLogsApi.list({
-        resource: 'observations',
         resourceId: observationId,
         limit: 50,
       });
@@ -802,29 +801,33 @@ export default function ObservationDetailPage() {
                   </div>
                   ))}
 
-                  {canViewActivityLogs && activityLogs?.length > 0 && (
+                  {canViewActivityLogs && (
                     <div className="pt-3 mt-3 border-t border-slate-200 dark:border-slate-800">
                       <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                         Activity Logs
                       </p>
-                      <div className="space-y-3">
-                        {activityLogs.slice(0, 8).map((log: any) => (
-                          <div key={log.id} className="flex items-start gap-3">
-                            <div className="flex-shrink-0">
-                              <div className="w-2 h-2 mt-2 rounded-full bg-slate-300 dark:bg-slate-600" />
+                      {activityLogs?.length ? (
+                        <div className="space-y-3">
+                          {activityLogs.slice(0, 8).map((log: any) => (
+                            <div key={log.id} className="flex items-start gap-3">
+                              <div className="flex-shrink-0">
+                                <div className="w-2 h-2 mt-2 rounded-full bg-slate-300 dark:bg-slate-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm text-slate-900 dark:text-slate-100">{log.description}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {new Date(log.timestamp).toLocaleString()}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  by {log.user?.firstName || log.userEmail || 'System'} {log.user?.lastName || ''}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm text-slate-900 dark:text-slate-100">{log.description}</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">
-                                {new Date(log.timestamp).toLocaleString()}
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">
-                                by {log.user?.firstName || log.userEmail || 'System'} {log.user?.lastName || ''}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">No activity logs yet.</p>
+                      )}
                     </div>
                   )}
                 </div>
