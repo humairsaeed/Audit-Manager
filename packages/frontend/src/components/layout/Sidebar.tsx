@@ -96,14 +96,24 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
       {/* Logo */}
       <div className={clsx(
         'flex items-center h-16 border-b border-slate-800/70',
-        isCollapsed ? 'justify-center px-2' : 'justify-between px-4'
+        isCollapsed ? 'justify-center px-2' : 'px-4'
       )}>
-        <div className={clsx('flex items-center gap-2', isCollapsed && 'justify-center')}>
-          <ShieldCheckIcon className="w-7 h-7 text-primary-400 flex-shrink-0" />
-          {!isCollapsed && (
-            <span className="text-lg font-semibold tracking-wide text-white">ERES AMS</span>
+        <Link href="/dashboard" className="flex items-center">
+          {isCollapsed ? (
+            <img
+              src="/logo-eres-white.svg"
+              alt="ERES"
+              className="h-8 w-auto"
+              style={{ maxWidth: '40px', objectFit: 'contain', objectPosition: 'left' }}
+            />
+          ) : (
+            <img
+              src="/logo-eres-white.svg"
+              alt="ERES EMIRATES REAL ESTATE SOLUTIONS"
+              className="h-10 w-auto"
+            />
           )}
-        </div>
+        </Link>
       </div>
 
       {/* Main Navigation */}
