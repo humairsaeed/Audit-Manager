@@ -649,7 +649,7 @@ export default function ObservationDetailPage() {
           </div>
 
           {/* Status Actions */}
-          {(filteredTransitions.length > 0 || (canFollowUp && (observation.ownerId || observation.reviewerId))) && (
+            {(filteredTransitions.length > 0 || (canFollowUp && observation.status !== 'CLOSED' && (observation.ownerId || observation.reviewerId))) && (
             <div className="card p-6">
               <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Actions</h3>
               <div className="space-y-2">
@@ -666,7 +666,7 @@ export default function ObservationDetailPage() {
                     {transition.label}
                   </button>
                 ))}
-                {canFollowUp && (observation.ownerId || observation.reviewerId) && (
+                  {canFollowUp && observation.status !== 'CLOSED' && (observation.ownerId || observation.reviewerId) && (
                   <button
                     onClick={() => setShowFollowUpModal(true)}
                     className="btn btn-secondary w-full"

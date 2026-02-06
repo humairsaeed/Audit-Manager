@@ -199,20 +199,12 @@ export default function DashboardPage() {
             onCustomToChange={setCustomTo}
           />
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <Link href="/observations/new" className="btn btn-primary">
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Create Observation
-            </Link>
             {hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN) && (
               <Link href="/import" className="btn btn-secondary">
                 <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
                 Import
               </Link>
             )}
-            <Link href="/reports" className="btn btn-secondary">
-              <ChartBarIcon className="h-4 w-4 mr-2" />
-              Reports
-            </Link>
           </div>
         </div>
       </div>

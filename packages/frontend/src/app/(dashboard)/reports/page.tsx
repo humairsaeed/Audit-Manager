@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import {
   ChartBarIcon,
   DocumentArrowDownIcon,
@@ -9,6 +10,7 @@ import {
   CalendarIcon,
 } from '@heroicons/react/24/outline';
 import { dashboardApi, reportsApi, auditsApi } from '@/lib/api';
+import { useAuthStore, ROLES } from '@/stores/auth';
 import clsx from 'clsx';
 
 type ReportType = 'summary' | 'trends' | 'compliance' | 'aging';
@@ -31,6 +33,20 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ReportsPage() {
+  const router = useRouter();
+  const { hasAnyRole } = useAuthStore();
+  const canAccessReports = hasAnyRole(ROLES.OBSERVATION_OWNER, ROLES.REVIEWER, ROLES.AUDITOR);
+
+  useEffect(() => {
+    if (!canAccessReports) {
+      router.replace('/dashboard');
+    }
+  }, [canAccessReports, router]);
+
+  if (!canAccessReports) {
+    return null;
+  }
+
   const [activeReport, setActiveReport] = useState<ReportType>('summary');
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
