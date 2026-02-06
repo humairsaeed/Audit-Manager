@@ -59,7 +59,7 @@ const NOTIFICATION_TEMPLATES: Record<NotificationType, {
     }),
   },
   FOLLOW_UP: {
-    subject: 'Follow-up Required: {title}',
+    subject: 'Follow-up Required: {observationTitle}',
     emailBody: (data) => `
       <h2>Follow-up Requested</h2>
       <p>A follow-up has been requested for the following observation:</p>
