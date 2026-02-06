@@ -24,6 +24,7 @@ import notificationRoutes from './routes/notification.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import aiObservationRoutes from './routes/ai-observation.routes.js';
+import auditLogRoutes from './routes/audit-log.routes.js';
 
 const app = express();
 
@@ -84,6 +85,7 @@ app.use(`${apiPrefix}/notifications`, notificationRoutes);
 app.use(`${apiPrefix}/settings`, settingsRoutes);
 app.use(`${apiPrefix}/reports`, reportRoutes);
 app.use(`${apiPrefix}/ai`, aiObservationRoutes);
+app.use(`${apiPrefix}/audit-logs`, auditLogRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

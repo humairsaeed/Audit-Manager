@@ -424,6 +424,14 @@ export const dashboardApi = {
   },
 };
 
+// Audit Logs API
+export const auditLogsApi = {
+  list: async (params?: Record<string, any>) => {
+    const response = await api.get<ApiResponse<PaginatedResponse<any>>>('/audit-logs', { params });
+    return response.data;
+  },
+};
+
 // Entities API
 export const entitiesApi = {
   list: async (flat?: boolean) => {

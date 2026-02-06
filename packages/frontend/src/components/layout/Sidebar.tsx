@@ -18,6 +18,7 @@ import {
   ShieldCheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  DocumentMagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore, ROLES } from '@/stores/auth';
 import clsx from 'clsx';
@@ -71,6 +72,12 @@ const navigation = [
     icon: Cog6ToothIcon,
     roles: [ROLES.SYSTEM_ADMIN],
   },
+  {
+    name: 'Activity Logs',
+    href: '/admin/activity-logs',
+    icon: DocumentMagnifyingGlassIcon,
+    roles: [ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN],
+  },
 ];
 
 export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
@@ -83,7 +90,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
     return hasAnyRole(...item.roles);
   });
 
-  const adminItems = ['Users', 'Roles', 'Entities', 'Settings'];
+  const adminItems = ['Users', 'Roles', 'Entities', 'Settings', 'Activity Logs'];
   const primaryNavigation = filteredNavigation.filter(
     (item) => item.name !== 'divider' && !adminItems.includes(item.name)
   );
