@@ -92,42 +92,24 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
   );
 
   const SidebarContent = ({ isCollapsed = false }: { isCollapsed?: boolean }) => (
-    <div className="flex flex-col h-full bg-gray-900">
+    <div className="flex flex-col h-full bg-slate-950 text-slate-200">
       {/* Logo */}
       <div className={clsx(
-        'flex items-center h-16 bg-gray-900 border-b border-gray-800',
-        isCollapsed ? 'justify-between px-2' : 'justify-between px-4'
+        'flex items-center h-16 border-b border-slate-800/70',
+        isCollapsed ? 'justify-center px-2' : 'justify-between px-4'
       )}>
-        <div className={clsx('flex items-center', isCollapsed && 'justify-center')}>
-          <ShieldCheckIcon className="w-8 h-8 text-primary-500 flex-shrink-0" />
+        <div className={clsx('flex items-center gap-2', isCollapsed && 'justify-center')}>
+          <ShieldCheckIcon className="w-7 h-7 text-primary-400 flex-shrink-0" />
           {!isCollapsed && (
-            <span className="ml-2 text-xl font-bold text-white">ERES AMS</span>
+            <span className="text-lg font-semibold tracking-wide text-white">ERES AMS</span>
           )}
         </div>
-        {!isCollapsed && (
-          <button
-            onClick={onToggleCollapse}
-            className="hidden lg:inline-flex p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-            title="Collapse sidebar"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-        )}
-        {isCollapsed && (
-          <button
-            onClick={onToggleCollapse}
-            className="hidden lg:inline-flex p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-            title="Expand sidebar"
-          >
-            <ChevronRightIcon className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
       {/* Main Navigation */}
       <nav className={clsx(
         'flex-1 py-4 space-y-1 overflow-y-auto',
-        isCollapsed ? 'px-2' : 'px-2'
+        isCollapsed ? 'px-2' : 'px-3'
       )}>
         {primaryNavigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -139,15 +121,25 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
               href={item.href}
               onClick={onClose}
               title={isCollapsed ? item.name : undefined}
+              aria-current={isActive ? 'page' : undefined}
               className={clsx(
-                'flex items-center py-2 text-sm font-medium rounded-lg transition-colors',
+                'group relative flex items-center gap-3 rounded-md py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
                 isCollapsed ? 'justify-center px-2' : 'px-3',
                 isActive
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  ? 'bg-slate-800/80 text-white'
+                  : 'text-slate-300 hover:bg-slate-900/60 hover:text-white'
               )}
             >
-              {Icon && <Icon className={clsx('w-5 h-5 flex-shrink-0', !isCollapsed && 'mr-3')} />}
+              {isActive && (
+                <span
+                  className={clsx(
+                    'absolute left-0 top-2 h-6 w-1 rounded-full bg-primary-400',
+                    isCollapsed && 'left-1/2 -translate-x-1/2'
+                  )}
+                  aria-hidden="true"
+                />
+              )}
+              {Icon && <Icon className="w-5 h-5 flex-shrink-0 text-slate-400 group-hover:text-white" />}
               {!isCollapsed && <span className="truncate">{item.name}</span>}
             </Link>
           );
@@ -156,7 +148,15 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
 
       {/* Admin Navigation - Fixed near bottom above user info */}
       {adminNavigation.length > 0 && (
-        <div className="border-t border-gray-700 pt-3 pb-2 px-2 space-y-1">
+        <div className={clsx(
+          'border-t border-slate-800/70 pt-4 pb-2 space-y-1',
+          isCollapsed ? 'px-2' : 'px-3'
+        )}>
+          {!isCollapsed && (
+            <p className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Administration
+            </p>
+          )}
           {adminNavigation.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
@@ -167,15 +167,25 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
                 href={item.href}
                 onClick={onClose}
                 title={isCollapsed ? item.name : undefined}
+                aria-current={isActive ? 'page' : undefined}
                 className={clsx(
-                  'flex items-center py-2 text-sm font-medium rounded-lg transition-colors',
+                  'group relative flex items-center gap-3 rounded-md py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
                   isCollapsed ? 'justify-center px-2' : 'px-3',
                   isActive
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    ? 'bg-slate-800/80 text-white'
+                    : 'text-slate-300 hover:bg-slate-900/60 hover:text-white'
                 )}
               >
-                {Icon && <Icon className={clsx('w-5 h-5 flex-shrink-0', !isCollapsed && 'mr-3')} />}
+                {isActive && (
+                  <span
+                    className={clsx(
+                      'absolute left-0 top-2 h-6 w-1 rounded-full bg-primary-400',
+                      isCollapsed && 'left-1/2 -translate-x-1/2'
+                    )}
+                    aria-hidden="true"
+                  />
+                )}
+                {Icon && <Icon className="w-5 h-5 flex-shrink-0 text-slate-400 group-hover:text-white" />}
                 {!isCollapsed && <span className="truncate">{item.name}</span>}
               </Link>
             );
@@ -185,7 +195,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
 
       {/* User Info */}
       <div className={clsx(
-        'border-t border-gray-700',
+        'border-t border-slate-800/70',
         isCollapsed ? 'p-2' : 'p-4'
       )}>
         <div className={clsx(
@@ -194,7 +204,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         )}>
           <div className="flex-shrink-0">
             <div className={clsx(
-              'rounded-full bg-primary-600 flex items-center justify-center',
+              'rounded-full bg-primary-500/90 flex items-center justify-center',
               isCollapsed ? 'w-8 h-8' : 'w-10 h-10'
             )}>
               <span className={clsx('text-white font-medium', isCollapsed && 'text-xs')}>
@@ -208,7 +218,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
               <p className="text-sm font-medium text-white truncate">
                 {user?.displayName || `${user?.firstName} ${user?.lastName}`}
               </p>
-              <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+              <p className="text-xs text-slate-400 truncate">{user?.email}</p>
             </div>
           )}
         </div>
@@ -272,6 +282,13 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
         'hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300',
         collapsed ? 'lg:w-16' : 'lg:w-64'
       )}>
+        <button
+          onClick={onToggleCollapse}
+          className="hidden lg:inline-flex items-center justify-center absolute -right-3 top-4 h-7 w-7 rounded-full border border-slate-800 bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />}
+        </button>
         <SidebarContent isCollapsed={collapsed} />
       </div>
     </>
