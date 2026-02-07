@@ -188,6 +188,7 @@ export class AuditService {
       leadAuditorId?: string;
       periodStart?: Date;
       periodEnd?: Date;
+      year?: number;
     },
     userContext?: { userId: string; roles: string[] }
   ): Promise<PaginatedResponse<AuditWithRelations>> {
@@ -217,6 +218,15 @@ export class AuditService {
 
     if (filters?.entityId) {
       where.entityId = filters.entityId;
+    }
+
+    if (filters?.year) {
+      const startOfYear = new Date(filters.year, 0, 1);
+      const endOfYear = new Date(filters.year + 1, 0, 1);
+      where.createdAt = {
+        gte: startOfYear,
+        lt: endOfYear,
+      };
     }
 
     if (filters?.leadAuditorId) {

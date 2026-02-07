@@ -75,6 +75,7 @@ router.get(
       leadAuditorId: req.query.leadAuditorId as string,
       periodStart: req.query.periodStart ? new Date(req.query.periodStart as string) : undefined,
       periodEnd: req.query.periodEnd ? new Date(req.query.periodEnd as string) : undefined,
+      year: req.query.year ? parseInt(req.query.year as string, 10) : undefined,
     };
 
     const result = await AuditService.listAudits(
