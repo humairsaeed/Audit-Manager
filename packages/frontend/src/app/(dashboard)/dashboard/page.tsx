@@ -12,8 +12,6 @@ import {
   ArrowTrendingDownIcon,
   BoltIcon,
   ChartBarIcon,
-  PlusIcon,
-  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
 import { dashboardApi, observationsApi } from '@/lib/api';
 import { useAuthStore, ROLES } from '@/stores/auth';
@@ -211,14 +209,6 @@ export default function DashboardPage() {
             onCustomFromChange={setCustomFrom}
             onCustomToChange={setCustomTo}
           />
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {hasAnyRole(ROLES.SYSTEM_ADMIN, ROLES.AUDIT_ADMIN) && (
-              <Link href="/import" className="btn btn-secondary">
-                <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
-                Import
-              </Link>
-            )}
-          </div>
         </div>
       </div>
 
@@ -250,31 +240,9 @@ export default function DashboardPage() {
           </div>
           <div className="card p-6 xl:col-span-2">
             <SectionHeader title="Risk Exposure" subtitle="High impact focus" />
-            <div className="mt-6 space-y-4">
+            <div className="mt-6">
               {riskTotal > 0 ? (
-                <>
-                  <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    {riskChartData
-                      .filter((item) => item.count > 0)
-                      .map((item) => (
-                        <div
-                          key={item.rating}
-                          className={clsx('h-full', riskChartColors[item.rating])}
-                          style={{ width: `${(item.count / riskTotal) * 100}%` }}
-                        />
-                      ))}
-                  </div>
-                  <div className="space-y-3">
-                    {riskChartData.map((item) => (
-                      <div key={item.rating} className="flex items-center justify-between">
-                        <span className={clsx('badge', riskColors[item.rating])}>{item.rating}</span>
-                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {item.count}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </>
+                <RiskBarChart data={riskChartData} maxValue={Math.max(...riskChartData.map(d => d.count))} />
               ) : (
                 <EmptyState message="No risk data available." />
               )}
@@ -539,6 +507,67 @@ function AgingRow({ label, value }: { label: string; value: number }) {
     <div className="flex items-center justify-between">
       <span className="text-sm text-slate-600 dark:text-slate-300">{label}</span>
       <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{value}</span>
+    </div>
+  );
+}
+
+function RiskBarChart({ data, maxValue }: { data: { rating: string; count: number }[]; maxValue: number }) {
+  const barColors: Record<string, string> = {
+    CRITICAL: 'bg-red-500',
+    HIGH: 'bg-orange-400',
+    MEDIUM: 'bg-yellow-400',
+    LOW: 'bg-green-500',
+    INFORMATIONAL: 'bg-slate-400',
+  };
+
+  const labelColors: Record<string, string> = {
+    CRITICAL: 'text-red-600 dark:text-red-400',
+    HIGH: 'text-orange-500 dark:text-orange-400',
+    MEDIUM: 'text-yellow-600 dark:text-yellow-400',
+    LOW: 'text-green-600 dark:text-green-400',
+    INFORMATIONAL: 'text-slate-500 dark:text-slate-400',
+  };
+
+  const chartHeight = 180;
+  const safeMax = maxValue || 1;
+
+  return (
+    <div className="flex flex-col">
+      {/* Chart area */}
+      <div className="flex items-end justify-between gap-3 px-2" style={{ height: chartHeight }}>
+        {data.map((item) => {
+          const heightPercent = (item.count / safeMax) * 100;
+          return (
+            <div key={item.rating} className="flex flex-1 flex-col items-center gap-2">
+              {/* Count label above bar */}
+              <span className={clsx('text-sm font-semibold', labelColors[item.rating])}>
+                {item.count}
+              </span>
+              {/* Bar */}
+              <div
+                className={clsx(
+                  'w-full max-w-[48px] rounded-t-md transition-all duration-300',
+                  barColors[item.rating]
+                )}
+                style={{
+                  height: `${Math.max(heightPercent, item.count > 0 ? 8 : 0)}%`,
+                  minHeight: item.count > 0 ? '12px' : '0px'
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
+      {/* X-axis labels */}
+      <div className="flex items-center justify-between gap-3 px-2 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+        {data.map((item) => (
+          <div key={item.rating} className="flex-1 text-center">
+            <span className={clsx('text-[10px] font-medium uppercase tracking-wide', labelColors[item.rating])}>
+              {item.rating === 'INFORMATIONAL' ? 'INFO' : item.rating}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -87,19 +87,22 @@ export const auditLogMiddleware = (
       const resource = extractResource(req.path);
       const resourceId = extractResourceId(req.path);
 
-      createAuditLog(
-        user?.userId || null,
-        user?.email || null,
-        action,
-        resource,
-        resourceId,
-        generateDescription(req.method, resource, resourceId),
-        null, // Previous value would need to be captured before the operation
-        req.body,
-        getClientIp(req),
-        req.headers['user-agent'] || null,
-        user?.sessionId || null
-      );
+      // Generate description with resource name lookup
+      generateDescriptionAsync(req.method, resource, resourceId, body).then((description) => {
+        createAuditLog(
+          user?.userId || null,
+          user?.email || null,
+          action,
+          resource,
+          resourceId,
+          description,
+          null, // Previous value would need to be captured before the operation
+          req.body,
+          getClientIp(req),
+          req.headers['user-agent'] || null,
+          user?.sessionId || null
+        );
+      });
     }
 
     return originalJson(body);
@@ -139,6 +142,64 @@ function extractResourceId(path: string): string | null {
 function generateDescription(method: string, resource: string, resourceId: string | null): string {
   const action = method === 'POST' ? 'Created' : method === 'DELETE' ? 'Deleted' : 'Updated';
   const target = resourceId ? `${resource} (${resourceId})` : resource;
+  return `${action} ${target}`;
+}
+
+/**
+ * Generate human-readable description with async resource name lookup
+ */
+async function generateDescriptionAsync(
+  method: string,
+  resource: string,
+  resourceId: string | null,
+  responseBody: unknown
+): Promise<string> {
+  const action = method === 'POST' ? 'Created' : method === 'DELETE' ? 'Deleted' : 'Updated';
+
+  // Try to get a friendly name for the resource
+  let resourceName: string | null = null;
+
+  try {
+    // First, try to extract from response body
+    const body = responseBody as any;
+    if (body?.data?.title) {
+      resourceName = body.data.title;
+    } else if (body?.data?.name) {
+      resourceName = body.data.name;
+    }
+
+    // If not in response, look up from database for specific resources
+    if (!resourceName && resourceId) {
+      if (resource === 'observations') {
+        const observation = await prisma.observation.findUnique({
+          where: { id: resourceId },
+          select: { title: true },
+        });
+        resourceName = observation?.title || null;
+      } else if (resource === 'audits') {
+        const audit = await prisma.audit.findUnique({
+          where: { id: resourceId },
+          select: { name: true },
+        });
+        resourceName = audit?.name || null;
+      } else if (resource === 'users') {
+        const user = await prisma.user.findUnique({
+          where: { id: resourceId },
+          select: { email: true, firstName: true, lastName: true },
+        });
+        resourceName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : null;
+      }
+    }
+  } catch {
+    // Ignore lookup errors, fall back to ID
+  }
+
+  const target = resourceName
+    ? `${resource.slice(0, -1)} "${resourceName}"` // Remove trailing 's' from resource name
+    : resourceId
+      ? `${resource} (${resourceId})`
+      : resource;
+
   return `${action} ${target}`;
 }
 
