@@ -140,11 +140,21 @@ router.get(
     const sortBy = (req.query.sortBy as string) || 'targetDate';
     const sortOrder = (req.query.sortOrder as string) === 'desc' ? 'desc' : 'asc';
     const overdueOnly = req.query.overdueOnly === 'true';
-    const auditId = req.query.auditId as string | undefined;
+
+    const filters = {
+      ownerId: authReq.user.userId,
+      overdueOnly,
+      search: req.query.search as string | undefined,
+      auditId: req.query.auditId as string | undefined,
+      riskRating: req.query.riskRating as any,
+      status: req.query.status as any,
+      dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+      dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
+    };
 
     const result = await ObservationService.listObservations(
       { page, limit, sortBy, sortOrder },
-      { ownerId: authReq.user.userId, overdueOnly, auditId }
+      filters
     );
 
     const response: ApiResponse = {
