@@ -88,7 +88,7 @@ export const auditLogMiddleware = (
       const resourceId = extractResourceId(req.path);
 
       // Generate description with resource name lookup
-      generateDescriptionAsync(req.method, resource, resourceId, body).then((description) => {
+      generateDescriptionAsync(req.method, req.path, body).then((description) => {
         createAuditLog(
           user?.userId || null,
           user?.email || null,
@@ -112,37 +112,104 @@ export const auditLogMiddleware = (
 };
 
 /**
- * Extract resource name from path
+ * Parse path to extract resource info including nested resources
  */
-function extractResource(path: string): string {
+interface PathInfo {
+  parentResource: string;
+  parentId: string | null;
+  subResource: string | null;
+  subResourceId: string | null;
+}
+
+function parsePath(path: string): PathInfo {
   // Remove API prefix and version
   const cleanPath = path.replace(/^\/api\/v\d+\//, '');
-  // Get first segment
   const parts = cleanPath.split('/').filter(Boolean);
-  return parts[0] || 'unknown';
+
+  const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+  const result: PathInfo = {
+    parentResource: parts[0] || 'unknown',
+    parentId: null,
+    subResource: null,
+    subResourceId: null,
+  };
+
+  // Parse: /resource/:id/subResource/:subId
+  if (parts.length >= 2 && isUUID(parts[1])) {
+    result.parentId = parts[1];
+  }
+
+  if (parts.length >= 3 && !isUUID(parts[2])) {
+    result.subResource = parts[2];
+  }
+
+  if (parts.length >= 4 && isUUID(parts[3])) {
+    result.subResourceId = parts[3];
+  }
+
+  return result;
 }
 
 /**
- * Extract resource ID from path
+ * Extract resource name from path (for backward compatibility)
+ */
+function extractResource(path: string): string {
+  const info = parsePath(path);
+  return info.subResource || info.parentResource;
+}
+
+/**
+ * Extract resource ID from path (for backward compatibility)
  */
 function extractResourceId(path: string): string | null {
-  const parts = path.split('/').filter(Boolean);
-  // Look for UUID-like patterns
-  for (const part of parts) {
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(part)) {
-      return part;
-    }
-  }
-  return null;
+  const info = parsePath(path);
+  return info.subResourceId || info.parentId;
 }
 
 /**
- * Generate human-readable description
+ * Look up observation title by ID
  */
-function generateDescription(method: string, resource: string, resourceId: string | null): string {
-  const action = method === 'POST' ? 'Created' : method === 'DELETE' ? 'Deleted' : 'Updated';
-  const target = resourceId ? `${resource} (${resourceId})` : resource;
-  return `${action} ${target}`;
+async function getObservationTitle(id: string): Promise<string | null> {
+  try {
+    const observation = await prisma.observation.findUnique({
+      where: { id },
+      select: { title: true },
+    });
+    return observation?.title || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Look up audit name by ID
+ */
+async function getAuditName(id: string): Promise<string | null> {
+  try {
+    const audit = await prisma.audit.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+    return audit?.name || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Look up user name by ID
+ */
+async function getUserName(id: string): Promise<string | null> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { email: true, firstName: true, lastName: true },
+    });
+    return user ? `${user.firstName} ${user.lastName}`.trim() || user.email : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -150,57 +217,115 @@ function generateDescription(method: string, resource: string, resourceId: strin
  */
 async function generateDescriptionAsync(
   method: string,
-  resource: string,
-  resourceId: string | null,
+  path: string,
   responseBody: unknown
 ): Promise<string> {
-  const action = method === 'POST' ? 'Created' : method === 'DELETE' ? 'Deleted' : 'Updated';
+  const pathInfo = parsePath(path);
+  const body = responseBody as any;
 
-  // Try to get a friendly name for the resource
-  let resourceName: string | null = null;
+  // Get the name/title from response body if available
+  const responseTitle = body?.data?.title || body?.data?.name || body?.data?.fileName || null;
 
-  try {
-    // First, try to extract from response body
-    const body = responseBody as any;
-    if (body?.data?.title) {
-      resourceName = body.data.title;
-    } else if (body?.data?.name) {
-      resourceName = body.data.name;
+  // Handle nested resources (e.g., /observations/:id/evidence)
+  if (pathInfo.subResource && pathInfo.parentId) {
+    const parentName = await getParentResourceName(pathInfo.parentResource, pathInfo.parentId);
+    const parentDisplay = parentName ? `"${parentName}"` : pathInfo.parentId;
+
+    switch (pathInfo.subResource) {
+      case 'evidence':
+        if (method === 'POST') {
+          const fileName = body?.data?.fileName || body?.data?.originalName || 'file';
+          return `Uploaded evidence "${fileName}" to observation ${parentDisplay}`;
+        } else if (method === 'DELETE') {
+          return `Deleted evidence from observation ${parentDisplay}`;
+        }
+        break;
+
+      case 'comments':
+        if (method === 'POST') {
+          return `Added comment to observation ${parentDisplay}`;
+        } else if (method === 'DELETE') {
+          return `Deleted comment from observation ${parentDisplay}`;
+        }
+        break;
+
+      case 'status':
+        const newStatus = body?.data?.status || body?.status;
+        if (newStatus) {
+          return `Changed status of observation ${parentDisplay} to ${newStatus}`;
+        }
+        return `Updated status of observation ${parentDisplay}`;
+
+      case 'follow-up':
+        return `Added follow-up to observation ${parentDisplay}`;
+
+      case 'review-cycle':
+        return `Added review cycle to observation ${parentDisplay}`;
+
+      case 'team':
+        if (method === 'POST') {
+          const memberName = body?.data?.user?.firstName
+            ? `${body.data.user.firstName} ${body.data.user.lastName}`.trim()
+            : null;
+          return memberName
+            ? `Added ${memberName} to audit team for ${parentDisplay}`
+            : `Added team member to audit ${parentDisplay}`;
+        } else if (method === 'DELETE') {
+          return `Removed team member from audit ${parentDisplay}`;
+        }
+        break;
+
+      case 'documents':
+        if (method === 'POST') {
+          const docName = body?.data?.name || body?.data?.fileName || 'document';
+          return `Uploaded document "${docName}" to audit ${parentDisplay}`;
+        } else if (method === 'DELETE') {
+          return `Deleted document from audit ${parentDisplay}`;
+        }
+        break;
     }
 
-    // If not in response, look up from database for specific resources
-    if (!resourceName && resourceId) {
-      if (resource === 'observations') {
-        const observation = await prisma.observation.findUnique({
-          where: { id: resourceId },
-          select: { title: true },
-        });
-        resourceName = observation?.title || null;
-      } else if (resource === 'audits') {
-        const audit = await prisma.audit.findUnique({
-          where: { id: resourceId },
-          select: { name: true },
-        });
-        resourceName = audit?.name || null;
-      } else if (resource === 'users') {
-        const user = await prisma.user.findUnique({
-          where: { id: resourceId },
-          select: { email: true, firstName: true, lastName: true },
-        });
-        resourceName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : null;
-      }
-    }
-  } catch {
-    // Ignore lookup errors, fall back to ID
+    // Generic fallback for nested resources
+    const action = method === 'POST' ? 'Added' : method === 'DELETE' ? 'Removed' : 'Updated';
+    return `${action} ${pathInfo.subResource} for ${pathInfo.parentResource.slice(0, -1)} ${parentDisplay}`;
   }
 
-  const target = resourceName
-    ? `${resource.slice(0, -1)} "${resourceName}"` // Remove trailing 's' from resource name
-    : resourceId
-      ? `${resource} (${resourceId})`
-      : resource;
+  // Handle top-level resources
+  const action = method === 'POST' ? 'Created' : method === 'DELETE' ? 'Deleted' : 'Updated';
+  const resourceSingular = pathInfo.parentResource.replace(/s$/, '');
 
-  return `${action} ${target}`;
+  // Try to get resource name
+  let resourceName = responseTitle;
+
+  if (!resourceName && pathInfo.parentId) {
+    resourceName = await getParentResourceName(pathInfo.parentResource, pathInfo.parentId);
+  }
+
+  if (resourceName) {
+    return `${action} ${resourceSingular} "${resourceName}"`;
+  }
+
+  if (pathInfo.parentId) {
+    return `${action} ${resourceSingular} (${pathInfo.parentId.substring(0, 8)}...)`;
+  }
+
+  return `${action} ${resourceSingular}`;
+}
+
+/**
+ * Get parent resource name based on type
+ */
+async function getParentResourceName(resource: string, id: string): Promise<string | null> {
+  switch (resource) {
+    case 'observations':
+      return getObservationTitle(id);
+    case 'audits':
+      return getAuditName(id);
+    case 'users':
+      return getUserName(id);
+    default:
+      return null;
+  }
 }
 
 /**
@@ -271,13 +396,16 @@ export class AuditLogService {
     newStatus: string,
     ipAddress: string | null
   ): Promise<void> {
+    const resourceName = await getParentResourceName(resource + 's', resourceId);
+    const resourceDisplay = resourceName ? `"${resourceName}"` : resourceId;
+
     await createAuditLog(
       userId,
       email,
       'STATUS_CHANGE',
       resource,
       resourceId,
-      `Changed ${resource} status from ${previousStatus} to ${newStatus}`,
+      `Changed ${resource} ${resourceDisplay} status from ${previousStatus} to ${newStatus}`,
       { status: previousStatus },
       { status: newStatus },
       ipAddress,
@@ -295,13 +423,16 @@ export class AuditLogService {
     assigneeName: string,
     ipAddress: string | null
   ): Promise<void> {
+    const resourceName = await getParentResourceName(resource + 's', resourceId);
+    const resourceDisplay = resourceName ? `"${resourceName}"` : resourceId;
+
     await createAuditLog(
       userId,
       email,
       'ASSIGNMENT',
       resource,
       resourceId,
-      `Assigned ${resource} to ${assigneeName}`,
+      `Assigned ${resource} ${resourceDisplay} to ${assigneeName}`,
       null,
       { assigneeId, assigneeName },
       ipAddress,
@@ -318,13 +449,16 @@ export class AuditLogService {
     fileName: string,
     ipAddress: string | null
   ): Promise<void> {
+    const observationTitle = await getObservationTitle(observationId);
+    const obsDisplay = observationTitle ? `"${observationTitle}"` : observationId;
+
     await createAuditLog(
       userId,
       email,
       'EVIDENCE_UPLOAD',
       'evidence',
       evidenceId,
-      `Uploaded evidence "${fileName}" for observation ${observationId}`,
+      `Uploaded evidence "${fileName}" to observation ${obsDisplay}`,
       null,
       { fileName, observationId },
       ipAddress,
@@ -342,13 +476,16 @@ export class AuditLogService {
     rowCount: number,
     ipAddress: string | null
   ): Promise<void> {
+    const auditName = await getAuditName(auditId);
+    const auditDisplay = auditName ? `"${auditName}"` : auditId;
+
     await createAuditLog(
       userId,
       email,
       'IMPORT',
       'import_job',
       importJobId,
-      `Imported ${rowCount} observations from "${fileName}" to audit ${auditId}`,
+      `Imported ${rowCount} observations from "${fileName}" to audit ${auditDisplay}`,
       null,
       { fileName, rowCount, auditId },
       ipAddress,
