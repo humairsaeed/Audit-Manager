@@ -27,6 +27,14 @@ const riskColors: Record<string, string> = {
   INFORMATIONAL: 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600',
 };
 
+const riskChartColors: Record<string, string> = {
+  CRITICAL: 'bg-red-500',
+  HIGH: 'bg-orange-400',
+  MEDIUM: 'bg-yellow-400',
+  LOW: 'bg-green-500',
+  INFORMATIONAL: 'bg-slate-400',
+};
+
 const statusColors: Record<string, string> = {
   OPEN: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   IN_PROGRESS: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
@@ -149,6 +157,11 @@ export default function DashboardPage() {
   const openObservations = managementDashboard?.openObservations || 0;
   const overdueObservations = managementDashboard?.overdueObservations || 0;
   const slaCompliance = managementDashboard?.slaCompliance ?? null;
+  const riskChartData = riskOrder.map((rating) => ({
+    rating,
+    count: (riskSummary as any)[rating] || 0,
+  }));
+  const riskTotal = riskChartData.reduce((sum, item) => sum + item.count, 0);
 
   const topHighRisk = useMemo(() => {
     if (!dueSoonData) return [];
@@ -237,15 +250,34 @@ export default function DashboardPage() {
           </div>
           <div className="card p-6 xl:col-span-2">
             <SectionHeader title="Risk Exposure" subtitle="High impact focus" />
-            <div className="mt-6 space-y-3">
-              {riskOrder.map((rating) => (
-                <div key={rating} className="flex items-center justify-between">
-                  <span className={clsx('badge', riskColors[rating])}>{rating}</span>
-                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {(riskSummary as any)[rating] || 0}
-                  </span>
-                </div>
-              ))}
+            <div className="mt-6 space-y-4">
+              {riskTotal > 0 ? (
+                <>
+                  <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    {riskChartData
+                      .filter((item) => item.count > 0)
+                      .map((item) => (
+                        <div
+                          key={item.rating}
+                          className={clsx('h-full', riskChartColors[item.rating])}
+                          style={{ width: `${(item.count / riskTotal) * 100}%` }}
+                        />
+                      ))}
+                  </div>
+                  <div className="space-y-3">
+                    {riskChartData.map((item) => (
+                      <div key={item.rating} className="flex items-center justify-between">
+                        <span className={clsx('badge', riskColors[item.rating])}>{item.rating}</span>
+                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {item.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <EmptyState message="No risk data available." />
+              )}
             </div>
           </div>
         </section>

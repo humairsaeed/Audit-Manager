@@ -775,16 +775,16 @@ export default function ObservationDetailPage() {
             </dl>
           </div>
 
-          {/* History */}
+                    {/* History */}
           {observation.statusHistory && observation.statusHistory.length > 0 && (
             <div className="card p-6">
               <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-4">Status History</h3>
-                <div className="space-y-3">
-                  {observation.statusHistory.slice(0, 5).map((history: any, index: number) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <div className="w-2 h-2 mt-2 rounded-full bg-slate-400 dark:bg-slate-500" />
-                      </div>
+              <div className="space-y-3">
+                {observation.statusHistory.slice(0, 5).map((history: any, index: number) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 mt-2 rounded-full bg-slate-400 dark:bg-slate-500" />
+                    </div>
                     <div>
                       <p className="text-sm text-slate-900 dark:text-slate-100">
                         {history.fromStatus} → {history.toStatus}
@@ -799,8 +799,8 @@ export default function ObservationDetailPage() {
                       )}
                     </div>
                   </div>
-                  ))}
-                </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -1281,4 +1281,5 @@ export default function ObservationDetailPage() {
     </div>
   );
 }
+
 
