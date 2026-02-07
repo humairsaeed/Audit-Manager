@@ -106,9 +106,10 @@ export default function EditObservationPage() {
     },
   });
 
-  // Populate form when observation loads
+  // Populate form when observation AND users are loaded
+  // Users must be loaded first so select options exist when values are set
   useEffect(() => {
-    if (observation) {
+    if (observation && users) {
       reset({
         entityId: observation.entityId || '',
         title: observation.title,
@@ -125,7 +126,7 @@ export default function EditObservationPage() {
         targetDate: toDateInput(observation.targetDate),
       });
     }
-  }, [observation, reset]);
+  }, [observation, users, reset]);
 
   const onSubmit = (data: ObservationFormData) => {
     updateMutation.mutate(data);

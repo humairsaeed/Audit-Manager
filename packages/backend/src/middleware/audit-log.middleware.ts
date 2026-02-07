@@ -77,6 +77,7 @@ async function fetchPreviousValues(pathInfo: PathInfo): Promise<Record<string, u
           impact: true, recommendation: true, targetDate: true, responsiblePartyText: true,
           findingClassification: true, controlDomainArea: true, controlClauseRef: true,
           controlRequirement: true, externalReference: true, extensionReason: true,
+          ownerId: true, reviewerId: true,
         },
       });
       return observation as unknown as Record<string, unknown>;
@@ -87,6 +88,7 @@ async function fetchPreviousValues(pathInfo: PathInfo): Promise<Record<string, u
           name: true, description: true, status: true, scope: true,
           objectives: true, periodStart: true, periodEnd: true,
           executiveSummary: true, riskAssessment: true,
+          leadAuditorId: true,
         },
       });
       return audit as unknown as Record<string, unknown>;
@@ -98,22 +100,60 @@ async function fetchPreviousValues(pathInfo: PathInfo): Promise<Record<string, u
 }
 
 /**
- * Build a description showing what changed from previous to new values
+ * Fields that store user IDs which should be resolved to names
  */
-function buildChangeDescription(previousValues: Record<string, unknown>, newValues: Record<string, unknown>): Record<string, { from: unknown; to: unknown }> {
+const userIdFields = new Set(['ownerId', 'reviewerId', 'leadAuditorId']);
+
+/**
+ * Build a description showing what changed from previous to new values
+ * Resolves user IDs to names for owner/reviewer fields
+ */
+async function buildChangeDescription(previousValues: Record<string, unknown>, newValues: Record<string, unknown>): Promise<Record<string, { from: unknown; to: unknown }>> {
   const changes: Record<string, { from: unknown; to: unknown }> = {};
+
+  // Collect all user IDs that need resolving
+  const userIdsToResolve = new Set<string>();
+  for (const key of Object.keys(newValues)) {
+    if (userIdFields.has(key)) {
+      if (newValues[key] && typeof newValues[key] === 'string') userIdsToResolve.add(newValues[key] as string);
+      if (previousValues[key] && typeof previousValues[key] === 'string') userIdsToResolve.add(previousValues[key] as string);
+    }
+  }
+
+  // Batch resolve user names
+  const userNameMap = new Map<string, string>();
+  if (userIdsToResolve.size > 0) {
+    try {
+      const users = await prisma.user.findMany({
+        where: { id: { in: Array.from(userIdsToResolve) } },
+        select: { id: true, firstName: true, lastName: true, email: true },
+      });
+      for (const user of users) {
+        const name = `${user.firstName} ${user.lastName}`.trim() || user.email;
+        userNameMap.set(user.id, name);
+      }
+    } catch {
+      // Ignore lookup errors
+    }
+  }
 
   for (const key of Object.keys(newValues)) {
     const label = fieldLabels[key];
     if (!label) continue;
 
-    const oldVal = previousValues[key];
-    const newVal = newValues[key];
+    let oldVal = previousValues[key] ?? null;
+    let newVal = newValues[key];
 
     // Skip if values are the same
     if (JSON.stringify(oldVal) === JSON.stringify(newVal)) continue;
 
-    changes[label] = { from: oldVal ?? null, to: newVal };
+    // Resolve user IDs to names
+    if (userIdFields.has(key)) {
+      if (typeof oldVal === 'string' && userNameMap.has(oldVal)) oldVal = userNameMap.get(oldVal);
+      if (typeof newVal === 'string' && userNameMap.has(newVal as string)) newVal = userNameMap.get(newVal as string);
+    }
+
+    changes[label] = { from: oldVal, to: newVal };
   }
 
   return changes;
@@ -162,13 +202,13 @@ export const auditLogMiddleware = (
       Promise.all([
         generateDescriptionAsync(req.method, req.path, body, req.body),
         previousValuePromise,
-      ]).then(([description, prevValues]) => {
+      ]).then(async ([description, prevValues]) => {
         // Build detailed change log for updates
         let previousValue: unknown = prevValues;
         let newValue: unknown = req.body;
 
         if (prevValues && req.body && typeof req.body === 'object') {
-          const changes = buildChangeDescription(prevValues, req.body as Record<string, unknown>);
+          const changes = await buildChangeDescription(prevValues, req.body as Record<string, unknown>);
           if (Object.keys(changes).length > 0) {
             previousValue = changes;
             newValue = changes;
