@@ -75,6 +75,12 @@ export const auditLogMiddleware = (
     return;
   }
 
+  // Skip AI/insights routes - these are not user actions worth logging
+  if (/\/ai\/|\/insights/i.test(req.path)) {
+    next();
+    return;
+  }
+
   // Store original json method
   const originalJson = res.json.bind(res);
 
@@ -87,8 +93,8 @@ export const auditLogMiddleware = (
       const resource = extractResource(req.path);
       const resourceId = extractResourceId(req.path);
 
-      // Generate description with resource name lookup
-      generateDescriptionAsync(req.method, req.path, body).then((description) => {
+      // Generate description with resource name lookup and changed fields
+      generateDescriptionAsync(req.method, req.path, body, req.body).then((description) => {
         createAuditLog(
           user?.userId || null,
           user?.email || null,
@@ -215,10 +221,65 @@ async function getUserName(id: string): Promise<string | null> {
 /**
  * Generate human-readable description with async resource name lookup
  */
+/**
+ * Maps request body field names to human-readable labels
+ */
+const fieldLabels: Record<string, string> = {
+  managementResponse: 'management response',
+  correctiveActionPlan: 'corrective action plan',
+  description: 'description',
+  title: 'title',
+  riskRating: 'risk rating',
+  rootCause: 'root cause',
+  impact: 'impact',
+  recommendation: 'recommendation',
+  responsiblePartyText: 'responsible party',
+  ownerId: 'owner',
+  reviewerId: 'reviewer',
+  targetDate: 'target date',
+  extensionReason: 'extension reason',
+  tags: 'tags',
+  status: 'status',
+  findingClassification: 'finding classification',
+  controlDomainArea: 'control domain area',
+  controlClauseRef: 'control clause reference',
+  controlRequirement: 'control requirement',
+  externalReference: 'external reference',
+  name: 'name',
+  scope: 'scope',
+  objectives: 'objectives',
+  periodStart: 'period start',
+  periodEnd: 'period end',
+  executiveSummary: 'executive summary',
+  riskAssessment: 'risk assessment',
+};
+
+/**
+ * Get human-readable list of changed fields from request body
+ */
+function getChangedFieldsList(requestBody: unknown): string | null {
+  if (!requestBody || typeof requestBody !== 'object') return null;
+
+  const body = requestBody as Record<string, unknown>;
+  const changedFields: string[] = [];
+
+  for (const key of Object.keys(body)) {
+    if (fieldLabels[key]) {
+      changedFields.push(fieldLabels[key]);
+    }
+  }
+
+  if (changedFields.length === 0) return null;
+  if (changedFields.length === 1) return changedFields[0];
+  if (changedFields.length <= 3) return changedFields.join(', ');
+  return `${changedFields.slice(0, 3).join(', ')} and ${changedFields.length - 3} more`;
+}
+
 async function generateDescriptionAsync(
   method: string,
   path: string,
-  responseBody: unknown
+  responseBody: unknown,
+  requestBody?: unknown
 ): Promise<string> {
   const pathInfo = parsePath(path);
   const body = responseBody as any;
@@ -301,15 +362,17 @@ async function generateDescriptionAsync(
     resourceName = await getParentResourceName(pathInfo.parentResource, pathInfo.parentId);
   }
 
-  if (resourceName) {
-    return `${action} ${resourceSingular} "${resourceName}"`;
+  const nameDisplay = resourceName ? `"${resourceName}"` : pathInfo.parentId ? `(${pathInfo.parentId.substring(0, 8)}...)` : '';
+
+  // For updates, show which fields were changed
+  if ((method === 'PUT' || method === 'PATCH') && requestBody) {
+    const changedFields = getChangedFieldsList(requestBody);
+    if (changedFields) {
+      return `Updated ${changedFields} for ${resourceSingular} ${nameDisplay}`.trim();
+    }
   }
 
-  if (pathInfo.parentId) {
-    return `${action} ${resourceSingular} (${pathInfo.parentId.substring(0, 8)}...)`;
-  }
-
-  return `${action} ${resourceSingular}`;
+  return `${action} ${resourceSingular} ${nameDisplay}`.trim();
 }
 
 /**
