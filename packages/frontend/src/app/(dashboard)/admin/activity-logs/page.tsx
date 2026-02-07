@@ -22,6 +22,97 @@ const actionOptions = [
   'PERMISSION_CHANGE',
 ];
 
+const actionLabels: Record<string, string> = {
+  CREATE: 'Created',
+  UPDATE: 'Updated',
+  DELETE: 'Deleted',
+  LOGIN: 'Login',
+  LOGOUT: 'Logout',
+  STATUS_CHANGE: 'Status Change',
+  ASSIGNMENT: 'Assignment',
+  EVIDENCE_UPLOAD: 'Evidence Upload',
+  EXPORT: 'Export',
+  IMPORT: 'Import',
+  PERMISSION_CHANGE: 'Permission Change',
+};
+
+const actionColors: Record<string, string> = {
+  CREATE: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  UPDATE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  LOGIN: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  LOGOUT: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+  STATUS_CHANGE: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  ASSIGNMENT: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  EVIDENCE_UPLOAD: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+  EXPORT: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+  IMPORT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  PERMISSION_CHANGE: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+};
+
+const resourceLabels: Record<string, string> = {
+  observations: 'Observation',
+  audits: 'Audit',
+  users: 'User',
+  evidence: 'Evidence',
+  session: 'Session',
+  comments: 'Comment',
+  status: 'Status',
+  team: 'Team',
+  documents: 'Document',
+  import_job: 'Import',
+  user_role: 'User Role',
+  'follow-up': 'Follow-up',
+  'review-cycle': 'Review Cycle',
+  insights: 'AI Insight',
+};
+
+function formatFieldValue(value: unknown): string {
+  if (value === null || value === undefined) return '(empty)';
+  if (typeof value === 'string') {
+    if (value.length > 80) return value.substring(0, 80) + '...';
+    return value;
+  }
+  if (value instanceof Date || (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value as string))) {
+    try {
+      return new Date(value as string).toLocaleDateString();
+    } catch {
+      return String(value);
+    }
+  }
+  if (Array.isArray(value)) return value.join(', ');
+  return String(value);
+}
+
+function ChangeDetails({ log }: { log: any }) {
+  const changes = log.previousValue;
+
+  // If previousValue contains change details (from/to format)
+  if (changes && typeof changes === 'object' && !Array.isArray(changes)) {
+    const entries = Object.entries(changes);
+    const isChangeFormat = entries.length > 0 && entries.every(([, v]: [string, any]) =>
+      v && typeof v === 'object' && 'from' in v && 'to' in v
+    );
+
+    if (isChangeFormat) {
+      return (
+        <div className="mt-1 space-y-1">
+          {entries.map(([field, change]: [string, any]) => (
+            <div key={field} className="text-xs">
+              <span className="font-medium text-slate-600 dark:text-slate-300 capitalize">{field}:</span>{' '}
+              <span className="text-red-500 line-through">{formatFieldValue(change.from)}</span>{' '}
+              <span className="text-slate-400">&rarr;</span>{' '}
+              <span className="text-green-600 dark:text-green-400">{formatFieldValue(change.to)}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+  }
+
+  return null;
+}
+
 export default function ActivityLogsPage() {
   const router = useRouter();
   const { hasAnyRole } = useAuthStore();
@@ -96,7 +187,7 @@ export default function ActivityLogsPage() {
             >
               <option value="">All</option>
               {actionOptions.map((opt) => (
-                <option key={opt} value={opt}>{opt}</option>
+                <option key={opt} value={opt}>{actionLabels[opt] || opt}</option>
               ))}
             </select>
           </div>
@@ -162,7 +253,7 @@ export default function ActivityLogsPage() {
               )}
               {!isLoading && logs.map((log: any) => (
                 <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
                     {new Date(log.timestamp).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-200">
@@ -171,18 +262,29 @@ export default function ActivityLogsPage() {
                     </div>
                     <div className="text-xs text-slate-500">{log.user?.email || log.userEmail}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-200">
-                    <span className="badge bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                      {log.action}
+                  <td className="px-6 py-4 text-sm">
+                    <span className={clsx(
+                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                      actionColors[log.action] || 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    )}>
+                      {actionLabels[log.action] || log.action}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                    {log.resource}{log.resourceId ? ` (${log.resourceId})` : ''}
+                    <div className="font-medium">
+                      {resourceLabels[log.resource] || log.resource}
+                    </div>
+                    {log.resourceName && (
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-[200px] truncate" title={log.resourceName}>
+                        {log.resourceName}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 max-w-md">
-                    <span className="line-clamp-2">{log.description}</span>
+                    <div className="line-clamp-2">{log.description}</div>
+                    <ChangeDetails log={log} />
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-500">{log.ipAddress || '--'}</td>
+                  <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">{log.ipAddress || '--'}</td>
                 </tr>
               ))}
             </tbody>

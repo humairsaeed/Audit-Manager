@@ -62,6 +62,64 @@ export const createAuditLog = async (
 };
 
 /**
+ * Fetch previous values before an update operation
+ */
+async function fetchPreviousValues(pathInfo: PathInfo): Promise<Record<string, unknown> | null> {
+  if (!pathInfo.parentId) return null;
+
+  try {
+    if (pathInfo.parentResource === 'observations' && !pathInfo.subResource) {
+      const observation = await prisma.observation.findUnique({
+        where: { id: pathInfo.parentId },
+        select: {
+          title: true, description: true, riskRating: true, status: true,
+          managementResponse: true, correctiveActionPlan: true, rootCause: true,
+          impact: true, recommendation: true, targetDate: true, responsiblePartyText: true,
+          findingClassification: true, controlDomainArea: true, controlClauseRef: true,
+          controlRequirement: true, externalReference: true, extensionReason: true,
+        },
+      });
+      return observation as unknown as Record<string, unknown>;
+    } else if (pathInfo.parentResource === 'audits' && !pathInfo.subResource) {
+      const audit = await prisma.audit.findUnique({
+        where: { id: pathInfo.parentId },
+        select: {
+          name: true, description: true, status: true, scope: true,
+          objectives: true, periodStart: true, periodEnd: true,
+          executiveSummary: true, riskAssessment: true,
+        },
+      });
+      return audit as unknown as Record<string, unknown>;
+    }
+  } catch {
+    // Ignore errors
+  }
+  return null;
+}
+
+/**
+ * Build a description showing what changed from previous to new values
+ */
+function buildChangeDescription(previousValues: Record<string, unknown>, newValues: Record<string, unknown>): Record<string, { from: unknown; to: unknown }> {
+  const changes: Record<string, { from: unknown; to: unknown }> = {};
+
+  for (const key of Object.keys(newValues)) {
+    const label = fieldLabels[key];
+    if (!label) continue;
+
+    const oldVal = previousValues[key];
+    const newVal = newValues[key];
+
+    // Skip if values are the same
+    if (JSON.stringify(oldVal) === JSON.stringify(newVal)) continue;
+
+    changes[label] = { from: oldVal ?? null, to: newVal };
+  }
+
+  return changes;
+}
+
+/**
  * Middleware to automatically log API requests that modify data
  */
 export const auditLogMiddleware = (
@@ -81,6 +139,13 @@ export const auditLogMiddleware = (
     return;
   }
 
+  const pathInfo = parsePath(req.path);
+
+  // For update operations, capture previous values before the route handler runs
+  const previousValuePromise = (req.method === 'PUT' || req.method === 'PATCH')
+    ? fetchPreviousValues(pathInfo)
+    : Promise.resolve(null);
+
   // Store original json method
   const originalJson = res.json.bind(res);
 
@@ -93,8 +158,23 @@ export const auditLogMiddleware = (
       const resource = extractResource(req.path);
       const resourceId = extractResourceId(req.path);
 
-      // Generate description with resource name lookup and changed fields
-      generateDescriptionAsync(req.method, req.path, body, req.body).then((description) => {
+      // Generate description and log with previous values
+      Promise.all([
+        generateDescriptionAsync(req.method, req.path, body, req.body),
+        previousValuePromise,
+      ]).then(([description, prevValues]) => {
+        // Build detailed change log for updates
+        let previousValue: unknown = prevValues;
+        let newValue: unknown = req.body;
+
+        if (prevValues && req.body && typeof req.body === 'object') {
+          const changes = buildChangeDescription(prevValues, req.body as Record<string, unknown>);
+          if (Object.keys(changes).length > 0) {
+            previousValue = changes;
+            newValue = changes;
+          }
+        }
+
         createAuditLog(
           user?.userId || null,
           user?.email || null,
@@ -102,8 +182,8 @@ export const auditLogMiddleware = (
           resource,
           resourceId,
           description,
-          null, // Previous value would need to be captured before the operation
-          req.body,
+          previousValue,
+          newValue,
           getClientIp(req),
           req.headers['user-agent'] || null,
           user?.sessionId || null

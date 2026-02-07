@@ -74,10 +74,57 @@ router.get(
       }),
     ]);
 
+    // Resolve resource names from IDs for display
+    const enrichedLogs = await Promise.all(
+      logs.map(async (log) => {
+        let resourceName: string | null = null;
+
+        if (log.resourceId) {
+          try {
+            if (log.resource === 'observations' || log.resource === 'status' || log.resource === 'comments' || log.resource === 'follow-up') {
+              const observation = await prisma.observation.findUnique({
+                where: { id: log.resourceId },
+                select: { title: true },
+              });
+              resourceName = observation?.title || null;
+            } else if (log.resource === 'audits' || log.resource === 'team' || log.resource === 'documents') {
+              const audit = await prisma.audit.findUnique({
+                where: { id: log.resourceId },
+                select: { name: true },
+              });
+              resourceName = audit?.name || null;
+            } else if (log.resource === 'users' || log.resource === 'user_role') {
+              const user = await prisma.user.findUnique({
+                where: { id: log.resourceId },
+                select: { firstName: true, lastName: true, email: true },
+              });
+              resourceName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : null;
+            } else if (log.resource === 'evidence') {
+              const evidence = await prisma.evidence.findUnique({
+                where: { id: log.resourceId },
+                select: { fileName: true, observation: { select: { title: true } } },
+              });
+              resourceName = evidence?.observation?.title || evidence?.fileName || null;
+            } else if (log.resource === 'insights') {
+              // Try to resolve insights to observation name from description
+              resourceName = null;
+            }
+          } catch {
+            // Ignore lookup errors
+          }
+        }
+
+        return {
+          ...log,
+          resourceName,
+        };
+      })
+    );
+
     const response: ApiResponse = {
       success: true,
       data: {
-        data: logs,
+        data: enrichedLogs,
         pagination: {
           page,
           limit,
